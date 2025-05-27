@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, X, Search, Percent } from 'lucide-react';
@@ -39,6 +40,13 @@ type FormValues = {
   tableNumber: string;
 };
 
+// Extended OrderItem type to include additions for local state
+type ExtendedOrderItem = OrderItem & { 
+  discount?: number; 
+  discountType?: string; 
+  additions?: Addition[];
+};
+
 const DiscountTypes = {
   PERCENTAGE: 'percentage',
   FIXED: 'fixed',
@@ -60,7 +68,7 @@ const availableTables = [
 const CreateOrder = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const [orderItems, setOrderItems] = useState<(OrderItem & { discount?: number; discountType?: string })[]>([]);
+  const [orderItems, setOrderItems] = useState<ExtendedOrderItem[]>([]);
   const [isCancelConfirmationOpen, setIsCancelConfirmationOpen] = useState(false);
   const [clientSearchQuery, setClientSearchQuery] = useState('');
   const [orderDiscount, setOrderDiscount] = useState<number>(0);
@@ -116,7 +124,7 @@ const CreateOrder = () => {
     toast.success(`${product.name} ${t('added_to_order')}`);
   };
   
-  const handleUpdateOrderItem = (index: number, updatedItem: OrderItem & { discount?: number; discountType?: string }) => {
+  const handleUpdateOrderItem = (index: number, updatedItem: ExtendedOrderItem) => {
     const updatedItems = [...orderItems];
     updatedItems[index] = updatedItem;
     setOrderItems(updatedItems);
@@ -128,7 +136,7 @@ const CreateOrder = () => {
     toast.success(t('product_removed'));
   };
   
-  const calculateProductFinalPrice = (product: OrderItem & { discount?: number; discountType?: string }) => {
+  const calculateProductFinalPrice = (product: ExtendedOrderItem) => {
     if (!product.discount || product.discount <= 0 || product.discountType === DiscountTypes.NONE) {
       return product.total;
     }

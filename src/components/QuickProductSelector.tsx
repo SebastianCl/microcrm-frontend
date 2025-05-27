@@ -5,7 +5,8 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Search, Plus, ShoppingCart } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Search, Plus, ShoppingCart, Filter } from 'lucide-react';
 import { SAMPLE_INVENTORY } from '@/components/InventoryList';
 import { OrderItem, Addition } from '@/models/order.model';
 import { productHasAdditions, getProductAdditions } from '@/lib/sample-additions';
@@ -20,13 +21,21 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
   const [selectedProductId, setSelectedProductId] = useState<string>('');
   const [selectedAdditions, setSelectedAdditions] = useState<Addition[]>([]);
   const [quantity, setQuantity] = useState(1);
+  const [activeCategory, setActiveCategory] = useState<string>('all');
   const { t } = useLanguage();
 
-  // Filter products based on search
-  const filteredProducts = SAMPLE_INVENTORY.filter(product =>
-    product.stockQuantity > 0 &&
-    product.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Get unique categories from inventory
+  const categories = Array.from(new Set(SAMPLE_INVENTORY.map(product => product.category)));
+
+  // Filter products based on search and category
+  const filteredProducts = SAMPLE_INVENTORY.filter(product => {
+    const matchesSearch = product.stockQuantity > 0 &&
+      product.name.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesCategory = activeCategory === 'all' || product.category === activeCategory;
+    
+    return matchesSearch && matchesCategory;
+  });
 
   const selectedProduct = SAMPLE_INVENTORY.find(p => p.id === selectedProductId);
   const hasAdditions = selectedProductId ? productHasAdditions(selectedProductId) : false;
@@ -89,6 +98,62 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
     setQuantity(1);
   };
 
+  const getProductsByCategory = (category: string) => {
+    if (category === 'all') return filteredProducts;
+    return filteredProducts.filter(product => product.category === category);
+  };
+
+  const ProductGrid = ({ products }: { products: typeof SAMPLE_INVENTORY }) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-80 overflow-y-auto">
+      {products.map((product) => (
+        <Card 
+          key={product.id} 
+          className={`p-3 cursor-pointer transition-all hover:shadow-md ${
+            selectedProductId === product.id ? 'ring-2 ring-primary' : ''
+          }`}
+          onClick={() => setSelectedProductId(product.id)}
+        >
+          <div className="flex justify-between items-start mb-2">
+            <div className="flex-1">
+              <h4 className="font-medium text-sm">{product.name}</h4>
+              <p className="text-xs text-muted-foreground">${product.price}</p>
+              <div className="flex gap-1 mt-1">
+                <Badge variant="outline" className="text-xs">
+                  {product.stockQuantity} {t('available')}
+                </Badge>
+                <Badge variant="secondary" className="text-xs">
+                  {product.category}
+                </Badge>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleQuickAdd(product.id);
+              }}
+              className="h-8 w-8 p-0"
+            >
+              <Plus className="h-3 w-3" />
+            </Button>
+          </div>
+          
+          {productHasAdditions(product.id) && (
+            <Badge variant="secondary" className="text-xs">
+              {t('has_additions')}
+            </Badge>
+          )}
+        </Card>
+      ))}
+      {products.length === 0 && (
+        <div className="col-span-full text-center py-8 text-muted-foreground">
+          No se encontraron productos
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="space-y-4">
       {/* Search Bar */}
@@ -102,52 +167,49 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
         />
       </div>
 
-      {/* Quick Product Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-64 overflow-y-auto">
-        {filteredProducts.map((product) => (
-          <Card 
-            key={product.id} 
-            className={`p-3 cursor-pointer transition-all hover:shadow-md ${
-              selectedProductId === product.id ? 'ring-2 ring-primary' : ''
-            }`}
-            onClick={() => setSelectedProductId(product.id)}
-          >
-            <div className="flex justify-between items-start mb-2">
-              <div className="flex-1">
-                <h4 className="font-medium text-sm">{product.name}</h4>
-                <p className="text-xs text-muted-foreground">${product.price}</p>
-                <Badge variant="outline" className="text-xs mt-1">
-                  {product.stockQuantity} {t('available')}
-                </Badge>
-              </div>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleQuickAdd(product.id);
-                }}
-                className="h-8 w-8 p-0"
-              >
-                <Plus className="h-3 w-3" />
-              </Button>
-            </div>
-            
-            {productHasAdditions(product.id) && (
-              <Badge variant="secondary" className="text-xs">
-                {t('has_additions')}
-              </Badge>
-            )}
-          </Card>
+      {/* Category Tabs */}
+      <Tabs value={activeCategory} onValueChange={setActiveCategory} className="w-full">
+        <div className="flex items-center gap-2 mb-4">
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+            <TabsTrigger value="all" className="text-xs">
+              Todos ({filteredProducts.length})
+            </TabsTrigger>
+            {categories.map(category => {
+              const categoryProducts = getProductsByCategory(category);
+              return (
+                <TabsTrigger key={category} value={category} className="text-xs">
+                  {category} ({categoryProducts.length})
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+        </div>
+
+        {/* All Products Tab */}
+        <TabsContent value="all" className="mt-0">
+          <ProductGrid products={filteredProducts} />
+        </TabsContent>
+
+        {/* Category-specific Tabs */}
+        {categories.map(category => (
+          <TabsContent key={category} value={category} className="mt-0">
+            <ProductGrid products={getProductsByCategory(category)} />
+          </TabsContent>
         ))}
-      </div>
+      </Tabs>
 
       {/* Selected Product Configuration */}
       {selectedProduct && (
         <Card className="p-4 border-primary">
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <h3 className="font-semibold">{selectedProduct.name}</h3>
+              <div>
+                <h3 className="font-semibold">{selectedProduct.name}</h3>
+                <Badge variant="outline" className="text-xs mt-1">
+                  {selectedProduct.category}
+                </Badge>
+              </div>
               <Button
                 variant="ghost"
                 size="sm"
