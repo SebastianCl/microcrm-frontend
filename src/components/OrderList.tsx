@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, X, Loader, Clock, RefreshCcw } from 'lucide-react';
+import { Check, X, Loader, Clock, RefreshCcw, Eye, Edit } from 'lucide-react';
 import { Order } from '@/models/order.model';
 import { Button } from '@/components/ui/button';
 import DataTable from './ui/DataTable';
@@ -13,7 +13,9 @@ import SearchAndFilter from './ui/SearchAndFilter';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorDisplay } from '@/components/ui/error-display';
 import { useNetwork } from '@/hooks/useNetwork';
-import { useOrders } from '@/hooks/useOrders';
+import { useOrders, useUpdateOrderStatus } from '@/hooks/useOrders';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from 'sonner';
 
 interface OrderListProps {
   limit?: number;
@@ -48,7 +50,9 @@ const OrderList: React.FC<OrderListProps> = ({
   useEffect(() => {
     if (!orders) return;
     
-    let result = [...orders];    // Aplicar filtro de busqueda
+    let result = [...orders];
+
+    // Aplicar filtro de busqueda
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter(order => 
@@ -62,7 +66,7 @@ const OrderList: React.FC<OrderListProps> = ({
       result = result.filter(order => order.status === activeFilters.status);
     }
 
-    //  Aplicar filtro de fecha
+    // Aplicar filtro de fecha
     if (activeFilters.date) {
       result = result.filter(order => {
         const orderDate = new Date(order.date).toISOString().split('T')[0];
@@ -70,7 +74,7 @@ const OrderList: React.FC<OrderListProps> = ({
       });
     }
 
-    //  Aplicar ordenar
+    // Aplicar ordenar
     if (activeFilters._sort) {
       result.sort((a, b) => {
         if (activeFilters._sort === 'asc') {
@@ -79,7 +83,9 @@ const OrderList: React.FC<OrderListProps> = ({
           return a.date < b.date ? 1 : -1;
         }
       });
-    }    setFilteredOrders(result);
+    }
+
+    setFilteredOrders(result);
   }, [searchQuery, activeFilters, orders]);
   
   // Aplicar límite si se especifica
@@ -136,6 +142,37 @@ const OrderList: React.FC<OrderListProps> = ({
     setCurrentPage(1);
   };
 
+  // Quick status change component
+  const QuickStatusChange = ({ order }: { order: Order }) => {
+    const updateStatus = useUpdateOrderStatus(order.id);
+
+    const handleStatusChange = async (newStatus: 'pending' | 'processed' | 'canceled' | 'completed') => {
+      if (newStatus === order.status) return;
+      
+      try {
+        await updateStatus.mutateAsync(newStatus);
+        toast.success(`Estado de orden ${order.id} actualizado`);
+      } catch (error) {
+        toast.error('Error al actualizar el estado');
+        console.error('Error updating status:', error);
+      }
+    };
+
+    return (
+      <Select value={order.status} onValueChange={handleStatusChange} disabled={updateStatus.isPending}>
+        <SelectTrigger className="w-32 h-8">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="pending">Pendiente</SelectItem>
+          <SelectItem value="processed">Procesando</SelectItem>
+          <SelectItem value="completed">Completada</SelectItem>
+          <SelectItem value="canceled">Cancelada</SelectItem>
+        </SelectContent>
+      </Select>
+    );
+  };
+
   const filterOptions = [
     {
       id: 'status',
@@ -153,31 +190,48 @@ const OrderList: React.FC<OrderListProps> = ({
   const columns = [
     {
       header: 'Orden',
-      accessorKey: (order: Order) => order.id,
+      accessorKey: (order: Order) => (
+        <div className="font-medium">
+          #{order.id}
+          {order.tableNumber && (
+            <div className="text-xs text-muted-foreground">
+              Mesa {order.tableNumber}
+            </div>
+          )}
+        </div>
+      ),
     },
     {
       header: 'Cliente',
-      accessorKey: (order: Order) => order.clientName,
-    },
-    {
-      header: 'Fecha',
-      accessorKey: (order: Order) => formatDate(order.date),
-      hideOnMobile: true
+      accessorKey: (order: Order) => (
+        <div>
+          <div className="font-medium">{order.clientName}</div>
+          <div className="text-xs text-muted-foreground">
+            {formatDate(order.date)}
+          </div>
+        </div>
+      ),
     },
     {
       header: 'Total',
-      accessorKey: (order: Order) => `$${order.total}`,
+      accessorKey: (order: Order) => (
+        <div className="font-semibold text-right">
+          ${order.total.toFixed(2)}
+        </div>
+      ),
+      className: "text-right"
     },
     {
       header: 'Estado',
       accessorKey: (order: Order) => order.status,
-      cell: (order: Order) => getStatusBadge(order.status),
+      cell: (order: Order) => <QuickStatusChange order={order} />,
+      className: "w-[140px]"
     },
     {
       header: 'Acciones',
       accessorKey: (order: Order) => order.id,
       cell: (order: Order) => (
-        <div className="flex justify-end">
+        <div className="flex gap-1">
           <Button 
             variant="outline" 
             size="sm" 
@@ -186,7 +240,17 @@ const OrderList: React.FC<OrderListProps> = ({
               navigate(`/orders/${order.id}`);
             }}
           >
-            Ver
+            <Eye className="h-3 w-3" />
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/orders/${order.id}/edit`);
+            }}
+          >
+            <Edit className="h-3 w-3" />
           </Button>
         </div>
       ),
@@ -197,6 +261,7 @@ const OrderList: React.FC<OrderListProps> = ({
   const handleRowClick = (order: Order) => {
     navigate(`/orders/${order.id}`);
   };
+
   return (
     <Card className="p-4">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">

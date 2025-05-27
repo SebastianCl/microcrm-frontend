@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,6 +16,7 @@ import InventoryDetail from "./pages/InventoryDetail";
 import Orders from "./pages/Orders";
 import OrderDetail from "./pages/OrderDetail";
 import CreateOrder from "./pages/CreateOrder";
+import EditOrder from "./pages/EditOrder";
 import Users from "./pages/Users";
 import LoginPage from "./pages/Login";
 import NotFound from "./pages/NotFound";
@@ -31,7 +33,8 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <AuthProvider>              <Routes>
+            <AuthProvider>
+              <Routes>
                 <Route path="/login" element={<LoginPage />} />
                 <Route element={
                   <ProtectedRoute>
@@ -47,6 +50,7 @@ const App = () => (
                   <Route path="/orders" element={<Orders />} />
                   <Route path="/orders/new" element={<CreateOrder />} />
                   <Route path="/orders/:id" element={<OrderDetail />} />
+                  <Route path="/orders/:id/edit" element={<EditOrder />} />
                   <Route path="/users" element={<Users />} />
                   <Route path="/reports" element={<Reports />} />
                   <Route path="/settings" element={<Settings />} />
