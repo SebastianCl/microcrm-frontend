@@ -176,7 +176,7 @@ const EditOrder = () => {
                       <th className="text-center p-3 font-medium text-muted-foreground">{t('quantity')}</th>
                       <th className="text-right p-3 font-medium text-muted-foreground">{t('price')}</th>
                       <th className="text-right p-3 font-medium text-muted-foreground">{t('total')}</th>
-                      <th className="p-3 w-[100px]">{t('actions')}</th>
+                      <th className="p-3 w-[100px]">Acciones</th>
                     </tr>
                   </thead>
                   <tbody>

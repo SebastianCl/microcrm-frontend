@@ -274,7 +274,7 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
               </div>
               <Button onClick={handleAddWithOptions} className="flex items-center space-x-1">
                 <ShoppingCart className="h-4 w-4" />
-                <span>{t('add_to_order')}</span>
+                <span>Agregar</span>
               </Button>
             </div>
           </div>
