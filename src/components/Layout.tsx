@@ -1,4 +1,3 @@
-
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -7,7 +6,6 @@ import { Menu, PanelLeftClose, PanelLeft } from 'lucide-react';
 import { useState } from 'react';
 import NetworkStatus from './NetworkStatus';
 import { ThemeToggle } from './ThemeToggle';
-import { LanguageSelector } from './LanguageSelector';
 
 const Layout = () => {
   const isMobile = useIsMobile();
@@ -43,7 +41,6 @@ const Layout = () => {
               </Button>
             </div>
             <div className="flex items-center gap-2">
-              <LanguageSelector />
               <ThemeToggle />
             </div>
           </div>

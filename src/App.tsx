@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -27,7 +26,7 @@ import { LanguageProvider } from "./contexts/LanguageProvider";
 
 const App = () => (
   <ThemeProvider defaultTheme="light">
-    <LanguageProvider defaultLanguage="en">
+    <LanguageProvider defaultLanguage="es">
       <QueryProvider>
         <TooltipProvider>
           <Toaster />
