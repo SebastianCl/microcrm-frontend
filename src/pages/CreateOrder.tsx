@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, X, Search, Percent } from 'lucide-react';
@@ -15,7 +14,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import AddProductToOrderDialog from '@/components/AddProductToOrderDialog';
 import CancelOrderConfirmation from '@/components/CancelOrderConfirmation';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
@@ -26,16 +24,13 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from '@/components/ui/hover-card';
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { useLanguage } from '@/contexts/LanguageProvider';
+import QuickProductSelector from '@/components/QuickProductSelector';
+import OrderItemRow from '@/components/OrderItemRow';
 
 type FormValues = {
   clientId: string;
@@ -65,7 +60,6 @@ const CreateOrder = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const [orderItems, setOrderItems] = useState<(OrderItem & { discount?: number; discountType?: string; additions?: { id: number; name: string; price: number }[] })[]>([]);
-  const [isAddProductDialogOpen, setIsAddProductDialogOpen] = useState(false);
   const [isCancelConfirmationOpen, setIsCancelConfirmationOpen] = useState(false);
   const [clientSearchQuery, setClientSearchQuery] = useState('');
   const [orderDiscount, setOrderDiscount] = useState<number>(0);
@@ -97,19 +91,20 @@ const CreateOrder = () => {
   );
 
   const handleAddProduct = (product: OrderItem) => {
-    // Valida si el producto ya está en la orden
+    // Check if product already exists in order
     const existingProductIndex = orderItems.findIndex(
-      item => item.productId === product.productId
+      item => item.productId === product.productId && 
+      JSON.stringify(item.additions || []) === JSON.stringify(product.additions || [])
     );
     
     if (existingProductIndex >= 0) {
-      // Actualiza la cantidad y el total del producto existente
+      // Update existing product quantity
       const updatedItems = [...orderItems];
       updatedItems[existingProductIndex].quantity += product.quantity;
       updatedItems[existingProductIndex].total += product.total;
       setOrderItems(updatedItems);
     } else {
-      // Agrega el nuevo producto a la orden con propiedad de descuento
+      // Add new product
       setOrderItems([...orderItems, { 
         ...product, 
         discount: 0, 
@@ -120,19 +115,16 @@ const CreateOrder = () => {
     toast.success(`${product.name} ${t('added_to_order')}`);
   };
   
-  const handleRemoveProduct = (productId: string) => {
-    setOrderItems(orderItems.filter(item => item.productId !== productId));
-    toast.success(t('product_removed'));
+  const handleUpdateOrderItem = (index: number, updatedItem: OrderItem & { discount?: number; discountType?: string }) => {
+    const updatedItems = [...orderItems];
+    updatedItems[index] = updatedItem;
+    setOrderItems(updatedItems);
+    toast.success(t('product_updated'));
   };
 
-  const handleProductDiscountChange = (productId: string, discount: number, discountType: string) => {
-    const updatedItems = orderItems.map(item => {
-      if (item.productId === productId) {
-        return { ...item, discount, discountType };
-      }
-      return item;
-    });
-    setOrderItems(updatedItems);
+  const handleRemoveProduct = (index: number) => {
+    setOrderItems(orderItems.filter((_, i) => i !== index));
+    toast.success(t('product_removed'));
   };
   
   const calculateProductFinalPrice = (product: OrderItem & { discount?: number; discountType?: string }) => {
@@ -384,17 +376,17 @@ const CreateOrder = () => {
             
             <Separator className="my-6" />
             
+            {/* Quick Product Selector */}
             <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-                <h3 className="text-lg font-semibold">{t('products')}</h3>
-                <Button 
-                  type="button"
-                  onClick={() => setIsAddProductDialogOpen(true)}
-                  className="w-full sm:w-auto"
-                >
-                  {t('add_product')}
-                </Button>
-              </div>
+              <h3 className="text-lg font-semibold">{t('add_products')}</h3>
+              <QuickProductSelector onAddProduct={handleAddProduct} />
+            </div>
+            
+            <Separator className="my-6" />
+            
+            {/* Order Items */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">{t('order_items')}</h3>
               
               <div className="border rounded-md overflow-hidden">
                 <div className="overflow-x-auto">
@@ -404,111 +396,27 @@ const CreateOrder = () => {
                         <th className="text-left p-3 font-medium text-muted-foreground">{t('product')}</th>
                         <th className="text-center p-3 font-medium text-muted-foreground">{t('quantity')}</th>
                         <th className="text-right p-3 font-medium text-muted-foreground">{t('price')}</th>
-                        <th className="text-right p-3 font-medium text-muted-foreground">{t('discount')}</th>
                         <th className="text-right p-3 font-medium text-muted-foreground">{t('total')}</th>
-                        <th className="p-3 w-[50px]"></th>
+                        <th className="p-3 w-[100px]">{t('actions')}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {orderItems.length === 0 ? (
                         <tr>
-                          <td colSpan={6} className="text-center p-4 text-muted-foreground">
-                            {t('no_products')}
+                          <td colSpan={5} className="text-center p-8 text-muted-foreground">
+                            {t('no_products_yet')}
+                            <br />
+                            <span className="text-sm">{t('use_quick_selector_above')}</span>
                           </td>
                         </tr>
                       ) : (
-                        orderItems.map((item) => (
-                          <tr key={item.productId} className="border-b hover:bg-muted/30">
-                            <td className="p-3 text-left">{item.name}</td>
-                            <td className="p-3 text-center">{item.quantity}</td>
-                            <td className="p-3 text-right">${item.price}</td>
-                            <td className="p-3 text-right">
-                              <div className="flex items-center justify-end gap-1">
-                                <HoverCard>
-                                  <HoverCardTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="h-7 px-2">
-                                      {item.discountType === DiscountTypes.PERCENTAGE 
-                                        ? `${item.discount}%` 
-                                        : item.discountType === DiscountTypes.FIXED 
-                                          ? `$${item.discount}`
-                                          : '-'}
-                                    </Button>
-                                  </HoverCardTrigger>
-                                  <HoverCardContent className="w-60 p-3" align="end">
-                                    <div className="space-y-2">
-                                      <h4 className="font-medium mb-1">{t('discount_for')} {item.name}</h4>
-                                      <div className="flex gap-2">
-                                        <Input
-                                          type="number"
-                                          min="0"
-                                          value={item.discount || 0}
-                                          onChange={(e) => handleProductDiscountChange(
-                                            item.productId, 
-                                            Number(e.target.value), 
-                                            item.discountType || DiscountTypes.NONE
-                                          )}
-                                          className="flex-1"
-                                          disabled={item.discountType === DiscountTypes.NONE}
-                                        />
-                                        <DropdownMenu>
-                                          <DropdownMenuTrigger asChild>
-                                            <Button variant="outline" size="sm" className="px-2">
-                                              {item.discountType === DiscountTypes.PERCENTAGE 
-                                                ? '%' 
-                                                : item.discountType === DiscountTypes.FIXED 
-                                                  ? '$' 
-                                                  : '-'}
-                                            </Button>
-                                          </DropdownMenuTrigger>
-                                          <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onClick={() => handleProductDiscountChange(
-                                              item.productId, item.discount || 0, DiscountTypes.NONE
-                                            )}>
-                                              {t('no_discount')}
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => handleProductDiscountChange(
-                                              item.productId, item.discount || 0, DiscountTypes.PERCENTAGE
-                                            )}>
-                                              {t('percentage')} (%)
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => handleProductDiscountChange(
-                                              item.productId, item.discount || 0, DiscountTypes.FIXED
-                                            )}>
-                                              {t('fixed_amount')} ($)
-                                            </DropdownMenuItem>
-                                          </DropdownMenuContent>
-                                        </DropdownMenu>
-                                      </div>
-                                      {item.discount > 0 && item.discountType !== DiscountTypes.NONE && (
-                                        <p className="text-xs text-muted-foreground">
-                                          {t('original_price')}: ${item.total}<br />
-                                          {t('with_discount')}: ${calculateProductFinalPrice(item)}
-                                        </p>
-                                      )}
-                                    </div>
-                                  </HoverCardContent>
-                                </HoverCard>
-                              </div>
-                            </td>
-                            <td className="p-3 text-right">
-                              ${calculateProductFinalPrice(item)}
-                              {(item.discount > 0 && item.discountType !== DiscountTypes.NONE) && (
-                                <span className="text-xs text-muted-foreground line-through ml-1">
-                                  ${item.total}
-                                </span>
-                              )}
-                            </td>
-                            <td className="p-3 text-right">
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                onClick={() => handleRemoveProduct(item.productId)}
-                                className="hover:text-red-500"
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </td>
-                          </tr>
+                        orderItems.map((item, index) => (
+                          <OrderItemRow
+                            key={`${item.productId}-${index}`}
+                            item={item}
+                            onUpdate={(updatedItem) => handleUpdateOrderItem(index, updatedItem)}
+                            onRemove={() => handleRemoveProduct(index)}
+                          />
                         ))
                       )}
                     </tbody>
@@ -560,12 +468,6 @@ const CreateOrder = () => {
           </form>
         </Form>
       </Card>
-      
-      <AddProductToOrderDialog
-        open={isAddProductDialogOpen}
-        onOpenChange={setIsAddProductDialogOpen}
-        onAddProduct={handleAddProduct}
-      />
       
       <CancelOrderConfirmation
         open={isCancelConfirmationOpen}
