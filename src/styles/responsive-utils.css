@@ -1,0 +1,103 @@
+
+/* Additional responsive utilities */
+.responsive-container {
+  @apply w-full px-4 md:px-6 lg:px-8 max-w-7xl mx-auto;
+}
+
+.responsive-card {
+  @apply p-4 md:p-6 lg:p-8;
+}
+
+.responsive-form {
+  @apply space-y-4 md:space-y-6;
+}
+
+.responsive-grid {
+  @apply grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+}
+
+.responsive-flex {
+  @apply flex flex-col sm:flex-row items-start sm:items-center;
+}
+
+/* Improved form styles */
+.form-layout-2-col {
+  @apply grid md:grid-cols-2 gap-4 md:gap-6;
+}
+
+.form-layout-3-col {
+  @apply grid md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6;
+}
+
+/* Accessibility improvements */
+.focusable {
+  @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
+}
+
+.sr-only {
+  @apply absolute w-px h-px p-0 -m-px overflow-hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Animation utilities */
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Table responsive fixes */
+.responsive-table-wrapper {
+  @apply w-full overflow-x-auto -mx-4 sm:mx-0 rounded-md border;
+}
+
+.responsive-table {
+  @apply min-w-full table-auto border-collapse;
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+  .mobile-full-width {
+    @apply w-full;
+  }
+  
+  .mobile-stack {
+    @apply flex-col;
+  }
+  
+  .mobile-center {
+    @apply justify-center items-center text-center;
+  }
+  
+  .hide-on-mobile {
+    @apply hidden;
+  }
+  
+  .mobile-p-4 {
+    @apply p-4;
+  }
+}

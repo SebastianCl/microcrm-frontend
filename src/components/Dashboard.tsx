@@ -1,59 +1,55 @@
 
-import { useState } from 'react';
-import Sidebar from '@/components/layout/Sidebar';
-import Header from '@/components/layout/Header';
-import ProductsPage from '@/components/pages/ProductsPage';
-import OrdersPage from '@/components/pages/OrdersPage';
-import CustomersPage from '@/components/pages/CustomersPage';
-import EmployeesPage from '@/components/pages/EmployeesPage';
-import ReportsPage from '@/components/pages/ReportsPage';
-import TablesPage from '@/components/pages/TablesPage';
-import { useAuth } from '@/contexts/AuthContext';
-
-export type PageType = 'orders' | 'products' | 'customers' | 'employees' | 'reports' | 'tables';
+import React from 'react';
+import { PiggyBank, CreditCard, AlertCircle } from 'lucide-react';
+import StatCard from './stats/StatCard';
+import RevenueChart from './charts/RevenueChart';
+import InvoiceList from './InvoiceList';
+import ClientList from './ClientList';
+import { dashboardStats } from '@/lib/sample-data';
 
 const Dashboard = () => {
-  const [currentPage, setCurrentPage] = useState<PageType>('orders');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const { user } = useAuth();
-
-  const renderPage = () => {
-    switch (currentPage) {
-      case 'orders':
-        return <OrdersPage />;
-      case 'products':
-        return <ProductsPage />;
-      case 'customers':
-        return <CustomersPage />;
-      case 'employees':
-        return <EmployeesPage />;
-      case 'reports':
-        return <ReportsPage />;
-      case 'tables':
-        return <TablesPage />;
-      default:
-        return <OrdersPage />;
-    }
-  };
-
   return (
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar 
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
-        isOpen={isSidebarOpen}
-        setIsOpen={setIsSidebarOpen}
-      />
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Panel de Control</h1>
+        <p className="text-muted-foreground mt-2">
+          Bienvenido a tu panel de facturación. Aquí tienes un resumen de tus finanzas.
+        </p>
+      </div>
       
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header 
-          toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-          currentPage={currentPage}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          title="Ingresos Totales"
+          value={`$${dashboardStats.totalRevenue.toLocaleString()}`}
+          icon={<PiggyBank />}
+          trend={{ value: 12, isPositive: true }}
         />
-        
-        <main className="flex-1 overflow-auto bg-gray-50 p-6">
-          {renderPage()}
-        </main>
+        <StatCard
+          title="Facturas Pagadas"
+          value={`$${dashboardStats.paidInvoices.toLocaleString()}`}
+          icon={<CreditCard />}
+          description={`${dashboardStats.invoiceCount.paid} facturas`}
+        />
+        <StatCard
+          title="Cantidad Pendiente"
+          value={`$${dashboardStats.pendingAmount.toLocaleString()}`}
+          icon={<CreditCard />}
+          description={`${dashboardStats.invoiceCount.pending} facturas`}
+        />
+        <StatCard
+          title="Cantidad Vencida"
+          value={`$${dashboardStats.overdueAmount.toLocaleString()}`}
+          icon={<AlertCircle />}
+          description={`${dashboardStats.invoiceCount.overdue} facturas`}
+          trend={{ value: 5, isPositive: false }}
+        />
+      </div>
+
+      <RevenueChart />
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <InvoiceList limit={5} showCreateButton={false} />
+        <ClientList limit={5} showCreateButton={false} />
       </div>
     </div>
   );

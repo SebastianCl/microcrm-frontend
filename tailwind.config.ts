@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,17 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Custom colors for our billing app
+				billing: {
+					blue: '#0369A1',
+					teal: '#0D9488',
+					navy: '#0F172A',
+					gray: '#94A3B8',
+					lightgray: '#E2E8F0',
+					success: '#10B981',
+					warning: '#F59E0B',
+					danger: '#EF4444',
 				}
 			},
 			borderRadius: {

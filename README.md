@@ -1,73 +1,105 @@
-# Welcome to your Lovable project
+# Micro POS
 
-## Project info
+![Versión](https://img.shields.io/badge/versión-1.0.0-blue)
+![React](https://img.shields.io/badge/React-18.3.1-61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.5.3-3178C6)
+![Licencia](https://img.shields.io/badge/licencia-EULA-orange)
 
-**URL**: https://lovable.dev/projects/ecfbcd80-7f4f-4043-bbfc-f4609bb3109e
+## 📋 Descripción
 
-## How can I edit this code?
+Micro POS es una aplicación web moderna para gestión de ventas, inventario, clientes y pedidos. Diseñada para pequeñas y medianas empresas que necesitan una solución integral para administrar sus operaciones comerciales diarias de manera eficiente.
 
-There are several ways of editing your application.
+### ✨ Características Principales
 
-**Use Lovable**
+- **Panel de Control**: Visualiza estadísticas clave de tu negocio en tiempo real
+- **Gestión de Facturas**: Crea, consulta y administra facturas fácilmente
+- **Seguimiento de Clientes**: Mantén una base de datos actualizada de tus clientes
+- **Gestión de Inventario**: Controla tus productos y existencias
+- **Gestión de Pedidos**: Administra pedidos desde su creación hasta la entrega
+- **Informes y Estadísticas**: Genera reportes sobre tu desempeño financiero
+- **Interfaz Responsiva**: Diseño adaptable a dispositivos móviles y escritorio
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/ecfbcd80-7f4f-4043-bbfc-f4609bb3109e) and start prompting.
+## 🚀 Instalación y Uso
 
-Changes made via Lovable will be committed automatically to this repo.
+### Requisitos previos
 
-**Use your preferred IDE**
+- Node.js (versión 18 o superior)
+- PNPM (gestor de paquetes)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Configuración del entorno de desarrollo
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+```bash
+# Paso 1: Instala las dependencias necesarias
+pnpm install
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+# Paso 2: Inicia el servidor de desarrollo
+pnpm run dev
 ```
 
-**Edit a file directly in GitHub**
+La aplicación estará disponible en [http://localhost:5173](http://localhost:5173)
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Comandos disponibles
 
-**Use GitHub Codespaces**
+```bash
+# Iniciar servidor de desarrollo
+pnpm run dev
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+# Generar build de producción
+pnpm run build
 
-## What technologies are used for this project?
+# Generar build de desarrollo
+pnpm run build:dev
 
-This project is built with:
+# Ejecutar verificación de código
+pnpm run lint
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+# Previsualizar build
+pnpm run preview
+```
 
-## How can I deploy this project?
+## 🛠️ Tecnologías Utilizadas
 
-Simply open [Lovable](https://lovable.dev/projects/ecfbcd80-7f4f-4043-bbfc-f4609bb3109e) and click on Share -> Publish.
+### Frontend
+- **React 18**: Biblioteca para construir interfaces de usuario
+- **TypeScript**: Superset tipado de JavaScript
+- **Vite**: Entorno de desarrollo ultrarrápido
+- **React Router**: Manejo de rutas y navegación
+- **React Hook Form**: Manejo de formularios con validación
+- **Zod**: Validación de esquemas
+- **Recharts**: Biblioteca para visualización de datos
+- **Lucide React**: Iconos vectoriales
 
-## Can I connect a custom domain to my Lovable project?
+### UI/UX
+- **Tailwind CSS**: Framework de CSS utilitario
+- **shadcn-ui**: Componentes de UI reutilizables y accesibles
+- **Radix UI**: Primitivos de UI accesibles y sin estilos
+- **Embla Carousel**: Carruseles modernos y accesibles
+- **Sonner**: Notificaciones elegantes (toasts)
 
-Yes, you can!
+## 📊 Estructura del Proyecto
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+```
+src/
+├── components/       # Componentes reutilizables
+│   ├── charts/       # Gráficos y visualizaciones
+│   ├── stats/        # Componentes de estadísticas
+│   └── ui/           # Componentes UI base
+├── contexts/         # Contextos de React
+├── hooks/            # Hooks personalizados
+├── lib/              # Utilidades y datos
+└── pages/            # Páginas principales
+```
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## 📝 Licencia
+
+Este proyecto está bajo la Licencia EULA. Consulta el archivo `LICENSE` para más información.
+
+## 👥 Contribución
+
+Las contribuciones son bienvenidas. Por favor, lee las directrices de contribución antes de enviar un pull request.
+
+## 📞 Contacto
+
+Para soporte o consultas, contacta a: [sebastiancl3435@gmail.com](mailto:sebastiancl3435@gmail.com)
+
+---

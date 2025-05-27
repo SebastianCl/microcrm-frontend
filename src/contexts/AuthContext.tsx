@@ -1,62 +1,52 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { Navigate, useLocation, Outlet } from 'react-router-dom';
 
-interface User {
-  id_usuario: number;
-  nombre_usuario: string;
-  rol: 'admin' | 'empleado';
-  id_cliente: number;
-}
+type User = {
+  email: string;
+  role: string;
+} | null;
 
-interface AuthContextType {
-  user: User | null;
+type AuthContextType = {
   isAuthenticated: boolean;
-  login: (username: string, password: string) => Promise<boolean>;
+  user: User;
+  login: (user: User) => void;
   logout: () => void;
-}
+};
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock users for demo - in real app this would connect to your backend
-const mockUsers: User[] = [
-  { id_usuario: 1, nombre_usuario: 'admin', rol: 'admin', id_cliente: 1 },
-  { id_usuario: 2, nombre_usuario: 'empleado', rol: 'empleado', id_cliente: 1 }
-];
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [user, setUser] = useState<User>(null);
+  
   useEffect(() => {
-    // Check for stored auth on mount
-    const storedUser = localStorage.getItem('pos_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    // Comprobar si el usuario está autenticado en la carga inicial
+    const storedAuth = localStorage.getItem('isAuthenticated');
+    const storedUser = localStorage.getItem('user');
+    
+    if (storedAuth === 'true' && storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      setIsAuthenticated(true);
+      setUser(parsedUser);
     }
   }, []);
-
-  const login = async (username: string, password: string): Promise<boolean> => {
-    // Mock authentication - in real app this would call your API
-    const foundUser = mockUsers.find(u => u.nombre_usuario === username);
-    if (foundUser && (password === 'admin' || password === 'empleado')) {
-      setUser(foundUser);
-      localStorage.setItem('pos_user', JSON.stringify(foundUser));
-      return true;
-    }
-    return false;
+  
+  const login = (userData: User) => {
+    setIsAuthenticated(true);
+    setUser(userData);
+    localStorage.setItem('isAuthenticated', 'true');
+    localStorage.setItem('user', JSON.stringify(userData)); // Almacenar el objeto de usuario completo
   };
-
+  
   const logout = () => {
+    setIsAuthenticated(false);
     setUser(null);
-    localStorage.removeItem('pos_user');
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('user');
   };
-
+  
   return (
-    <AuthContext.Provider value={{
-      user,
-      isAuthenticated: !!user,
-      login,
-      logout
-    }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -68,4 +58,17 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
+};
+
+// Protected route component
+export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+  const location = useLocation();
+  
+  if (!isAuthenticated) {
+    // Guardar la ubicación a la que el usuario intentaba acceder al redirigir al inicio de sesión
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  
+  return <>{children}</>;
 };
