@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Filter, FilterX, ArrowDown, ArrowUp } from 'lucide-react';
@@ -38,53 +38,72 @@ const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
   const [searchQuery, setSearchQuery] = useState(search);
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+    // Sincronizar el estado interno con la prop search cuando cambie
+  useEffect(() => {
+    setSearchQuery(search);
+  }, [search]);
   
-  const handleSearch = () => {
+  const handleSearch = useCallback(() => {
     onSearchChange(searchQuery);
-  };
+  }, [searchQuery, onSearchChange]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
     if (e.target.value === '') {
       onSearchChange('');
     }
-  };
+  }, [onSearchChange]);
 
-  const handleInputKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleInputKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleSearch();
     }
-  };
-
-  const handleFilterChange = (filterId: string, value: any) => {
-    const newFilters = { ...activeFilters };
-    
-    if (value === '' || value === null || value === undefined) {
-      delete newFilters[filterId];
-    } else {
-      newFilters[filterId] = value;
-    }
-    
-    setActiveFilters(newFilters);
-    if (onFilter) {
-      onFilter(newFilters);
-    }
-  };
-
-  const clearFilters = () => {
-    setActiveFilters({});
-    if (onFilter) {
-      onFilter({});
-    }
-  };
-
-  const toggleSortDirection = () => {
-    const newDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-    setSortDirection(newDirection);
-    if (onFilter) {
-      onFilter({ ...activeFilters, _sort: newDirection });
-    }
-  };
+  }, [handleSearch]);  const handleFilterChange = useCallback((filterId: string, value: any) => {
+    setActiveFilters(prevFilters => {
+      const newFilters = { ...prevFilters };
+      
+      if (value === '' || value === null || value === undefined) {
+        delete newFilters[filterId];
+      } else {
+        newFilters[filterId] = value;
+      }
+      
+      // Llamar onFilter solo si realmente cambió algo
+      if (JSON.stringify(newFilters) !== JSON.stringify(prevFilters)) {
+        setTimeout(() => {
+          if (onFilter) {
+            onFilter(newFilters);
+          }
+        }, 0);
+      }
+      
+      return newFilters;
+    });
+  }, [onFilter]);  const clearFilters = useCallback(() => {
+    setActiveFilters(prevFilters => {
+      // Solo llamar onFilter si realmente había filtros activos
+      if (Object.keys(prevFilters).length > 0) {
+        setTimeout(() => {
+          if (onFilter) {
+            onFilter({});
+          }
+        }, 0);
+      }
+      return {};
+    });
+  }, [onFilter]);  const toggleSortDirection = useCallback(() => {
+    setSortDirection(prevDirection => {
+      const newDirection = prevDirection === 'asc' ? 'desc' : 'asc';
+      
+      setTimeout(() => {
+        if (onFilter) {
+          onFilter({ ...activeFilters, _sort: newDirection });
+        }
+      }, 0);
+      
+      return newDirection;
+    });
+  }, [onFilter, activeFilters]);
 
   const activeFilterCount = Object.keys(activeFilters).filter(key => key !== '_sort').length;
 

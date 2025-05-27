@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   Package,
   Eye,
@@ -82,14 +82,13 @@ export const SAMPLE_INVENTORY: InventoryItem[] = [
 
 const InventoryList = () => {
   const navigate = useNavigate();
-  const [currentPage, setCurrentPage] = useState(1);
-  const [filteredInventory, setFilteredInventory] = useState(SAMPLE_INVENTORY);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);  const [searchQuery, setSearchQuery] = useState('');
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   
-  useEffect(() => {
+  // Usar useMemo para evitar re-renders innecesarios
+  const filteredInventory = useMemo(() => {
     let result = [...SAMPLE_INVENTORY];
 
     // Aplicar filtro de busqueda
@@ -128,8 +127,8 @@ const InventoryList = () => {
       });
     }
 
-    setFilteredInventory(result);
-  }, [searchQuery, activeFilters]);
+    return result;
+  }, [searchQuery, activeFilters.category, activeFilters.status, activeFilters.minPrice, activeFilters._sort]);
   
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -143,16 +142,15 @@ const InventoryList = () => {
         return <Badge>{status}</Badge>;
     }
   };
-
-  const handleSearch = (query: string) => {
+  const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
     setCurrentPage(1);
-  };
+  }, []);
 
-  const handleFilter = (filters: Record<string, any>) => {
+  const handleFilter = useCallback((filters: Record<string, any>) => {
     setActiveFilters(filters);
     setCurrentPage(1);
-  };
+  }, []);
 
   const handleEditClick = (e: React.MouseEvent, item: InventoryItem) => {
     e.stopPropagation();

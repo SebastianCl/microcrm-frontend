@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, X, Loader, Clock, RefreshCcw, Eye, Edit } from 'lucide-react';
 import { Order } from '@/models/order.model';
@@ -43,12 +43,9 @@ const OrderList: React.FC<OrderListProps> = ({
     error, 
     refetch 
   } = useOrders();
-  
-  // Estado para órdenes filtradas
-  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
-  
-  useEffect(() => {
-    if (!orders) return;
+    // Estado para órdenes filtradas usando useMemo para evitar re-renders innecesarios
+  const filteredOrders = useMemo(() => {
+    if (!orders) return [];
     
     let result = [...orders];
 
@@ -85,8 +82,8 @@ const OrderList: React.FC<OrderListProps> = ({
       });
     }
 
-    setFilteredOrders(result);
-  }, [searchQuery, activeFilters, orders]);
+    return result;
+  }, [searchQuery, activeFilters.status, activeFilters.date, activeFilters._sort, orders]);
   
   // Aplicar límite si se especifica
   const displayOrders = limit ? filteredOrders.slice(0, limit) : filteredOrders;
@@ -131,16 +128,15 @@ const OrderList: React.FC<OrderListProps> = ({
       return dateString;
     }
   };
-
-  const handleSearch = (query: string) => {
+  const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
     setCurrentPage(1);
-  };
+  }, []);
 
-  const handleFilter = (filters: Record<string, any>) => {
+  const handleFilter = useCallback((filters: Record<string, any>) => {
     setActiveFilters(filters);
     setCurrentPage(1);
-  };
+  }, []);
 
   // Quick status change component
   const QuickStatusChange = ({ order }: { order: Order }) => {

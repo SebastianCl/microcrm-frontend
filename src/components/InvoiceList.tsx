@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DataTable from './ui/DataTable';
 import { Invoice } from '@/models/invoice.model';
@@ -99,16 +99,15 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
         return <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Vencida</Badge>;
     }
   };
-
-  const handleSearch = (query: string) => {
+  const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
     setCurrentPage(1);
-  };
+  }, []);
 
-  const handleFilter = (filters: Record<string, any>) => {
+  const handleFilter = useCallback((filters: Record<string, any>) => {
     setActiveFilters(filters);
     setCurrentPage(1);
-  };
+  }, []);
 
   const filterOptions = [
     {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import DataTable from './ui/DataTable';
 import { Client } from '@/models/client.model';
 import { Card } from '@/components/ui/card';
@@ -117,16 +117,15 @@ const ClientList: React.FC<ClientListProps> = ({
   
   // Aplicar límite si se especifica
   const displayClients = limit ? filteredClients.slice(0, limit) : filteredClients;
-
-  const handleSearch = (query: string) => {
+  const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
     setCurrentPage(1);
-  };
+  }, []);
 
-  const handleFilter = (filters: Record<string, any>) => {
+  const handleFilter = useCallback((filters: Record<string, any>) => {
     setActiveFilters(filters);
     setCurrentPage(1);
-  };
+  }, []);
 
   const filterOptions = [
     {
