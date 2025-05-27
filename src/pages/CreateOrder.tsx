@@ -379,7 +379,7 @@ const CreateOrder = () => {
             
             {/* Quick Product Selector */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">{t('add_products')}</h3>
+              <h3 className="text-lg font-semibold">Agrega productos</h3>
               <QuickProductSelector onAddProduct={handleAddProduct} />
             </div>
             
@@ -387,7 +387,6 @@ const CreateOrder = () => {
             
             {/* Order Items */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">{t('order_items')}</h3>
               
               <div className="border rounded-md overflow-hidden">
                 <div className="overflow-x-auto">
