@@ -31,6 +31,7 @@ import {
 import { useLanguage } from '@/contexts/LanguageProvider';
 import QuickProductSelector from '@/components/QuickProductSelector';
 import OrderItemRow from '@/components/OrderItemRow';
+import { Addition } from '@/models/order.model';
 
 type FormValues = {
   clientId: string;
@@ -59,7 +60,7 @@ const availableTables = [
 const CreateOrder = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const [orderItems, setOrderItems] = useState<(OrderItem & { discount?: number; discountType?: string; additions?: { id: number; name: string; price: number }[] })[]>([]);
+  const [orderItems, setOrderItems] = useState<(OrderItem & { discount?: number; discountType?: string })[]>([]);
   const [isCancelConfirmationOpen, setIsCancelConfirmationOpen] = useState(false);
   const [clientSearchQuery, setClientSearchQuery] = useState('');
   const [orderDiscount, setOrderDiscount] = useState<number>(0);
@@ -205,7 +206,7 @@ const CreateOrder = () => {
         cantidad: item.quantity,
         precio_unitario: item.price,
         adiciones: item.additions ? item.additions.map(addition => ({
-          id_adicion: addition.id,
+          id_adicion: Number(addition.id),
           nombre: addition.name,
           precio: addition.price
         })) : []
