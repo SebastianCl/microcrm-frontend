@@ -20,7 +20,6 @@ import LoginPage from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import { AuthProvider, ProtectedRoute } from "./contexts/AuthContext";
 import { QueryProvider } from "./contexts/QueryProvider";
-import InstallPWA from "./components/InstallPWA";
 import { ThemeProvider } from "./contexts/ThemeProvider";
 import { LanguageProvider } from "./contexts/LanguageProvider";
 
@@ -32,8 +31,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <AuthProvider>
-              <Routes>
+            <AuthProvider>              <Routes>
                 <Route path="/login" element={<LoginPage />} />
                 <Route element={
                   <ProtectedRoute>
@@ -55,7 +53,6 @@ const App = () => (
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
-              <InstallPWA />
             </AuthProvider>
           </BrowserRouter>
         </TooltipProvider>

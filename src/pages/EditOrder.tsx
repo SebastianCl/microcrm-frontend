@@ -184,7 +184,7 @@ const EditOrder = () => {
                     {orderItems.length === 0 ? (
                       <tr>
                         <td colSpan={5} className="text-center p-8 text-muted-foreground">
-                          {t('no_products_yet')}
+                          Sin productos
                         </td>
                       </tr>
                     ) : (

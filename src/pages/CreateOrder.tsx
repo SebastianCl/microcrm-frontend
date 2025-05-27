@@ -405,9 +405,7 @@ const CreateOrder = () => {
                       {orderItems.length === 0 ? (
                         <tr>
                           <td colSpan={5} className="text-center p-8 text-muted-foreground">
-                            {t('no_products_yet')}
-                            <br />
-                            <span className="text-sm">{t('use_quick_selector_above')}</span>
+                            Sin productos
                           </td>
                         </tr>
                       ) : (
