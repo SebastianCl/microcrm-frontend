@@ -9,6 +9,7 @@ type User = {
 type AuthContextType = {
   isAuthenticated: boolean;
   user: User;
+  isLoadingAuth: boolean; // Añadir isLoadingAuth
   login: (user: User) => void;
   logout: () => void;
 };
@@ -18,7 +19,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<User>(null);
-  
+  const [isLoadingAuth, setIsLoadingAuth] = useState<boolean>(true); // Estado para la carga inicial
+
   useEffect(() => {
     // Comprobar si el usuario está autenticado en la carga inicial
     const storedAuth = localStorage.getItem('isAuthenticated');
@@ -29,6 +31,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsAuthenticated(true);
       setUser(parsedUser);
     }
+    setIsLoadingAuth(false); // Terminar la carga después de comprobar localStorage
   }, []);
   
   const login = (userData: User) => {
@@ -46,7 +49,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
   
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, isLoadingAuth, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -62,8 +65,12 @@ export const useAuth = () => {
 
 // Protected route component
 export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoadingAuth } = useAuth(); // Obtener isLoadingAuth
   const location = useLocation();
+  
+  if (isLoadingAuth) {
+    return null; // O un componente de carga, por ejemplo: <div>Cargando...</div>
+  }
   
   if (!isAuthenticated) {
     // Guardar la ubicación a la que el usuario intentaba acceder al redirigir al inicio de sesión
