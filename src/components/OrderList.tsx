@@ -11,11 +11,22 @@ import { ErrorDisplay } from '@/components/ui/error-display';
 import { useNetwork } from '@/hooks/useNetwork';
 import { useOrders } from '@/hooks/useOrders';
 import OrderCard from './OrderCard';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 
 interface OrderListProps {
   limit?: number;
   showCreateButton?: boolean;
 }
+
+const ITEMS_PER_PAGE = 10;
 
 const OrderList: React.FC<OrderListProps> = ({ 
   limit, 
@@ -24,6 +35,7 @@ const OrderList: React.FC<OrderListProps> = ({
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
+  const [currentPage, setCurrentPage] = useState(1);
   
   // Verificar conectividad de red
   const { isOnline } = useNetwork();
@@ -37,7 +49,7 @@ const OrderList: React.FC<OrderListProps> = ({
     refetch 
   } = useOrders();
 
-  // Estado para pedidosfiltradas usando useMemo para evitar re-renders innecesarios
+  // Estado para pedidos filtradas usando useMemo para evitar re-renders innecesarios
   const filteredOrders = useMemo(() => {
     if (!orders) return [];
     
@@ -57,38 +69,52 @@ const OrderList: React.FC<OrderListProps> = ({
       result = result.filter(order => order.status === activeFilters.status);
     }
 
-    // Aplicar filtro de fecha
-    if (activeFilters.date) {
-      result = result.filter(order => {
-        const orderDate = new Date(order.date).toISOString().split('T')[0];
-        return orderDate === activeFilters.date;
-      });
+    // Aplicar filtro de tipo de pedido
+    if (activeFilters.orderType) {
+      if (activeFilters.orderType === 'dine-in') {
+        result = result.filter(order => order.tableNumber);
+      } else if (activeFilters.orderType === 'takeout') {
+        result = result.filter(order => !order.tableNumber);
+      }
     }
 
     // Aplicar ordenar
     if (activeFilters._sort) {
       result.sort((a, b) => {
         if (activeFilters._sort === 'asc') {
-          return a.date > b.date ? 1 : -1;
+          return a.id > b.id ? 1 : -1;
         } else {
-          return a.date < b.date ? 1 : -1;
+          return a.id < b.id ? 1 : -1;
         }
       });
     }
 
     return result;
-  }, [searchQuery, activeFilters.status, activeFilters.date, activeFilters._sort, orders]);
+  }, [searchQuery, activeFilters.status, activeFilters.orderType, activeFilters._sort, orders]);
   
-  // Aplicar límite si se especifica
-  const displayOrders = limit ? filteredOrders.slice(0, limit) : filteredOrders;
+  // Calcular paginación
+  const totalPages = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  
+  // Aplicar límite si se especifica, sino usar paginación
+  const displayOrders = limit 
+    ? filteredOrders.slice(0, limit) 
+    : filteredOrders.slice(startIndex, endIndex);
 
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
+    setCurrentPage(1); // Reset to first page when searching
   }, []);
 
   const handleFilter = useCallback((filters: Record<string, any>) => {
     setActiveFilters(filters);
+    setCurrentPage(1); // Reset to first page when filtering
   }, []);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   const filterOptions = [
     {
@@ -98,11 +124,48 @@ const OrderList: React.FC<OrderListProps> = ({
       options: ['pending', 'processed', 'canceled', 'completed']
     },
     {
-      id: 'date',
-      label: 'Fecha',
-      type: 'date' as const
+      id: 'orderType',
+      label: 'Tipo',
+      type: 'select' as const,
+      options: [
+        { value: 'dine-in', label: 'En Mesa' },
+        { value: 'takeout', label: 'Para Llevar' }
+      ]
     }
   ];
+
+  // Generar páginas visibles para paginación
+  const getVisiblePages = () => {
+    const delta = 2;
+    const pages = [];
+    
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      pages.push(1);
+      
+      const rangeStart = Math.max(2, currentPage - delta);
+      const rangeEnd = Math.min(totalPages - 1, currentPage + delta);
+      
+      if (rangeStart > 2) {
+        pages.push(-1);
+      }
+      
+      for (let i = rangeStart; i <= rangeEnd; i++) {
+        pages.push(i);
+      }
+      
+      if (rangeEnd < totalPages - 1) {
+        pages.push(-2);
+      }
+      
+      pages.push(totalPages);
+    }
+    
+    return pages;
+  };
 
   return (
     <Card className="p-4">
@@ -171,6 +234,48 @@ const OrderList: React.FC<OrderListProps> = ({
               <OrderCard key={order.id} order={order} />
             ))
           )}
+        </div>
+      )}
+
+      {/* Paginación solo si no hay límite y hay más de una página */}
+      {!limit && totalPages > 1 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-2">
+          <div className="text-xs sm:text-sm text-muted-foreground order-2 sm:order-1">
+            Mostrando {startIndex + 1} a {Math.min(endIndex, filteredOrders.length)} de {filteredOrders.length} pedidos
+          </div>
+          <Pagination className="order-1 sm:order-2">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious 
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  className={currentPage <= 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                />
+              </PaginationItem>
+              
+              {getVisiblePages().map((page, i) => (
+                <PaginationItem key={page < 0 ? `ellipsis-${i}` : page}>
+                  {page < 0 ? (
+                    <PaginationEllipsis />
+                  ) : (
+                    <PaginationLink
+                      onClick={() => handlePageChange(page)}
+                      isActive={page === currentPage}
+                      className="cursor-pointer"
+                    >
+                      {page}
+                    </PaginationLink>
+                  )}
+                </PaginationItem>
+              ))}
+              
+              <PaginationItem>
+                <PaginationNext 
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  className={currentPage >= totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
         </div>
       )}
     </Card>

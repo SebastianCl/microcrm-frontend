@@ -4,10 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, X, Clock, Loader, ArrowRight, Ban } from 'lucide-react';
+import { Check, X, Clock, Loader, ArrowRight, Ban, UtensilsCrossed, ShoppingBag } from 'lucide-react';
 import { Order } from '@/models/order.model';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import { useUpdateOrderStatus } from '@/hooks/useOrders';
 import { toast } from 'sonner';
 import CancelOrderConfirmation from './CancelOrderConfirmation';
@@ -54,6 +52,24 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
     }
   };
 
+  const getOrderTypeBadge = () => {
+    if (order.tableNumber) {
+      return (
+        <Badge variant="outline" className="flex items-center gap-1 font-medium">
+          <UtensilsCrossed className="h-3 w-3" />
+          <span>Mesa {order.tableNumber}</span>
+        </Badge>
+      );
+    } else {
+      return (
+        <Badge variant="outline" className="flex items-center gap-1 font-medium">
+          <ShoppingBag className="h-3 w-3" />
+          <span>Para Llevar</span>
+        </Badge>
+      );
+    }
+  };
+
   const getNextStatus = (currentStatus: string) => {
     switch (currentStatus) {
       case 'pending': return 'processed';
@@ -95,14 +111,6 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    try {
-      return format(new Date(dateString), 'dd MMM yyyy', { locale: es });
-    } catch (error) {
-      return dateString;
-    }
-  };
-
   const nextStatus = getNextStatus(order.status);
   const nextStatusLabel = getNextStatusLabel(order.status);
 
@@ -115,23 +123,21 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
         <CardContent className="p-0">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             {/* Order Info */}
-            <div className="flex-1 space-y-2">
+            <div className="flex-1 space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                 <h3 className="font-semibold text-lg">#{order.id}</h3>
-                {getStatusBadge(order.status)}
+                <div className="flex gap-2">
+                  {getStatusBadge(order.status)}
+                  {getOrderTypeBadge()}
+                </div>
               </div>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-sm text-muted-foreground">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-muted-foreground">
                 <div>
                   <span className="font-medium">Cliente:</span> {order.clientName}
                 </div>
-                {order.tableNumber && (
-                  <div>
-                    <span className="font-medium">Mesa:</span> {order.tableNumber}
-                  </div>
-                )}
                 <div>
-                  <span className="font-medium">Fecha:</span> {formatDate(order.date)}
+                  <span className="font-medium">Items:</span> {order.items.length} producto{order.items.length !== 1 ? 's' : ''}
                 </div>
               </div>
               
