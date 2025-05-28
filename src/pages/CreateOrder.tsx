@@ -1,301 +1,485 @@
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ChevronLeft, X, Search, Percent } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
+import { clients, Order, OrderItem } from '@/lib/sample-data';
+import { useForm } from 'react-hook-form';
+import { toast } from "sonner";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import CancelOrderConfirmation from '@/components/CancelOrderConfirmation';
+import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Plus, Minus, Search, ArrowLeft } from 'lucide-react';
-import { useCreateOrder } from '@/hooks/useOrders';
-import { Order, OrderItem } from '@/models/order.model';
-import { toast } from 'sonner';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { useLanguage } from '@/contexts/LanguageProvider';
+import QuickProductSelector from '@/components/QuickProductSelector';
+import OrderItemRow from '@/components/OrderItemRow';
+import { Addition } from '@/models/order.model';
 
-// Mock product data with categories
-const mockProducts = [
-  { id: '1', name: 'Hamburguesa Clásica', price: 12000, category: 'Hamburguesas' },
-  { id: '2', name: 'Pizza Margherita', price: 18000, category: 'Pizzas' },
-  { id: '3', name: 'Ensalada César', price: 8000, category: 'Ensaladas' },
-  { id: '4', name: 'Coca Cola', price: 3000, category: 'Bebidas' },
-  { id: '5', name: 'Hamburguesa BBQ', price: 14000, category: 'Hamburguesas' },
-  { id: '6', name: 'Pizza Pepperoni', price: 20000, category: 'Pizzas' },
-  { id: '7', name: 'Ensalada Griega', price: 9000, category: 'Ensaladas' },
-  { id: '8', name: 'Agua', price: 2000, category: 'Bebidas' },
+type FormValues = {
+  clientId: string;
+  discount: string;
+  tableNumber: string;
+};
+
+// Extended OrderItem type to include additions for local state
+type ExtendedOrderItem = OrderItem & { 
+  discount?: number; 
+  discountType?: string; 
+  additions?: Addition[];
+};
+
+const DiscountTypes = {
+  PERCENTAGE: 'percentage',
+  FIXED: 'fixed',
+  NONE: 'none'
+};
+
+// Sample tables data - in a real app this would come from an API
+const availableTables = [
+  { id: 1, name: 'Mesa 1' },
+  { id: 2, name: 'Mesa 2' },
+  { id: 3, name: 'Mesa 3' },
+  { id: 4, name: 'Mesa 4' },
+  { id: 5, name: 'Mesa 5' },
+  { id: 6, name: 'Mesa 6' },
+  { id: 7, name: 'Mesa 7' },
+  { id: 8, name: 'Mesa 8' },
 ];
-
-const categories = ['Todas', ...Array.from(new Set(mockProducts.map(p => p.category)))];
 
 const CreateOrder = () => {
   const navigate = useNavigate();
-  const createOrder = useCreateOrder();
+  const { t } = useLanguage();
+  const [orderItems, setOrderItems] = useState<ExtendedOrderItem[]>([]);
+  const [isCancelConfirmationOpen, setIsCancelConfirmationOpen] = useState(false);
+  const [clientSearchQuery, setClientSearchQuery] = useState('');
+  const [orderDiscount, setOrderDiscount] = useState<number>(0);
+  const [orderDiscountType, setOrderDiscountType] = useState<string>(DiscountTypes.NONE);
   
-  const [orderType, setOrderType] = useState<'takeout' | 'dine-in'>('takeout');
-  const [clientName, setClientName] = useState('');
-  const [tableNumber, setTableNumber] = useState('');
-  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('Todas');
-
-  const filteredProducts = mockProducts.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'Todas' || product.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+  const form = useForm<FormValues>({
+    defaultValues: {
+      clientId: '',
+      discount: '0',
+      tableNumber: '',
+    },
   });
-
-  const addToOrder = (productId: string, name: string, price: number) => {
-    const existingItem = orderItems.find(item => item.productId === productId);
-    
-    if (existingItem) {
-      setOrderItems(orderItems.map(item =>
-        item.productId === productId
-          ? { ...item, quantity: item.quantity + 1, total: (item.quantity + 1) * item.price }
-          : item
-      ));
+  
+  const handleCancelClick = () => {
+    if (orderItems.length > 0 || form.formState.isDirty) {
+      setIsCancelConfirmationOpen(true);
     } else {
-      const newItem: OrderItem = {
-        productId,
-        name,
-        quantity: 1,
-        price,
-        total: price
-      };
-      setOrderItems([...orderItems, newItem]);
+      navigate('/orders');
     }
   };
 
-  const updateQuantity = (productId: string, newQuantity: number) => {
-    if (newQuantity === 0) {
-      setOrderItems(orderItems.filter(item => item.productId !== productId));
+  const handleConfirmCancel = () => {
+    navigate('/orders');
+  };
+  
+  const filteredClients = clients.filter(client => 
+    client.name.toLowerCase().includes(clientSearchQuery.toLowerCase()) ||
+    client.company?.toLowerCase().includes(clientSearchQuery.toLowerCase())
+  );
+
+  const handleAddProduct = (product: OrderItem) => {
+    // Check if product already exists in order
+    const existingProductIndex = orderItems.findIndex(
+      item => item.productId === product.productId && 
+      JSON.stringify(item.additions || []) === JSON.stringify(product.additions || [])
+    );
+    
+    if (existingProductIndex >= 0) {
+      // Update existing product quantity
+      const updatedItems = [...orderItems];
+      updatedItems[existingProductIndex].quantity += product.quantity;
+      updatedItems[existingProductIndex].total += product.total;
+      setOrderItems(updatedItems);
     } else {
-      setOrderItems(orderItems.map(item =>
-        item.productId === productId
-          ? { ...item, quantity: newQuantity, total: newQuantity * item.price }
-          : item
-      ));
+      // Add new product
+      setOrderItems([...orderItems, { 
+        ...product, 
+        discount: 0, 
+        discountType: DiscountTypes.NONE 
+      }]);
     }
+    
+    toast.success(`${product.name} Agregar a la orden`);
+  };
+  
+  const handleUpdateOrderItem = (index: number, updatedItem: ExtendedOrderItem) => {
+    const updatedItems = [...orderItems];
+    updatedItems[index] = updatedItem;
+    setOrderItems(updatedItems);
+    toast.success("Producto actualizado");
   };
 
-  const total = orderItems.reduce((sum, item) => sum + item.total, 0);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!clientName.trim()) {
-      toast.error('El nombre del cliente es requerido');
-      return;
+  const handleRemoveProduct = (index: number) => {
+    setOrderItems(orderItems.filter((_, i) => i !== index));
+    toast.success("Producto removido");
+  };
+  
+  const calculateProductFinalPrice = (product: ExtendedOrderItem) => {
+    if (!product.discount || product.discount <= 0 || product.discountType === DiscountTypes.NONE) {
+      return product.total;
     }
     
-    if (orderType === 'dine-in' && !tableNumber.trim()) {
-      toast.error('El número de mesa es requerido para pedidos en mesa');
-      return;
+    if (product.discountType === DiscountTypes.PERCENTAGE) {
+      return product.total * (1 - product.discount / 100);
     }
     
+    if (product.discountType === DiscountTypes.FIXED) {
+      return Math.max(0, product.total - product.discount);
+    }
+    
+    return product.total;
+  };
+  
+  const getProductsSubtotal = () => {
+    return orderItems.reduce((sum, item) => sum + calculateProductFinalPrice(item), 0);
+  };
+  
+  const calculateOrderDiscount = () => {
+    const subtotal = getProductsSubtotal();
+    
+    if (orderDiscountType === DiscountTypes.PERCENTAGE) {
+      return subtotal * (orderDiscount / 100);
+    }
+    
+    if (orderDiscountType === DiscountTypes.FIXED) {
+      return Math.min(subtotal, orderDiscount);
+    }
+    
+    return 0;
+  };
+  
+  const getOrderTotal = () => {
+    const subtotal = getProductsSubtotal();
+    const discount = calculateOrderDiscount();
+    return Math.max(0, subtotal - discount);
+  };
+    
+  const onSubmit = async (values: FormValues) => {
     if (orderItems.length === 0) {
-      toast.error('Debe agregar al menos un producto al pedido');
+      toast.error('Error: No hay productos');
       return;
     }
-
-    const newOrder: Omit<Order, 'id'> = {
-      clientId: '0',
-      clientName: clientName.trim(),
-      date: new Date().toISOString(),
+    
+    let clientName = 'Cliente no especificado';
+    if (values.clientId) {
+      const selectedClient = clients.find(client => client.id === values.clientId);
+      if (selectedClient) {
+        clientName = selectedClient.name;
+      }
+    }
+    
+    // Create new order with the front-end structure
+    const newOrder: Order = {
+      id: `ORD-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
+      clientId: values.clientId || 'no-client',
+      clientName: clientName,
+      date: new Date().toISOString().split('T')[0],
       status: 'pending',
       items: orderItems,
-      total,
-      ...(orderType === 'dine-in' ? { tableNumber: parseInt(tableNumber) } : {})
+      total: getOrderTotal(),
+      // Add the table number if provided
+      tableNumber: values.tableNumber ? parseInt(values.tableNumber) : undefined
     };
-
+    
+    // Transform the object to the format required by the backend (POST /api/pedido/)
+    const backendOrderPayload = {
+      id_cliente: Number(values.clientId.replace('client-', '')) || 1,
+      id_usuario: 1, // Default value for current user
+      id_mesa: values.tableNumber ? parseInt(values.tableNumber) : null, // Use null if no table is selected
+      tipo_pedido: values.tableNumber ? "en_mesa" : "para_llevar", // Set type based on table selection
+      productos: orderItems.map(item => ({
+        id_producto: Number(item.productId),
+        cantidad: item.quantity,
+        precio_unitario: item.price,
+        adiciones: item.additions ? item.additions.map(addition => ({
+          id_adicion: Number(addition.id),
+          nombre: addition.name,
+          precio: addition.price
+        })) : []
+      })),
+      estado: "pendiente" // Initial order status
+    };
+    
+    const token = localStorage.getItem('authToken');
+    
     try {
-      await createOrder.mutateAsync(newOrder);
-      toast.success('Pedido creado exitosamente');
-      navigate('/orders');
+      // Configure headers with authentication token
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
+
+      // Call the API to create the order in the backend
+      console.log("Sending payload to backend:", backendOrderPayload);
+      await fetch('http://localhost:3000/api/pedido/', {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(backendOrderPayload)
+      }).then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP Error: ${response.status}`);
+        }
+        return response.json();
+      });
+
+      toast.success('Orden creada');
+      setTimeout(() => navigate('/orders'), 1000);
     } catch (error) {
-      toast.error('Error al crear el pedido');
-      console.error('Error creating order:', error);
+      toast.error('Error al crear la orden');
+      console.error("Error creating order:", error);
     }
   };
-
+  
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={() => navigate('/orders')}
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Volver
-        </Button>
-        <h1 className="text-3xl font-bold tracking-tight">Crear Nuevo Pedido</h1>
+    <div className="space-y-6 max-w-5xl mx-auto">
+      <div className="flex items-center space-x-2">
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Nueva orden</h1>
       </div>
+      
+      <Card className="p-4 md:p-6">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="grid md:grid-cols-3 gap-6">
+              <FormField
+                control={form.control}
+                name="clientId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-base font-medium">Cliente (opcional)</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className="w-full justify-between"
+                          >
+                            {field.value ? clients.find(client => client.id === field.value)?.name : 'Seleccionar cliente'}
+                            <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0" align="start">
+                        <div className="p-2">
+                          <Input
+                            placeholder="Buscar cliente"
+                            value={clientSearchQuery}
+                            onChange={(e) => setClientSearchQuery(e.target.value)}
+                            className="mb-2"
+                          />
+                        </div>
+                        <div className="max-h-60 overflow-y-auto">
+                          {filteredClients.length > 0 ? (
+                            filteredClients.map(client => (
+                              <div
+                                key={client.id}
+                                className={`flex items-center px-4 py-2 cursor-pointer hover:bg-muted ${field.value === client.id ? 'bg-muted' : ''}`}
+                                onClick={() => {
+                                  field.onChange(client.id);
+                                  setClientSearchQuery('');
+                                }}
+                              >
+                                <div>
+                                  <p className="text-sm font-medium">{client.name}</p>
+                                  {client.company && (
+                                    <p className="text-xs text-muted-foreground">{client.company}</p>
+                                  )}
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="px-4 py-2 text-sm text-muted-foreground">
+                              No se encontraron clientes
+                            </div>
+                          )}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Product Selection */}
-        <div className="lg:col-span-2 space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Seleccionar Productos</CardTitle>
-              <div className="flex gap-2">
-                <div className="flex-1">
+              <FormField
+                control={form.control}
+                name="tableNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-base font-medium">Mesa (opcional)</FormLabel>
+                    <select
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      onChange={field.onChange}
+                      value={field.value}
+                    >
+                      <option value="">Sin mesa</option>
+                      {availableTables.map(table => (
+                        <option key={table.id} value={table.id}>
+                          {table.name}
+                        </option>
+                      ))}
+                    </select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex flex-col">
+                <FormLabel className="text-base font-medium mb-2">Descuento</FormLabel>
+                <div className="flex gap-2 items-center">
                   <Input
-                    placeholder="Buscar productos..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full"
+                    type="number"
+                    min="0"
+                    value={orderDiscount}
+                    onChange={(e) => setOrderDiscount(Number(e.target.value))}
+                    className="flex-1"
+                    placeholder='Valor del descuento'
+                    disabled={orderDiscountType === DiscountTypes.NONE}
                   />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="flex gap-2">
+                        {orderDiscountType === DiscountTypes.PERCENTAGE 
+                          ? '%' 
+                          : orderDiscountType === DiscountTypes.FIXED 
+                            ? '$' 
+                            : 'Tipo'}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => setOrderDiscountType(DiscountTypes.NONE)}>
+                        Sin descuento
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setOrderDiscountType(DiscountTypes.PERCENTAGE)}>
+                        Porcentaje (%)
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setOrderDiscountType(DiscountTypes.FIXED)}>
+                        Cantidad fija ($)
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
-            </CardHeader>
-            <CardContent>
-              <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-                <TabsList className="grid w-full grid-cols-5">
-                  {categories.map((category) => (
-                    <TabsTrigger key={category} value={category} className="text-xs">
-                      {category}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-                
-                {categories.map((category) => (
-                  <TabsContent key={category} value={category} className="mt-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {filteredProducts.map((product) => (
-                        <Card key={product.id} className="cursor-pointer hover:shadow-md transition-shadow">
-                          <CardContent className="p-4">
-                            <div className="flex justify-between items-start mb-2">
-                              <div>
-                                <h3 className="font-semibold">{product.name}</h3>
-                                <Badge variant="secondary" className="text-xs">
-                                  {product.category}
-                                </Badge>
-                              </div>
-                              <span className="font-bold text-primary">
-                                ${product.price.toLocaleString()}
-                              </span>
-                            </div>
-                            <Button
-                              onClick={() => addToOrder(product.id, product.name, product.price)}
-                              className="w-full"
-                              size="sm"
-                            >
-                              <Plus className="h-4 w-4 mr-1" />
-                              Agregar
-                            </Button>
-                          </CardContent>
-                        </Card>
-                      ))}
+            </div>
+            
+            <Separator className="my-6" />
+            
+            {/* Quick Product Selector */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Agrega productos</h3>
+              <QuickProductSelector onAddProduct={handleAddProduct} />
+            </div>
+            
+            <Separator className="my-6" />
+            
+            {/* Order Items */}
+            <div className="space-y-4">
+              
+              <div className="border rounded-md overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b bg-muted/40">
+                        <th className="text-left p-3 font-medium text-muted-foreground">Producto</th>
+                        <th className="text-center p-3 font-medium text-muted-foreground">Cantidad</th>
+                        <th className="text-right p-3 font-medium text-muted-foreground">Precio</th>
+                        <th className="text-right p-3 font-medium text-muted-foreground">Total</th>
+                        <th className="p-3 w-[100px]">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {orderItems.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="text-center p-8 text-muted-foreground">
+                            Sin productos
+                          </td>
+                        </tr>
+                      ) : (
+                        orderItems.map((item, index) => (
+                          <OrderItemRow
+                            key={`${item.productId}-${index}`}
+                            item={item}
+                            onUpdate={(updatedItem) => handleUpdateOrderItem(index, updatedItem)}
+                            onRemove={() => handleRemoveProduct(index)}
+                          />
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              
+              <div className="flex justify-end pt-4">
+                <div className="w-full sm:w-72 md:w-80">
+                  <div className="space-y-1">
+                    <div className="flex justify-between py-1 text-muted-foreground">
+                      <span>Subtotal:</span>
+                      <span>${getProductsSubtotal()}</span>
                     </div>
-                  </TabsContent>
-                ))}
-              </Tabs>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Order Summary */}
-        <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Resumen del Pedido</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="orderType">Tipo de Pedido</Label>
-                  <Select value={orderType} onValueChange={(value: 'takeout' | 'dine-in') => setOrderType(value)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="takeout">Para Llevar</SelectItem>
-                      <SelectItem value="dine-in">En Mesa</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="clientName">Nombre del Cliente</Label>
-                  <Input
-                    id="clientName"
-                    value={clientName}
-                    onChange={(e) => setClientName(e.target.value)}
-                    placeholder="Ingrese el nombre del cliente"
-                    required
-                  />
-                </div>
-
-                {orderType === 'dine-in' && (
-                  <div>
-                    <Label htmlFor="tableNumber">Número de Mesa</Label>
-                    <Input
-                      id="tableNumber"
-                      type="number"
-                      value={tableNumber}
-                      onChange={(e) => setTableNumber(e.target.value)}
-                      placeholder="Ej: 5"
-                      required
-                    />
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <Label>Productos</Label>
-                  {orderItems.length === 0 ? (
-                    <p className="text-muted-foreground text-sm">No hay productos seleccionados</p>
-                  ) : (
-                    orderItems.map((item) => (
-                      <div key={item.productId} className="flex items-center justify-between p-2 border rounded">
-                        <div>
-                          <p className="font-medium text-sm">{item.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            ${item.price.toLocaleString()} c/u
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                          >
-                            <Minus className="h-3 w-3" />
-                          </Button>
-                          <span className="w-8 text-center">{item.quantity}</span>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                          >
-                            <Plus className="h-3 w-3" />
-                          </Button>
-                        </div>
+                    {orderDiscount > 0 && orderDiscountType !== DiscountTypes.NONE && (
+                      <div className="flex justify-between py-1 text-muted-foreground">
+                        <span>
+                          Descuento ({orderDiscountType === DiscountTypes.PERCENTAGE ? `${orderDiscount}%` : `$${orderDiscount}`}):
+                        </span>
+                        <span>-${calculateOrderDiscount()}</span>
                       </div>
-                    ))
-                  )}
-                </div>
-
-                <div className="border-t pt-4">
-                  <div className="flex justify-between font-bold">
-                    <span>Total:</span>
-                    <span>${total.toLocaleString()}</span>
+                    )}
+                    <div className="flex justify-between py-2 text-lg font-bold border-t">
+                      <span>Total:</span>
+                      <span>${getOrderTotal()}</span>
+                    </div>
                   </div>
                 </div>
-
-                <Button 
-                  type="submit" 
-                  className="w-full"
-                  disabled={createOrder.isPending || orderItems.length === 0}
-                >
-                  {createOrder.isPending ? 'Creando...' : 'Crear Pedido'}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+              </div>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row sm:justify-between gap-4 pt-6">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={handleCancelClick}
+                className="w-full sm:w-auto order-2 sm:order-1"
+              >
+                Cancelar
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={orderItems.length === 0}
+                className="w-full sm:w-auto order-1 sm:order-2"
+              >
+                Crear orden
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </Card>
+      
+      <CancelOrderConfirmation
+        open={isCancelConfirmationOpen}
+        onOpenChange={setIsCancelConfirmationOpen}
+        onConfirm={handleConfirmCancel}
+      />
     </div>
   );
 };
