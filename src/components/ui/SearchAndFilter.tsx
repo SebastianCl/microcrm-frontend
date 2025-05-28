@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -15,7 +14,7 @@ export interface FilterOption {
   id: string;
   label: string;
   type: "select" | "date" | "number" | "boolean";
-  options?: string[];
+  options?: string[] | { value: string; label: string; }[];
 }
 
 interface SearchAndFilterProps {
@@ -38,7 +37,7 @@ const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
   const [searchQuery, setSearchQuery] = useState(search);
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-    // Sincronizar el estado interno con la prop search cuando cambie
+  
   useEffect(() => {
     setSearchQuery(search);
   }, [search]);
@@ -58,7 +57,9 @@ const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
     if (e.key === 'Enter') {
       handleSearch();
     }
-  }, [handleSearch]);  const handleFilterChange = useCallback((filterId: string, value: any) => {
+  }, [handleSearch]);
+
+  const handleFilterChange = useCallback((filterId: string, value: any) => {
     setActiveFilters(prevFilters => {
       const newFilters = { ...prevFilters };
       
@@ -79,7 +80,9 @@ const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
       
       return newFilters;
     });
-  }, [onFilter]);  const clearFilters = useCallback(() => {
+  }, [onFilter]);
+
+  const clearFilters = useCallback(() => {
     setActiveFilters(prevFilters => {
       // Solo llamar onFilter si realmente había filtros activos
       if (Object.keys(prevFilters).length > 0) {
@@ -91,7 +94,9 @@ const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
       }
       return {};
     });
-  }, [onFilter]);  const toggleSortDirection = useCallback(() => {
+  }, [onFilter]);
+
+  const toggleSortDirection = useCallback(() => {
     setSortDirection(prevDirection => {
       const newDirection = prevDirection === 'asc' ? 'desc' : 'asc';
       
@@ -106,6 +111,27 @@ const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
   }, [onFilter, activeFilters]);
 
   const activeFilterCount = Object.keys(activeFilters).filter(key => key !== '_sort').length;
+
+  const renderSelectOptions = (filter: FilterOption) => {
+    if (!filter.options) return null;
+    
+    // Check if options is an array of strings or objects
+    const isStringArray = typeof filter.options[0] === 'string';
+    
+    if (isStringArray) {
+      return (filter.options as string[]).map((option) => (
+        <option key={option} value={option}>
+          {option}
+        </option>
+      ));
+    } else {
+      return (filter.options as { value: string; label: string; }[]).map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ));
+    }
+  };
 
   return (
     <div className={`flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2 ${className}`}>
@@ -173,11 +199,7 @@ const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
                           onChange={(e) => handleFilterChange(filter.id, e.target.value)}
                         >
                           <option value="">Todos</option>
-                          {filter.options.map((option) => (
-                            <option key={option} value={option}>
-                              {option}
-                            </option>
-                          ))}
+                          {renderSelectOptions(filter)}
                         </select>
                       )}
                       {filter.type === 'date' && (
