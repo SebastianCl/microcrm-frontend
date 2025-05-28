@@ -100,22 +100,22 @@ const AddProductToOrderDialog: React.FC<AddProductToOrderDialogProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>{t('add_product_to_order')}</DialogTitle>
+          <DialogTitle>Agregar producto</DialogTitle>
         </DialogHeader>
         
         <div className="grid gap-4 py-4">
           <div>
-            <Label htmlFor="product">{t('product')}</Label>
+            <Label htmlFor="product">Producto</Label>
             <select
               id="product"
               className="flex w-full h-10 px-3 py-2 text-sm rounded-md border border-input bg-background ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               value={selectedProductId}
               onChange={(e) => setSelectedProductId(e.target.value)}
             >
-              <option value="">{t('select_product')}</option>
+              <option value="">Seleccionar producto</option>
               {SAMPLE_INVENTORY.filter(p => p.stockQuantity > 0).map((product) => (
                 <option key={product.id} value={product.id}>
-                  {product.name} - ${product.price} ({product.stockQuantity} {t('available')})
+                  {product.name} - ${product.price} ({product.stockQuantity} Disponible)
                 </option>
               ))}
             </select>
@@ -124,7 +124,7 @@ const AddProductToOrderDialog: React.FC<AddProductToOrderDialogProps> = ({
           {selectedProductId && selectedProduct && (
             <>
               <div>
-                <Label htmlFor="quantity">{t('quantity')}</Label>
+                <Label htmlFor="quantity">Cantidad</Label>
                 <Input
                   id="quantity"
                   type="number"
@@ -138,7 +138,7 @@ const AddProductToOrderDialog: React.FC<AddProductToOrderDialogProps> = ({
               {/* Display additions if available */}
               {hasAdditions && (
                 <div className="space-y-2">
-                  <Label>{t('additions')}</Label>
+                  <Label>Adiciones</Label>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 border rounded-md p-3">
                     {availableAdditions.map(addition => (
                       <div key={addition.id} className="flex items-center space-x-2">
@@ -157,12 +157,12 @@ const AddProductToOrderDialog: React.FC<AddProductToOrderDialogProps> = ({
               )}
               
               <div>
-                <Label>{t('subtotal')}</Label>
+                <Label>Subtotal</Label>
                 <div className="text-xl font-semibold mt-1">
                   ${calculateSubtotal()}
                   {selectedAdditions.length > 0 && (
                     <span className="text-sm font-normal text-muted-foreground ml-2">
-                      (${selectedProduct.price} + {t('additions')})
+                      (${selectedProduct.price} + Adiciones)
                     </span>
                   )}
                 </div>
@@ -173,13 +173,13 @@ const AddProductToOrderDialog: React.FC<AddProductToOrderDialogProps> = ({
         
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            {t('cancel')}
+            Cancelar
           </Button>
           <Button 
             onClick={handleAddProduct}
             disabled={!selectedProductId || quantity < 1}
           >
-            {t('add_product')}
+            Agregar producto
           </Button>
         </DialogFooter>
       </DialogContent>

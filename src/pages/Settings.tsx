@@ -46,7 +46,7 @@ const Settings = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">{t('settings')}</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Configuración</h1>
         <p className="text-muted-foreground mt-2">
           Gestiona la configuración de tu cuenta y preferencias.
         </p>
@@ -54,9 +54,9 @@ const Settings = () => {
 
       <Tabs defaultValue="profile" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="profile">{t('profile')}</TabsTrigger>
-          <TabsTrigger value="company">{t('company')}</TabsTrigger>
-          <TabsTrigger value="preferences">{t('preferences')}</TabsTrigger>
+          <TabsTrigger value="profile">Perfil</TabsTrigger>
+          <TabsTrigger value="company">Empresa</TabsTrigger>
+          <TabsTrigger value="preferences">Preferencias</TabsTrigger>
         </TabsList>
         
         <TabsContent value="profile">
@@ -87,7 +87,7 @@ const Settings = () => {
                   <Input id="phone" defaultValue="(301) 123-4567" />
                 </div>
                 
-                <Button type="submit">{t('save_changes')}</Button>
+                <Button type="submit">Guardar cambios</Button>
               </form>
             </CardContent>
           </Card>
@@ -125,7 +125,7 @@ const Settings = () => {
                   </div>
                 </div>
                 
-                <Button type="submit">{t('save_changes')}</Button>
+                <Button type="submit">Guardar cambios</Button>
               </form>
             </CardContent>
           </Card>
@@ -134,12 +134,12 @@ const Settings = () => {
         <TabsContent value="preferences">
           <Card>
             <CardHeader>
-              <CardTitle>{t('preferences')}</CardTitle>
+              <CardTitle>Preferencias</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSavePreferences} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="currency">{t('currency')}</Label>
+                  <Label htmlFor="currency">Moneda</Label>
                   <Select defaultValue="COP">
                     <SelectTrigger>
                       <SelectValue placeholder="Select currency" />
@@ -153,7 +153,7 @@ const Settings = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="dateFormat">{t('date_format')}</Label>
+                  <Label htmlFor="dateFormat">Formato de fecha</Label>
                   <Select defaultValue="DD/MM/YYYY">
                     <SelectTrigger>
                       <SelectValue placeholder="Select date format" />
@@ -178,7 +178,7 @@ const Settings = () => {
                   </Label>
                 </div>
                 
-                <Button type="submit">{t('save_changes')}</Button>
+                <Button type="submit">Guardar cambios</Button>
               </form>
             </CardContent>
           </Card>

@@ -58,17 +58,17 @@ const OrderDetail = () => {
     return (
       <div className="text-center py-8">
         <h2 className="text-2xl font-bold text-destructive">
-          {t('error_loading_order')}
+          Error cargando la orden
         </h2>
         <p className="text-muted-foreground mt-2">
-          {t('try_again_later')}
+          Inténtalo de nuevo más tarde
         </p>
         <Button 
           variant="outline" 
           className="mt-4"
           onClick={() => navigate('/orders')}
         >
-          {t('back_to_orders')}
+          Volver
         </Button>
       </div>
     );
@@ -110,16 +110,16 @@ const OrderDetail = () => {
           className="mr-2"
         >
           <ChevronLeft className="h-4 w-4 mr-1" />
-          {t('back')}
+          Volver
         </Button>
-        <h1 className="text-3xl font-bold">{t('order')} #{order.id}</h1>
+        <h1 className="text-3xl font-bold">Pedido #{order.id}</h1>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="md:col-span-2 p-6">
           <div className="flex justify-between items-start">
             <div>
-              <h2 className="text-xl font-semibold">{t('order_details')}</h2>
+              <h2 className="text-xl font-semibold">Detalle de la orden</h2>
               <p className="text-muted-foreground">{formatDate(order.date)}</p>
             </div>
             <div className="flex items-center space-x-2">
@@ -134,28 +134,28 @@ const OrderDetail = () => {
           
           <div className="space-y-4">
             <div>
-              <h3 className="font-medium">{t('customer')}</h3>
+              <h3 className="font-medium">Cliente</h3>
               <p>{order.clientName}</p>
             </div>
             
             {order.tableNumber && (
               <div>
-                <h3 className="font-medium">{t('table')}</h3>
-                <p>{t('table')} #{order.tableNumber}</p>
+                <h3 className="font-medium">Mesa</h3>
+                <p>Mesa #{order.tableNumber}</p>
               </div>
             )}
             
             <div>
-              <h3 className="font-medium mb-2">{t('items')}</h3>
+              <h3 className="font-medium mb-2">Artículos</h3>
               <div className="border rounded-md">
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr className="bg-muted/50">
-                        <th className="text-left p-2 px-4">{t('product')}</th>
-                        <th className="text-center p-2">{t('quantity')}</th>
-                        <th className="text-right p-2 px-4">{t('price')}</th>
-                        <th className="text-right p-2 px-4">{t('total')}</th>
+                        <th className="text-left p-2 px-4">Producto</th>
+                        <th className="text-center p-2">Cantidad</th>
+                        <th className="text-right p-2 px-4">Precio</th>
+                        <th className="text-right p-2 px-4">Total</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -171,7 +171,7 @@ const OrderDetail = () => {
                             <tr className="bg-muted/30">
                               <td colSpan={4} className="p-2 px-6">
                                 <div className="text-sm text-muted-foreground">
-                                  <span className="font-medium">{t('additions')}:</span>{' '}
+                                  <span className="font-medium">Adiciones:</span>{' '}
                                   {item.additions.map((addition: Addition, i: number) => (
                                     <React.Fragment key={`addition-${addition.id}`}>
                                       {addition.name} (+${addition.price})
@@ -190,18 +190,18 @@ const OrderDetail = () => {
               </div>
               
               <div className="mt-4 text-right">
-                <p className="text-xl font-bold">{t('total')}: ${order.total}</p>
+                <p className="text-xl font-bold">Total: ${order.total}</p>
               </div>
             </div>
           </div>
         </Card>
         
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">{t('manage_order')}</h2>
+          <h2 className="text-xl font-semibold mb-4">Gestionar pedidos</h2>
           
           <div className="space-y-4">
             <div>
-              <label className="block font-medium mb-2">{t('change_status')}:</label>
+              <label className="block font-medium mb-2">Cambiar estado:</label>
               <Select 
                 value={order.status} 
                 onValueChange={(value: 'pending' | 'processed' | 'canceled' | 'completed') => handleStatusChange(value)}
@@ -210,24 +210,25 @@ const OrderDetail = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="pending">{t('status_pending')}</SelectItem>
-                  <SelectItem value="processed">{t('status_processed')}</SelectItem>
-                  <SelectItem value="completed">{t('status_completed')}</SelectItem>
-                  <SelectItem value="canceled">{t('status_canceled')}</SelectItem>
+                  <SelectItem value="pending">Pendiente</SelectItem>
+                  <SelectItem value="processed">Preparando</SelectItem>
+                  <SelectItem value="completed">Entregado</SelectItem>
+                  <SelectItem value="canceled">Cancelado</SelectItem>
+                  <SelectItem value="finalizado">Finalizado</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             
             <div className="pt-4 space-y-4">
               <Button className="w-full" variant="outline">
-                {t('print_order')}
+                Imprimir
               </Button>
               <Button className="w-full" variant="outline">
-                {t('send_to_email')}
+                Enviar a email
               </Button>
               <Link to={`/orders/${order.id}/edit`}>
                 <Button className="w-full">
-                  {t('edit_order')}
+                  Editar orden
                 </Button>
               </Link>
             </div>

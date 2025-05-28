@@ -53,19 +53,19 @@ const EditOrder = () => {
       }]);
     }
     
-    toast.success(`${product.name} ${t('added_to_order')}`);
+    toast.success(`${product.name} Agregar a la orden`);
   };
 
   const handleUpdateOrderItem = (index: number, updatedItem: OrderItem & { discount?: number; discountType?: string }) => {
     const updatedItems = [...orderItems];
     updatedItems[index] = updatedItem;
     setOrderItems(updatedItems);
-    toast.success(t('product_updated'));
+    toast.success('Producto actualizado');
   };
 
   const handleRemoveProduct = (index: number) => {
     setOrderItems(orderItems.filter((_, i) => i !== index));
-    toast.success(t('product_removed'));
+    toast.success('Producto removido');
   };
 
   const calculateTotal = () => {
@@ -74,7 +74,7 @@ const EditOrder = () => {
 
   const handleSaveOrder = async () => {
     if (orderItems.length === 0) {
-      toast.error(t('error_no_products'));
+      toast.error('Error: No hay productos');
       return;
     }
 
@@ -84,10 +84,10 @@ const EditOrder = () => {
         total: calculateTotal()
       });
       
-      toast.success(t('order_updated'));
+      toast.success('Orden actualizada');
       navigate(`/orders/${id}`);
     } catch (error) {
-      toast.error(t('error_updating_order'));
+      toast.error('Error al actualizar la orden');
       console.error("Error updating order:", error);
     }
   };
@@ -104,14 +104,14 @@ const EditOrder = () => {
     return (
       <div className="text-center py-8">
         <h2 className="text-2xl font-bold text-destructive">
-          {t('error_loading_order')}
+          Error cargando orden
         </h2>
         <Button 
           variant="outline" 
           className="mt-4"
           onClick={() => navigate('/orders')}
         >
-          {t('back_to_orders')}
+          Volver
         </Button>
       </div>
     );
@@ -127,10 +127,10 @@ const EditOrder = () => {
           className="mr-2"
         >
           <ChevronLeft className="h-4 w-4 mr-1" />
-          {t('back')}
+          Volver
         </Button>
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-          {t('edit_order')} #{order.id}
+          Editar orden #{order.id}
         </h1>
       </div>
 
@@ -139,17 +139,17 @@ const EditOrder = () => {
           {/* Order Info */}
           <div className="grid md:grid-cols-3 gap-4 p-4 bg-muted/30 rounded-lg">
             <div>
-              <h4 className="font-medium">{t('customer')}</h4>
+              <h4 className="font-medium">Cliente</h4>
               <p className="text-muted-foreground">{order.clientName}</p>
             </div>
             <div>
-              <h4 className="font-medium">{t('date')}</h4>
+              <h4 className="font-medium">Fecha</h4>
               <p className="text-muted-foreground">{order.date}</p>
             </div>
             {order.tableNumber && (
               <div>
-                <h4 className="font-medium">{t('table')}</h4>
-                <p className="text-muted-foreground">{t('table')} #{order.tableNumber}</p>
+                <h4 className="font-medium">Mesa</h4>
+                <p className="text-muted-foreground">Mesa #{order.tableNumber}</p>
               </div>
             )}
           </div>
@@ -158,7 +158,7 @@ const EditOrder = () => {
 
           {/* Quick Product Selector */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">{t('add_more_products')}</h3>
+            <h3 className="text-lg font-semibold">Agrear producto</h3>
             <QuickProductSelector onAddProduct={handleAddProduct} />
           </div>
 
@@ -172,10 +172,10 @@ const EditOrder = () => {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b bg-muted/40">
-                      <th className="text-left p-3 font-medium text-muted-foreground">{t('product')}</th>
-                      <th className="text-center p-3 font-medium text-muted-foreground">{t('quantity')}</th>
-                      <th className="text-right p-3 font-medium text-muted-foreground">{t('price')}</th>
-                      <th className="text-right p-3 font-medium text-muted-foreground">{t('total')}</th>
+                      <th className="text-left p-3 font-medium text-muted-foreground">Producto</th>
+                      <th className="text-center p-3 font-medium text-muted-foreground">Cantidad</th>
+                      <th className="text-right p-3 font-medium text-muted-foreground">Precio</th>
+                      <th className="text-right p-3 font-medium text-muted-foreground">Total</th>
                       <th className="p-3 w-[100px]">Acciones</th>
                     </tr>
                   </thead>
@@ -204,7 +204,7 @@ const EditOrder = () => {
             <div className="flex justify-end pt-4">
               <div className="w-full sm:w-72 md:w-80">
                 <div className="flex justify-between py-2 text-lg font-bold border-t">
-                  <span>{t('total')}:</span>
+                  <span>Total:</span>
                   <span>${calculateTotal()}</span>
                 </div>
               </div>
@@ -217,7 +217,7 @@ const EditOrder = () => {
               onClick={() => navigate(`/orders/${id}`)}
               className="w-full sm:w-auto"
             >
-              {t('cancel')}
+              Cancelar
             </Button>
             <Button 
               onClick={handleSaveOrder}
@@ -227,7 +227,7 @@ const EditOrder = () => {
               {updateOrder.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : null}
-              {t('save_changes')}
+              Guardar cambios
             </Button>
           </div>
         </div>

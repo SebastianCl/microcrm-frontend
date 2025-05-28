@@ -121,19 +121,19 @@ const CreateOrder = () => {
       }]);
     }
     
-    toast.success(`${product.name} ${t('added_to_order')}`);
+    toast.success(`${product.name} Agregar a la orden`);
   };
   
   const handleUpdateOrderItem = (index: number, updatedItem: ExtendedOrderItem) => {
     const updatedItems = [...orderItems];
     updatedItems[index] = updatedItem;
     setOrderItems(updatedItems);
-    toast.success(t('product_updated'));
+    toast.success("Producto actualizado");
   };
 
   const handleRemoveProduct = (index: number) => {
     setOrderItems(orderItems.filter((_, i) => i !== index));
-    toast.success(t('product_removed'));
+    toast.success("Producto removido");
   };
   
   const calculateProductFinalPrice = (product: ExtendedOrderItem) => {
@@ -178,11 +178,11 @@ const CreateOrder = () => {
     
   const onSubmit = async (values: FormValues) => {
     if (orderItems.length === 0) {
-      toast.error(t('error_no_products'));
+      toast.error('Error: No hay productos');
       return;
     }
     
-    let clientName = t('unspecified_client');
+    let clientName = 'Cliente no especificado';
     if (values.clientId) {
       const selectedClient = clients.find(client => client.id === values.clientId);
       if (selectedClient) {
@@ -244,10 +244,10 @@ const CreateOrder = () => {
         return response.json();
       });
 
-      toast.success(t('order_created'));
+      toast.success('Orden creada');
       setTimeout(() => navigate('/orders'), 1000);
     } catch (error) {
-      toast.error(t('error_creating_order'));
+      toast.error('Error al crear la orden');
       console.error("Error creating order:", error);
     }
   };
@@ -255,7 +255,7 @@ const CreateOrder = () => {
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       <div className="flex items-center space-x-2">
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{t('new_order')}</h1>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Nueva orden</h1>
       </div>
       
       <Card className="p-4 md:p-6">
@@ -267,7 +267,7 @@ const CreateOrder = () => {
                 name="clientId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-base font-medium">{t('Cliente')} ({t('opcional')})</FormLabel>
+                    <FormLabel className="text-base font-medium">Cliente (opcional)</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -276,7 +276,7 @@ const CreateOrder = () => {
                             role="combobox"
                             className="w-full justify-between"
                           >
-                            {field.value ? clients.find(client => client.id === field.value)?.name : t('select_client')}
+                            {field.value ? clients.find(client => client.id === field.value)?.name : 'Seleccionar cliente'}
                             <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </FormControl>
@@ -284,7 +284,7 @@ const CreateOrder = () => {
                       <PopoverContent className="w-full p-0" align="start">
                         <div className="p-2">
                           <Input
-                            placeholder={t('search_client')}
+                            placeholder="Buscar cliente"
                             value={clientSearchQuery}
                             onChange={(e) => setClientSearchQuery(e.target.value)}
                             className="mb-2"
@@ -311,7 +311,7 @@ const CreateOrder = () => {
                             ))
                           ) : (
                             <div className="px-4 py-2 text-sm text-muted-foreground">
-                              {t('no_clients_found')}
+                              No se encontraron clientes
                             </div>
                           )}
                         </div>
@@ -327,13 +327,13 @@ const CreateOrder = () => {
                 name="tableNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-base font-medium">{t('Mesa')} ({t('opcional')})</FormLabel>
+                    <FormLabel className="text-base font-medium">Mesa (opcional)</FormLabel>
                     <select
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                       onChange={field.onChange}
                       value={field.value}
                     >
-                      <option value="">{t('no_table')}</option>
+                      <option value="">Sin mesa</option>
                       {availableTables.map(table => (
                         <option key={table.id} value={table.id}>
                           {table.name}
@@ -346,7 +346,7 @@ const CreateOrder = () => {
               />
 
               <div className="flex flex-col">
-                <FormLabel className="text-base font-medium mb-2">{t('order_discount')}</FormLabel>
+                <FormLabel className="text-base font-medium mb-2">Descuento</FormLabel>
                 <div className="flex gap-2 items-center">
                   <Input
                     type="number"
@@ -354,7 +354,7 @@ const CreateOrder = () => {
                     value={orderDiscount}
                     onChange={(e) => setOrderDiscount(Number(e.target.value))}
                     className="flex-1"
-                    placeholder={t('discount_value')}
+                    placeholder='Valor del descuento'
                     disabled={orderDiscountType === DiscountTypes.NONE}
                   />
                   <DropdownMenu>
@@ -364,18 +364,18 @@ const CreateOrder = () => {
                           ? '%' 
                           : orderDiscountType === DiscountTypes.FIXED 
                             ? '$' 
-                            : t('type')}
+                            : 'Tipo'}
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => setOrderDiscountType(DiscountTypes.NONE)}>
-                        {t('no_discount')}
+                        Sin descuento
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => setOrderDiscountType(DiscountTypes.PERCENTAGE)}>
-                        {t('percentage')} (%)
+                        Porcentaje (%)
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => setOrderDiscountType(DiscountTypes.FIXED)}>
-                        {t('fixed_amount')} ($)
+                        Cantidad fija ($)
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -401,10 +401,10 @@ const CreateOrder = () => {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b bg-muted/40">
-                        <th className="text-left p-3 font-medium text-muted-foreground">{t('product')}</th>
-                        <th className="text-center p-3 font-medium text-muted-foreground">{t('quantity')}</th>
-                        <th className="text-right p-3 font-medium text-muted-foreground">{t('price')}</th>
-                        <th className="text-right p-3 font-medium text-muted-foreground">{t('total')}</th>
+                        <th className="text-left p-3 font-medium text-muted-foreground">Producto</th>
+                        <th className="text-center p-3 font-medium text-muted-foreground">Cantidad</th>
+                        <th className="text-right p-3 font-medium text-muted-foreground">Precio</th>
+                        <th className="text-right p-3 font-medium text-muted-foreground">Total</th>
                         <th className="p-3 w-[100px]">Acciones</th>
                       </tr>
                     </thead>
@@ -434,19 +434,19 @@ const CreateOrder = () => {
                 <div className="w-full sm:w-72 md:w-80">
                   <div className="space-y-1">
                     <div className="flex justify-between py-1 text-muted-foreground">
-                      <span>{t('subtotal')}:</span>
+                      <span>Subtotal:</span>
                       <span>${getProductsSubtotal()}</span>
                     </div>
                     {orderDiscount > 0 && orderDiscountType !== DiscountTypes.NONE && (
                       <div className="flex justify-between py-1 text-muted-foreground">
                         <span>
-                          {t('discount')} ({orderDiscountType === DiscountTypes.PERCENTAGE ? `${orderDiscount}%` : `$${orderDiscount}`}):
+                          Descuento ({orderDiscountType === DiscountTypes.PERCENTAGE ? `${orderDiscount}%` : `$${orderDiscount}`}):
                         </span>
                         <span>-${calculateOrderDiscount()}</span>
                       </div>
                     )}
                     <div className="flex justify-between py-2 text-lg font-bold border-t">
-                      <span>{t('total')}:</span>
+                      <span>Total:</span>
                       <span>${getOrderTotal()}</span>
                     </div>
                   </div>
@@ -461,14 +461,14 @@ const CreateOrder = () => {
                 onClick={handleCancelClick}
                 className="w-full sm:w-auto order-2 sm:order-1"
               >
-                {t('cancel')}
+                Cancelar
               </Button>
               <Button 
                 type="submit" 
                 disabled={orderItems.length === 0}
                 className="w-full sm:w-auto order-1 sm:order-2"
               >
-                {t('create_order')}
+                Crear orden
               </Button>
             </div>
           </form>

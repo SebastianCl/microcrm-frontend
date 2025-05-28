@@ -119,7 +119,7 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
               <p className="text-xs text-muted-foreground">${product.price}</p>
               <div className="flex gap-1 mt-1">
                 <Badge variant="outline" className="text-xs">
-                  {product.stockQuantity} {t('available')}
+                  {product.stockQuantity} Disponible
                 </Badge>
                 <Badge variant="secondary" className="text-xs">
                   {product.category}
@@ -141,7 +141,7 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
           
           {productHasAdditions(product.id) && (
             <Badge variant="secondary" className="text-xs">
-              {t('has_additions')}
+              Tiene adiciones
             </Badge>
           )}
         </Card>
@@ -221,7 +221,7 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
 
             {/* Quantity */}
             <div className="flex items-center space-x-2">
-              <label className="text-sm font-medium">{t('quantity')}:</label>
+              <label className="text-sm font-medium">Cantidad:</label>
               <div className="flex items-center space-x-1">
                 <Button
                   size="sm"
@@ -246,7 +246,7 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
             {/* Additions */}
             {hasAdditions && (
               <div className="space-y-2">
-                <label className="text-sm font-medium">{t('additions')}:</label>
+                <label className="text-sm font-medium">Adiciones:</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {availableAdditions.map(addition => (
                     <div key={addition.id} className="flex items-center space-x-2">
@@ -270,7 +270,7 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
             {/* Total and Add Button */}
             <div className="flex justify-between items-center pt-2 border-t">
               <div className="text-sm">
-                <span className="font-medium">{t('total')}: ${calculateTotal()}</span>
+                <span className="font-medium">Total: ${calculateTotal()}</span>
               </div>
               <Button onClick={handleAddWithOptions} className="flex items-center space-x-1">
                 <ShoppingCart className="h-4 w-4" />

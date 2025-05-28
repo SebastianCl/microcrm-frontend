@@ -5,7 +5,7 @@ export const API_CONFIG = {
     AUTH: '/auth',
     INVOICES: '/invoices',
     CLIENTS: '/clients',
-    ORDERS: '/pedido/dia?estado=pendiente',
+    ORDERS: '/pedido/dia',
     INVENTORY: '/inventory',
     USERS: '/users',
   },

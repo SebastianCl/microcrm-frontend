@@ -75,7 +75,7 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({ item, onUpdate, onRemove })
 
           {/* Quantity Editor */}
           <div className="flex items-center space-x-2">
-            <label className="text-sm">{t('quantity')}:</label>
+            <label className="text-sm">Cantidad:</label>
             <div className="flex items-center space-x-1">
               <Button
                 size="sm"
@@ -106,7 +106,7 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({ item, onUpdate, onRemove })
           {/* Additions Editor */}
           {hasAdditions && (
             <div className="space-y-2">
-              <label className="text-sm font-medium">{t('additions')}:</label>
+              <label className="text-sm font-medium">Adiciones:</label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
                 {availableAdditions.map(addition => (
                   <div key={addition.id} className="flex items-center space-x-2">
@@ -128,7 +128,7 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({ item, onUpdate, onRemove })
           )}
 
           <div className="text-sm font-medium text-right">
-            {t('new_total')}: ${calculateNewTotal()}
+            Nuevo total: ${calculateNewTotal()}
           </div>
         </div>
       </Card>
