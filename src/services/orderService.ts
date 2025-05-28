@@ -24,10 +24,10 @@ interface ApiOrder {
   nombre_cliente: string;
 }
 
-// Servicio específico para las operaciones de órdenes
+// Servicio específico para las operaciones de pedidos
 export const orderService = {
   /**
-   * Obtiene todas las órdenes y las mapea al formato usado en la aplicación
+   * Obtiene todas las pedidosy las mapea al formato usado en la aplicación
    */
   async getAll(): Promise<Order[]> {
     const response = await apiClient.get<ApiOrderResponse>(API_CONFIG.ENDPOINTS.ORDERS);

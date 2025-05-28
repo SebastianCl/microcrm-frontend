@@ -25,7 +25,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
 
   const allLinks = [
     { path: '/', label: 'Panel', icon: <LayoutDashboard size={20} />, roles: ['Administrator'] },
-    { path: '/orders', label: 'Órdenes', icon: <ShoppingCart size={20} />, roles: ['Administrator', 'Collaborator'] },
+    { path: '/orders', label: 'Pedidos', icon: <ShoppingCart size={20} />, roles: ['Administrator', 'Collaborator'] },
     { path: '/invoices', label: 'Facturas', icon: <Receipt size={20} />, roles: ['Administrator', 'Collaborator'] },
     { path: '/clients', label: 'Clientes', icon: <Users size={20} />, roles: ['Administrator', 'Collaborator'] },
     { path: '/inventory', label: 'Inventario', icon: <Package size={20} />, roles: ['Administrator'] },

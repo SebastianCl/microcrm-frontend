@@ -9,7 +9,7 @@ export const ORDER_QUERY_KEYS = {
 };
 
 /**
- * Hook para obtener todas las órdenes
+ * Hook para obtener todas las pedidos
  */
 export const useOrders = (options = {}) => {
   return useQuery({
@@ -57,7 +57,7 @@ export const useUpdateOrder = (id: string) => {
     onSuccess: (updatedOrder) => {
       // Actualizar la orden en la caché
       queryClient.setQueryData(ORDER_QUERY_KEYS.ORDER(id), updatedOrder);
-      // Invalidar la lista de órdenes
+      // Invalidar la lista de pedidos
       queryClient.invalidateQueries({ queryKey: [ORDER_QUERY_KEYS.ORDERS] });
     },
   });
@@ -75,7 +75,7 @@ export const useUpdateOrderStatus = (id: string) => {
     onSuccess: (updatedOrder) => {
       // Actualizar la orden en la caché
       queryClient.setQueryData(ORDER_QUERY_KEYS.ORDER(id), updatedOrder);
-      // Invalidar la lista de órdenes
+      // Invalidar la lista de pedidos
       queryClient.invalidateQueries({ queryKey: [ORDER_QUERY_KEYS.ORDERS] });
     },
   });
@@ -92,7 +92,7 @@ export const useDeleteOrder = () => {
     onSuccess: (_, id) => {
       // Eliminar la orden de la caché
       queryClient.removeQueries({ queryKey: ORDER_QUERY_KEYS.ORDER(id) });
-      // Invalidar la lista de órdenes
+      // Invalidar la lista de pedidos
       queryClient.invalidateQueries({ queryKey: [ORDER_QUERY_KEYS.ORDERS] });
     },
   });

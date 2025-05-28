@@ -28,7 +28,7 @@ const OrderList: React.FC<OrderListProps> = ({
   // Verificar conectividad de red
   const { isOnline } = useNetwork();
   
-  // Usar React Query para obtener las órdenes
+  // Usar React Query para obtener las pedidos
   const { 
     data: orders = [], 
     isLoading, 
@@ -37,7 +37,7 @@ const OrderList: React.FC<OrderListProps> = ({
     refetch 
   } = useOrders();
 
-  // Estado para órdenes filtradas usando useMemo para evitar re-renders innecesarios
+  // Estado para pedidosfiltradas usando useMemo para evitar re-renders innecesarios
   const filteredOrders = useMemo(() => {
     if (!orders) return [];
     
@@ -107,7 +107,7 @@ const OrderList: React.FC<OrderListProps> = ({
   return (
     <Card className="p-4">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
-        <h2 className="text-xl font-semibold">{limit ? 'Órdenes Recientes' : 'Órdenes'}</h2>
+        <h2 className="text-xl font-semibold">{limit ? 'Pedidos Recientes' : 'Pedidos'}</h2>
         {showCreateButton && (
           <div className="flex gap-2 items-center">
             {!isOnline && <Badge variant="destructive">Sin conexión</Badge>}
@@ -145,7 +145,7 @@ const OrderList: React.FC<OrderListProps> = ({
       {/* Mostrar error si existe */}
       {isError && (
         <ErrorDisplay 
-          error={error instanceof Error ? error : 'Error al cargar las órdenes'} 
+          error={error instanceof Error ? error : 'Error al cargar las pedidos'} 
           onRetry={() => refetch()}
         />
       )}
@@ -164,7 +164,7 @@ const OrderList: React.FC<OrderListProps> = ({
         <div className="space-y-4">
           {displayOrders.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              No se encontraron órdenes
+              No se encontraron pedidos
             </div>
           ) : (
             displayOrders.map((order) => (
