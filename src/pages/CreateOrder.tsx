@@ -1,10 +1,8 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, X, Search, Percent } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { clients, Order, OrderItem } from '@/lib/sample-data';
+import { Order, OrderItem } from '@/lib/sample-data';
 import { useForm } from 'react-hook-form';
 import { toast } from "sonner";
 import {
@@ -17,26 +15,15 @@ import {
 } from '@/components/ui/form';
 import CancelOrderConfirmation from '@/components/CancelOrderConfirmation';
 import { Separator } from '@/components/ui/separator';
-import { Input } from '@/components/ui/input';
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import { useLanguage } from '@/contexts/LanguageProvider';
 import QuickProductSelector from '@/components/QuickProductSelector';
 import OrderItemRow from '@/components/OrderItemRow';
+import ClientSelectorModal from '@/components/ClientSelectorModal';
+import OrderSummaryCard from '@/components/OrderSummaryCard';
 import { Addition } from '@/models/order.model';
+import { User, MapPin, ShoppingCart, X } from 'lucide-react';
 
 type FormValues = {
-  clientId: string;
-  discount: string;
   tableNumber: string;
 };
 
@@ -70,20 +57,19 @@ const CreateOrder = () => {
   const { t } = useLanguage();
   const [orderItems, setOrderItems] = useState<ExtendedOrderItem[]>([]);
   const [isCancelConfirmationOpen, setIsCancelConfirmationOpen] = useState(false);
-  const [clientSearchQuery, setClientSearchQuery] = useState('');
   const [orderDiscount, setOrderDiscount] = useState<number>(0);
   const [orderDiscountType, setOrderDiscountType] = useState<string>(DiscountTypes.NONE);
+  const [selectedClientId, setSelectedClientId] = useState<string>('');
+  const [selectedClientName, setSelectedClientName] = useState<string>('');
   
   const form = useForm<FormValues>({
     defaultValues: {
-      clientId: '',
-      discount: '0',
       tableNumber: '',
     },
   });
   
   const handleCancelClick = () => {
-    if (orderItems.length > 0 || form.formState.isDirty) {
+    if (orderItems.length > 0 || form.formState.isDirty || selectedClientId) {
       setIsCancelConfirmationOpen(true);
     } else {
       navigate('/orders');
@@ -93,11 +79,16 @@ const CreateOrder = () => {
   const handleConfirmCancel = () => {
     navigate('/orders');
   };
-  
-  const filteredClients = clients.filter(client => 
-    client.name.toLowerCase().includes(clientSearchQuery.toLowerCase()) ||
-    client.company?.toLowerCase().includes(clientSearchQuery.toLowerCase())
-  );
+
+  const handleClientSelect = (clientId: string, clientName: string) => {
+    setSelectedClientId(clientId);
+    setSelectedClientName(clientName);
+  };
+
+  const clearClient = () => {
+    setSelectedClientId('');
+    setSelectedClientName('');
+  };
 
   const handleAddProduct = (product: OrderItem) => {
     // Check if product already exists in order
@@ -121,7 +112,7 @@ const CreateOrder = () => {
       }]);
     }
     
-    toast.success(`${product.name} Agregar a la orden`);
+    toast.success(`${product.name} agregado a la orden`);
   };
   
   const handleUpdateOrderItem = (index: number, updatedItem: ExtendedOrderItem) => {
@@ -175,7 +166,12 @@ const CreateOrder = () => {
     const discount = calculateOrderDiscount();
     return Math.max(0, subtotal - discount);
   };
-    
+  
+  const handleDiscountChange = (discount: number, type: string) => {
+    setOrderDiscount(discount);
+    setOrderDiscountType(type);
+  };
+  
   const onSubmit = async (values: FormValues) => {
     if (orderItems.length === 0) {
       toast.error('Error: No hay productos');
@@ -183,17 +179,14 @@ const CreateOrder = () => {
     }
     
     let clientName = 'Cliente no especificado';
-    if (values.clientId) {
-      const selectedClient = clients.find(client => client.id === values.clientId);
-      if (selectedClient) {
-        clientName = selectedClient.name;
-      }
+    if (selectedClientId) {
+      clientName = selectedClientName;
     }
     
     // Create new order with the front-end structure
     const newOrder: Order = {
       id: `ORD-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
-      clientId: values.clientId || 'no-client',
+      clientId: selectedClientId || 'no-client',
       clientName: clientName,
       date: new Date().toISOString().split('T')[0],
       status: 'pending',
@@ -205,7 +198,7 @@ const CreateOrder = () => {
     
     // Transform the object to the format required by the backend (POST /api/pedido/)
     const backendOrderPayload = {
-      id_cliente: Number(values.clientId.replace('client-', '')) || 1,
+      id_cliente: Number(selectedClientId.replace('client-', '')) || 1,
       id_usuario: 1, // Default value for current user
       id_mesa: values.tableNumber ? parseInt(values.tableNumber) : null, // Use null if no table is selected
       tipo_pedido: values.tableNumber ? "en_mesa" : "para_llevar", // Set type based on table selection
@@ -253,227 +246,169 @@ const CreateOrder = () => {
   };
   
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
-      <div className="flex items-center space-x-2">
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Nueva orden</h1>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <h1 className="text-xl md:text-2xl font-bold">Nueva Orden</h1>
+            <Button 
+              variant="outline" 
+              onClick={handleCancelClick}
+              className="flex items-center gap-2"
+            >
+              <X className="h-4 w-4" />
+              <span className="hidden sm:inline">Cancelar</span>
+            </Button>
+          </div>
+        </div>
       </div>
-      
-      <Card className="p-4 md:p-6">
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid md:grid-cols-3 gap-6">
-              <FormField
-                control={form.control}
-                name="clientId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-base font-medium">Cliente (opcional)</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <div className="grid lg:grid-cols-3 gap-6">
+              {/* Main Content */}
+              <div className="lg:col-span-2 space-y-6">
+                {/* Order Details Card */}
+                <Card className="p-4 md:p-6">
+                  <h2 className="text-lg font-semibold mb-4">Detalles del Pedido</h2>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {/* Client Selection */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Cliente (opcional)</label>
+                      {selectedClientId ? (
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 p-2 border rounded-md bg-muted/20 flex items-center gap-2">
+                            <User className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm">{selectedClientName}</span>
+                          </div>
                           <Button
+                            type="button"
                             variant="outline"
-                            role="combobox"
-                            className="w-full justify-between"
+                            size="icon"
+                            onClick={clearClient}
                           >
-                            {field.value ? clients.find(client => client.id === field.value)?.name : 'Seleccionar cliente'}
-                            <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            <X className="h-4 w-4" />
                           </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-full p-0" align="start">
-                        <div className="p-2">
-                          <Input
-                            placeholder="Buscar cliente"
-                            value={clientSearchQuery}
-                            onChange={(e) => setClientSearchQuery(e.target.value)}
-                            className="mb-2"
-                          />
                         </div>
-                        <div className="max-h-60 overflow-y-auto">
-                          {filteredClients.length > 0 ? (
-                            filteredClients.map(client => (
-                              <div
-                                key={client.id}
-                                className={`flex items-center px-4 py-2 cursor-pointer hover:bg-muted ${field.value === client.id ? 'bg-muted' : ''}`}
-                                onClick={() => {
-                                  field.onChange(client.id);
-                                  setClientSearchQuery('');
-                                }}
-                              >
-                                <div>
-                                  <p className="text-sm font-medium">{client.name}</p>
-                                  {client.company && (
-                                    <p className="text-xs text-muted-foreground">{client.company}</p>
-                                  )}
-                                </div>
-                              </div>
-                            ))
-                          ) : (
-                            <div className="px-4 py-2 text-sm text-muted-foreground">
-                              No se encontraron clientes
-                            </div>
-                          )}
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="tableNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-base font-medium">Mesa (opcional)</FormLabel>
-                    <select
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                      onChange={field.onChange}
-                      value={field.value}
-                    >
-                      <option value="">Sin mesa</option>
-                      {availableTables.map(table => (
-                        <option key={table.id} value={table.id}>
-                          {table.name}
-                        </option>
-                      ))}
-                    </select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="flex flex-col">
-                <FormLabel className="text-base font-medium mb-2">Descuento</FormLabel>
-                <div className="flex gap-2 items-center">
-                  <Input
-                    type="number"
-                    min="0"
-                    value={orderDiscount}
-                    onChange={(e) => setOrderDiscount(Number(e.target.value))}
-                    className="flex-1"
-                    placeholder='Valor del descuento'
-                    disabled={orderDiscountType === DiscountTypes.NONE}
-                  />
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" className="flex gap-2">
-                        {orderDiscountType === DiscountTypes.PERCENTAGE 
-                          ? '%' 
-                          : orderDiscountType === DiscountTypes.FIXED 
-                            ? '$' 
-                            : 'Tipo'}
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setOrderDiscountType(DiscountTypes.NONE)}>
-                        Sin descuento
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setOrderDiscountType(DiscountTypes.PERCENTAGE)}>
-                        Porcentaje (%)
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setOrderDiscountType(DiscountTypes.FIXED)}>
-                        Cantidad fija ($)
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
-            </div>
-            
-            <Separator className="my-6" />
-            
-            {/* Quick Product Selector */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Agrega productos</h3>
-              <QuickProductSelector onAddProduct={handleAddProduct} />
-            </div>
-            
-            <Separator className="my-6" />
-            
-            {/* Order Items */}
-            <div className="space-y-4">
-              
-              <div className="border rounded-md overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b bg-muted/40">
-                        <th className="text-left p-3 font-medium text-muted-foreground">Producto</th>
-                        <th className="text-center p-3 font-medium text-muted-foreground">Cantidad</th>
-                        <th className="text-right p-3 font-medium text-muted-foreground">Precio</th>
-                        <th className="text-right p-3 font-medium text-muted-foreground">Total</th>
-                        <th className="p-3 w-[100px]">Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {orderItems.length === 0 ? (
-                        <tr>
-                          <td colSpan={5} className="text-center p-8 text-muted-foreground">
-                            Sin productos
-                          </td>
-                        </tr>
                       ) : (
-                        orderItems.map((item, index) => (
-                          <OrderItemRow
-                            key={`${item.productId}-${index}`}
-                            item={item}
-                            onUpdate={(updatedItem) => handleUpdateOrderItem(index, updatedItem)}
-                            onRemove={() => handleRemoveProduct(index)}
-                          />
-                        ))
+                        <ClientSelectorModal 
+                          selectedClientId={selectedClientId}
+                          onClientSelect={handleClientSelect}
+                        />
                       )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              
-              <div className="flex justify-end pt-4">
-                <div className="w-full sm:w-72 md:w-80">
-                  <div className="space-y-1">
-                    <div className="flex justify-between py-1 text-muted-foreground">
-                      <span>Subtotal:</span>
-                      <span>${getProductsSubtotal()}</span>
                     </div>
-                    {orderDiscount > 0 && orderDiscountType !== DiscountTypes.NONE && (
-                      <div className="flex justify-between py-1 text-muted-foreground">
-                        <span>
-                          Descuento ({orderDiscountType === DiscountTypes.PERCENTAGE ? `${orderDiscount}%` : `$${orderDiscount}`}):
-                        </span>
-                        <span>-${calculateOrderDiscount()}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between py-2 text-lg font-bold border-t">
-                      <span>Total:</span>
-                      <span>${getOrderTotal()}</span>
-                    </div>
+
+                    {/* Table Selection */}
+                    <FormField
+                      control={form.control}
+                      name="tableNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4" />
+                            Mesa (opcional)
+                          </FormLabel>
+                          <FormControl>
+                            <select
+                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                              onChange={field.onChange}
+                              value={field.value}
+                            >
+                              <option value="">Sin mesa (Para llevar)</option>
+                              {availableTables.map(table => (
+                                <option key={table.id} value={table.id}>
+                                  {table.name}
+                                </option>
+                              ))}
+                            </select>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
+                </Card>
+
+                {/* Product Selection */}
+                <Card className="p-4 md:p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <ShoppingCart className="h-5 w-5" />
+                    <h2 className="text-lg font-semibold">Agregar Productos</h2>
+                  </div>
+                  <QuickProductSelector onAddProduct={handleAddProduct} />
+                </Card>
+
+                {/* Order Items */}
+                {orderItems.length > 0 && (
+                  <Card className="p-4 md:p-6">
+                    <h2 className="text-lg font-semibold mb-4">Productos en el Pedido</h2>
+                    <div className="border rounded-md overflow-hidden">
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="border-b bg-muted/40">
+                              <th className="text-left p-3 font-medium text-muted-foreground">Producto</th>
+                              <th className="text-center p-3 font-medium text-muted-foreground">Cantidad</th>
+                              <th className="text-right p-3 font-medium text-muted-foreground">Precio</th>
+                              <th className="text-right p-3 font-medium text-muted-foreground">Total</th>
+                              <th className="p-3 w-[100px]">Acciones</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {orderItems.map((item, index) => (
+                              <OrderItemRow
+                                key={`${item.productId}-${index}`}
+                                item={item}
+                                onUpdate={(updatedItem) => handleUpdateOrderItem(index, updatedItem)}
+                                onRemove={() => handleRemoveProduct(index)}
+                              />
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </Card>
+                )}
+              </div>
+
+              {/* Sidebar - Order Summary */}
+              <div className="lg:col-span-1">
+                <OrderSummaryCard
+                  itemCount={orderItems.length}
+                  subtotal={getProductsSubtotal()}
+                  discount={orderDiscount}
+                  discountType={orderDiscountType}
+                  total={getOrderTotal()}
+                  onDiscountChange={handleDiscountChange}
+                />
+                
+                {/* Action Buttons */}
+                <div className="mt-6 space-y-3">
+                  <Button 
+                    type="submit" 
+                    disabled={orderItems.length === 0}
+                    className="w-full h-12 text-base font-medium"
+                    size="lg"
+                  >
+                    Crear Orden
+                  </Button>
+                  
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={handleCancelClick}
+                    className="w-full h-10"
+                  >
+                    Cancelar
+                  </Button>
                 </div>
               </div>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row sm:justify-between gap-4 pt-6">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={handleCancelClick}
-                className="w-full sm:w-auto order-2 sm:order-1"
-              >
-                Cancelar
-              </Button>
-              <Button 
-                type="submit" 
-                disabled={orderItems.length === 0}
-                className="w-full sm:w-auto order-1 sm:order-2"
-              >
-                Crear orden
-              </Button>
             </div>
           </form>
         </Form>
-      </Card>
+      </div>
       
       <CancelOrderConfirmation
         open={isCancelConfirmationOpen}
