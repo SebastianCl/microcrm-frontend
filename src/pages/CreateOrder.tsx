@@ -1,7 +1,8 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Order, OrderItem } from '@/lib/sample-data';
 import { useForm } from 'react-hook-form';
 import { toast } from "sonner";
@@ -21,7 +22,7 @@ import OrderItemRow from '@/components/OrderItemRow';
 import ClientSelectorModal from '@/components/ClientSelectorModal';
 import OrderSummaryCard from '@/components/OrderSummaryCard';
 import { Addition } from '@/models/order.model';
-import { User, MapPin, ShoppingCart, X } from 'lucide-react';
+import { User, MapPin, ShoppingCart, X, Plus } from 'lucide-react';
 
 type FormValues = {
   tableNumber: string;
@@ -246,16 +247,21 @@ const CreateOrder = () => {
   };
   
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-10">
+      <div className="bg-white shadow-sm border-b sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <h1 className="text-xl md:text-2xl font-bold">Nueva Orden</h1>
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <ShoppingCart className="h-5 w-5 text-primary" />
+              </div>
+              <h1 className="text-xl md:text-2xl font-bold text-gray-900">Nueva Orden</h1>
+            </div>
             <Button 
               variant="outline" 
               onClick={handleCancelClick}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 hover:bg-gray-50"
             >
               <X className="h-4 w-4" />
               <span className="hidden sm:inline">Cancelar</span>
@@ -264,145 +270,168 @@ const CreateOrder = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
-            <div className="grid lg:grid-cols-3 gap-6">
+            <div className="grid lg:grid-cols-3 gap-8">
               {/* Main Content */}
-              <div className="lg:col-span-2 space-y-6">
+              <div className="lg:col-span-2 space-y-8">
                 {/* Order Details Card */}
-                <Card className="p-4 md:p-6">
-                  <h2 className="text-lg font-semibold mb-4">Detalles del Pedido</h2>
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    {/* Client Selection */}
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Cliente (opcional)</label>
-                      {selectedClientId ? (
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1 p-2 border rounded-md bg-muted/20 flex items-center gap-2">
-                            <User className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm">{selectedClientName}</span>
-                          </div>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            onClick={clearClient}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <ClientSelectorModal 
-                          selectedClientId={selectedClientId}
-                          onClientSelect={handleClientSelect}
-                        />
-                      )}
-                    </div>
-
-                    {/* Table Selection */}
-                    <FormField
-                      control={form.control}
-                      name="tableNumber"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4" />
-                            Mesa (opcional)
-                          </FormLabel>
-                          <FormControl>
-                            <select
-                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                              onChange={field.onChange}
-                              value={field.value}
+                <Card className="shadow-sm hover:shadow-md transition-shadow">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <User className="h-5 w-5 text-primary" />
+                      Detalles del Pedido
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="grid sm:grid-cols-2 gap-6">
+                      {/* Client Selection */}
+                      <div className="space-y-3">
+                        <label className="text-sm font-medium text-gray-700">Cliente</label>
+                        {selectedClientId ? (
+                          <div className="flex items-center gap-3">
+                            <div className="flex-1 p-3 border rounded-lg bg-green-50 border-green-200 flex items-center gap-2">
+                              <User className="h-4 w-4 text-green-600" />
+                              <span className="text-sm font-medium text-green-800">{selectedClientName}</span>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              onClick={clearClient}
+                              className="text-red-600 hover:bg-red-50 border-red-200"
                             >
-                              <option value="">Sin mesa (Para llevar)</option>
-                              {availableTables.map(table => (
-                                <option key={table.id} value={table.id}>
-                                  {table.name}
-                                </option>
-                              ))}
-                            </select>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <ClientSelectorModal 
+                            selectedClientId={selectedClientId}
+                            onClientSelect={handleClientSelect}
+                          >
+                            <Button type="button" variant="outline" className="w-full justify-start h-11">
+                              <Plus className="h-4 w-4 mr-2" />
+                              Agregar Cliente (Opcional)
+                            </Button>
+                          </ClientSelectorModal>
+                        )}
+                      </div>
+
+                      {/* Table Selection */}
+                      <FormField
+                        control={form.control}
+                        name="tableNumber"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                              <MapPin className="h-4 w-4 text-primary" />
+                              Mesa
+                            </FormLabel>
+                            <FormControl>
+                              <select
+                                className="flex h-11 w-full rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 hover:border-gray-300"
+                                onChange={field.onChange}
+                                value={field.value}
+                              >
+                                <option value="">Para llevar</option>
+                                {availableTables.map(table => (
+                                  <option key={table.id} value={table.id}>
+                                    {table.name}
+                                  </option>
+                                ))}
+                              </select>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </CardContent>
                 </Card>
 
                 {/* Product Selection */}
-                <Card className="p-4 md:p-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <ShoppingCart className="h-5 w-5" />
-                    <h2 className="text-lg font-semibold">Agregar Productos</h2>
-                  </div>
-                  <QuickProductSelector onAddProduct={handleAddProduct} />
+                <Card className="shadow-sm hover:shadow-md transition-shadow">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <ShoppingCart className="h-5 w-5 text-primary" />
+                      Seleccionar Productos
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <QuickProductSelector onAddProduct={handleAddProduct} />
+                  </CardContent>
                 </Card>
 
                 {/* Order Items */}
                 {orderItems.length > 0 && (
-                  <Card className="p-4 md:p-6">
-                    <h2 className="text-lg font-semibold mb-4">Productos en el Pedido</h2>
-                    <div className="border rounded-md overflow-hidden">
-                      <div className="overflow-x-auto">
-                        <table className="w-full">
-                          <thead>
-                            <tr className="border-b bg-muted/40">
-                              <th className="text-left p-3 font-medium text-muted-foreground">Producto</th>
-                              <th className="text-center p-3 font-medium text-muted-foreground">Cantidad</th>
-                              <th className="text-right p-3 font-medium text-muted-foreground">Precio</th>
-                              <th className="text-right p-3 font-medium text-muted-foreground">Total</th>
-                              <th className="p-3 w-[100px]">Acciones</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {orderItems.map((item, index) => (
-                              <OrderItemRow
-                                key={`${item.productId}-${index}`}
-                                item={item}
-                                onUpdate={(updatedItem) => handleUpdateOrderItem(index, updatedItem)}
-                                onRemove={() => handleRemoveProduct(index)}
-                              />
-                            ))}
-                          </tbody>
-                        </table>
+                  <Card className="shadow-sm hover:shadow-md transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="text-lg">Productos en el Pedido</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="border rounded-lg overflow-hidden bg-white">
+                        <div className="overflow-x-auto">
+                          <table className="w-full">
+                            <thead>
+                              <tr className="border-b bg-gray-50">
+                                <th className="text-left p-4 font-medium text-gray-700">Producto</th>
+                                <th className="text-center p-4 font-medium text-gray-700">Cantidad</th>
+                                <th className="text-right p-4 font-medium text-gray-700">Precio</th>
+                                <th className="text-right p-4 font-medium text-gray-700">Total</th>
+                                <th className="p-4 w-[100px]">Acciones</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {orderItems.map((item, index) => (
+                                <OrderItemRow
+                                  key={`${item.productId}-${index}`}
+                                  item={item}
+                                  onUpdate={(updatedItem) => handleUpdateOrderItem(index, updatedItem)}
+                                  onRemove={() => handleRemoveProduct(index)}
+                                />
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
-                    </div>
+                    </CardContent>
                   </Card>
                 )}
               </div>
 
               {/* Sidebar - Order Summary */}
               <div className="lg:col-span-1">
-                <OrderSummaryCard
-                  itemCount={orderItems.length}
-                  subtotal={getProductsSubtotal()}
-                  discount={orderDiscount}
-                  discountType={orderDiscountType}
-                  total={getOrderTotal()}
-                  onDiscountChange={handleDiscountChange}
-                />
-                
-                {/* Action Buttons */}
-                <div className="mt-6 space-y-3">
-                  <Button 
-                    type="submit" 
-                    disabled={orderItems.length === 0}
-                    className="w-full h-12 text-base font-medium"
-                    size="lg"
-                  >
-                    Crear Orden
-                  </Button>
+                <div className="sticky top-24 space-y-6">
+                  <OrderSummaryCard
+                    itemCount={orderItems.length}
+                    subtotal={getProductsSubtotal()}
+                    discount={orderDiscount}
+                    discountType={orderDiscountType}
+                    total={getOrderTotal()}
+                    onDiscountChange={handleDiscountChange}
+                  />
                   
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={handleCancelClick}
-                    className="w-full h-10"
-                  >
-                    Cancelar
-                  </Button>
+                  {/* Action Buttons */}
+                  <div className="space-y-3">
+                    <Button 
+                      type="submit" 
+                      disabled={orderItems.length === 0}
+                      className="w-full h-12 text-base font-medium shadow-sm hover:shadow-md transition-shadow"
+                      size="lg"
+                    >
+                      Crear Orden
+                    </Button>
+                    
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={handleCancelClick}
+                      className="w-full h-10 hover:bg-gray-50"
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>

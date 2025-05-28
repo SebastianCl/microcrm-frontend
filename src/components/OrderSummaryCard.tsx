@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Card } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
-import { Percent, DollarSign } from 'lucide-react';
+import { Percent, DollarSign, ShoppingCart, Receipt } from 'lucide-react';
 
 interface OrderSummaryCardProps {
   itemCount: number;
@@ -49,20 +49,26 @@ const OrderSummaryCard: React.FC<OrderSummaryCardProps> = ({
   const discountAmount = calculateOrderDiscount();
 
   return (
-    <Card className="p-4 sticky top-4">
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-lg">Resumen del Pedido</h3>
-          <Badge variant="secondary">
+    <Card className="shadow-sm hover:shadow-md transition-shadow sticky top-4">
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center justify-between text-lg">
+          <div className="flex items-center gap-2">
+            <Receipt className="h-5 w-5 text-primary" />
+            <span>Resumen</span>
+          </div>
+          <Badge variant="secondary" className="ml-2">
             {itemCount} {itemCount === 1 ? 'producto' : 'productos'}
           </Badge>
-        </div>
+        </CardTitle>
+      </CardHeader>
 
-        <Separator />
-
+      <CardContent className="space-y-6">
         {/* Discount Section */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Descuento</label>
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+            <Percent className="h-4 w-4" />
+            Descuento
+          </label>
           <div className="flex gap-2">
             <Input
               type="number"
@@ -75,7 +81,7 @@ const OrderSummaryCard: React.FC<OrderSummaryCardProps> = ({
             />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon">
+                <Button variant="outline" size="icon" className="shrink-0">
                   {discountType === DiscountTypes.PERCENTAGE ? (
                     <Percent className="h-4 w-4" />
                   ) : discountType === DiscountTypes.FIXED ? (
@@ -85,7 +91,7 @@ const OrderSummaryCard: React.FC<OrderSummaryCardProps> = ({
                   )}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="bg-white border shadow-lg">
                 <DropdownMenuItem onClick={() => onDiscountChange(0, DiscountTypes.NONE)}>
                   Sin descuento
                 </DropdownMenuItem>
@@ -103,29 +109,41 @@ const OrderSummaryCard: React.FC<OrderSummaryCardProps> = ({
         <Separator />
 
         {/* Totals */}
-        <div className="space-y-2">
+        <div className="space-y-3">
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Subtotal:</span>
-            <span>${subtotal.toFixed(2)}</span>
+            <span className="text-gray-600">Subtotal:</span>
+            <span className="font-medium">${subtotal.toFixed(2)}</span>
           </div>
           
           {discountAmount > 0 && (
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">
+              <span className="text-gray-600">
                 Descuento {discountType === DiscountTypes.PERCENTAGE ? `(${discount}%)` : `($${discount})`}:
               </span>
-              <span className="text-red-600">-${discountAmount.toFixed(2)}</span>
+              <span className="text-red-600 font-medium">-${discountAmount.toFixed(2)}</span>
             </div>
           )}
           
           <Separator />
           
           <div className="flex justify-between text-lg font-bold">
-            <span>Total:</span>
-            <span>${total.toFixed(2)}</span>
+            <span className="text-gray-900">Total:</span>
+            <span className="text-primary">${total.toFixed(2)}</span>
           </div>
         </div>
-      </div>
+
+        {/* Summary Badge */}
+        {itemCount > 0 && (
+          <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-center gap-2 text-green-800">
+              <ShoppingCart className="h-4 w-4" />
+              <span className="text-sm font-medium">
+                {itemCount} producto{itemCount !== 1 ? 's' : ''} agregado{itemCount !== 1 ? 's' : ''}
+              </span>
+            </div>
+          </div>
+        )}
+      </CardContent>
     </Card>
   );
 };
