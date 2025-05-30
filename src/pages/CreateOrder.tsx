@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -15,14 +14,13 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import CancelOrderConfirmation from '@/components/CancelOrderConfirmation';
-import { Separator } from '@/components/ui/separator';
-import { useLanguage } from '@/contexts/LanguageProvider';
 import QuickProductSelector from '@/components/QuickProductSelector';
 import OrderItemRow from '@/components/OrderItemRow';
 import ClientSelectorModal from '@/components/ClientSelectorModal';
 import OrderSummaryCard from '@/components/OrderSummaryCard';
 import { Addition } from '@/models/order.model';
 import { User, MapPin, ShoppingCart, X, Plus } from 'lucide-react';
+import { useTables } from '@/hooks/useTables';
 
 type FormValues = {
   tableNumber: string;
@@ -41,27 +39,27 @@ const DiscountTypes = {
   NONE: 'none'
 };
 
-// Sample tables data - in a real app this would come from an API
-const availableTables = [
-  { id: 1, name: 'Mesa 1' },
-  { id: 2, name: 'Mesa 2' },
-  { id: 3, name: 'Mesa 3' },
-  { id: 4, name: 'Mesa 4' },
-  { id: 5, name: 'Mesa 5' },
-  { id: 6, name: 'Mesa 6' },
-  { id: 7, name: 'Mesa 7' },
-  { id: 8, name: 'Mesa 8' },
-];
+// Comentado ya que ahora se obtendrá de la API
+// const availableTables = [
+//   { id: 1, name: 'Mesa 1' },
+//   { id: 2, name: 'Mesa 2' },
+//   { id: 3, name: 'Mesa 3' },
+//   { id: 4, name: 'Mesa 4' },
+//   { id: 5, name: 'Mesa 5' },
+//   { id: 6, name: 'Mesa 6' },
+//   { id: 7, name: 'Mesa 7' },
+//   { id: 8, name: 'Mesa 8' },
+// ];
 
 const CreateOrder = () => {
   const navigate = useNavigate();
-  const { t } = useLanguage();
   const [orderItems, setOrderItems] = useState<ExtendedOrderItem[]>([]);
   const [isCancelConfirmationOpen, setIsCancelConfirmationOpen] = useState(false);
   const [orderDiscount, setOrderDiscount] = useState<number>(0);
   const [orderDiscountType, setOrderDiscountType] = useState<string>(DiscountTypes.NONE);
   const [selectedClientId, setSelectedClientId] = useState<string>('');
   const [selectedClientName, setSelectedClientName] = useState<string>('');
+  const { data: tablesFromAPI, isLoading: isLoadingTables, error: tablesError } = useTables(); // Usar el hook useTables y renombrar la variable
   
   const form = useForm<FormValues>({
     defaultValues: {
@@ -95,7 +93,7 @@ const CreateOrder = () => {
     // Check if product already exists in order
     const existingProductIndex = orderItems.findIndex(
       item => item.productId === product.productId && 
-      JSON.stringify(item.additions || []) === JSON.stringify(product.additions || [])
+      JSON.stringify((item as ExtendedOrderItem).additions || []) === JSON.stringify((product as ExtendedOrderItem).additions || [])
     );
     
     if (existingProductIndex >= 0) {
@@ -186,7 +184,6 @@ const CreateOrder = () => {
     
     // Create new order with the front-end structure
     const newOrder: Order = {
-      id: `ORD-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
       clientId: selectedClientId || 'no-client',
       clientName: clientName,
       date: new Date().toISOString().split('T')[0],
@@ -199,18 +196,17 @@ const CreateOrder = () => {
     
     // Transform the object to the format required by the backend (POST /api/pedido/)
     const backendOrderPayload = {
-      id_cliente: Number(selectedClientId.replace('client-', '')) || 1,
+      id_cliente: Number(selectedClientId.replace('client-', '')) || null,
       id_usuario: 1, // Default value for current user
-      id_mesa: values.tableNumber ? parseInt(values.tableNumber) : null, // Use null if no table is selected
-      tipo_pedido: values.tableNumber ? "en_mesa" : "para_llevar", // Set type based on table selection
+      id_mesa: values.tableNumber ? parseInt(values.tableNumber) : null,
+      tipo_pedido: values.tableNumber ? "en_mesa" : "para_llevar",
       productos: orderItems.map(item => ({
         id_producto: Number(item.productId),
         cantidad: item.quantity,
         precio_unitario: item.price,
         adiciones: item.additions ? item.additions.map(addition => ({
           id_adicion: Number(addition.id),
-          nombre: addition.name,
-          precio: addition.price
+          cantidad: 1,
         })) : []
       })),
       estado: "pendiente" // Initial order status
@@ -335,9 +331,11 @@ const CreateOrder = () => {
                                 value={field.value}
                               >
                                 <option value="">Para llevar</option>
-                                {availableTables.map(table => (
-                                  <option key={table.id} value={table.id}>
-                                    {table.name}
+                                {isLoadingTables && <option value="" disabled>Cargando mesas...</option>}
+                                {tablesError && <option value="" disabled>Error al cargar mesas</option>}
+                                {tablesFromAPI && tablesFromAPI.map(table => (
+                                  <option key={table.id_mesa} value={table.id_mesa.toString()}>
+                                    {table.nombre_mesa}
                                   </option>
                                 ))}
                               </select>
