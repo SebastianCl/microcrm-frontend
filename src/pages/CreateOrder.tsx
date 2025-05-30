@@ -186,7 +186,7 @@ const CreateOrder = () => {
           cantidad: 1,
         })) : []
       })),
-      estado: "pendiente" // Initial order status
+      id_estado: 1
     };
     
     const token = localStorage.getItem('authToken');
@@ -220,37 +220,95 @@ const CreateOrder = () => {
   };
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <ShoppingCart className="h-5 w-5 text-primary" />
+    <Form {...form}> {/* Form provider wraps the entire page content that needs form context */}
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        {/* Header */}
+        <div className="bg-white shadow-sm border-b sticky top-0 z-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <ShoppingCart className="h-5 w-5 text-primary" />
+                </div>
+                <h1 className="text-xl md:text-2xl font-bold text-gray-900">Nueva Orden</h1>
               </div>
-              <h1 className="text-xl md:text-2xl font-bold text-gray-900">Nueva Orden</h1>
+              <div className="flex items-center gap-4"> {/* Contenedor para alinear elementos a la derecha */}
+                {/* Client Selection */}
+                <div className="hidden sm:block"> {/* Ocultar en pantallas pequeñas, ajustar según sea necesario */}
+                  {selectedClientId ? (
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 p-2 border rounded-lg bg-green-50 border-green-200 flex items-center gap-2">
+                        <User className="h-4 w-4 text-green-600" />
+                        <span className="text-sm font-medium text-green-700">{selectedClientName}</span>
+                      </div>
+                      <Button variant="ghost" size="icon" onClick={clearClient} className="text-gray-500 hover:text-red-500">
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <ClientSelectorModal
+                      selectedClientId={selectedClientId}
+                      onClientSelect={handleClientSelect}
+                      clients={clientsFromAPI}
+                      isLoading={isLoadingClients}
+                      error={clientsError}
+                    >
+                      <Button variant="outline" className="justify-start text-left font-normal hover:bg-gray-50">
+                        {isLoadingClients ? 'Cargando...' : clientsError ? 'Error' : 'Seleccionar Cliente'}
+                      </Button>
+                    </ClientSelectorModal>
+                  )}
+                </div>
+
+                {/* Table Selection */}
+                <div className="hidden sm:block"> {/* Ocultar en pantallas pequeñas, ajustar según sea necesario */}
+                  <FormField
+                    control={form.control}
+                    name="tableNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <select
+                            className="flex h-10 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 hover:border-gray-300"
+                            onChange={field.onChange}
+                            value={field.value}
+                          >
+                            <option value="">Para llevar</option>
+                            {isLoadingTables && <option value="" disabled>Cargando...</option>}
+                            {tablesError && <option value="" disabled>Error</option>}
+                            {tablesFromAPI && tablesFromAPI.map(table => (
+                              <option key={table.id_mesa} value={table.id_mesa.toString()}>
+                                {table.nombre_mesa}
+                              </option>
+                            ))}
+                          </select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={handleCancelClick}
+                  className="flex items-center gap-2 hover:bg-gray-50"
+                >
+                  <X className="h-4 w-4" />
+                  <span className="hidden sm:inline">Cancelar</span>
+                </Button>
+              </div>
             </div>
-            <Button 
-              variant="outline" 
-              onClick={handleCancelClick}
-              className="flex items-center gap-2 hover:bg-gray-50"
-            >
-              <X className="h-4 w-4" />
-              <span className="hidden sm:inline">Cancelar</span>
-            </Button>
           </div>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
+        {/* HTML form element wraps the main content area including the submit button */}
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="grid lg:grid-cols-3 gap-8">
               {/* Main Content */}
               <div className="lg:col-span-2 space-y-8">
-                {/* Order Details Card */}
-                <Card className="shadow-sm hover:shadow-md transition-shadow">
+                {/* Client and Table selection for smaller screens */}
+                <Card className="shadow-sm hover:shadow-md transition-shadow sm:hidden"> {/* Mostrar solo en pantallas pequeñas */}
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-lg">
                       <User className="h-5 w-5 text-primary" />
@@ -258,18 +316,16 @@ const CreateOrder = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
-                    <div className="grid sm:grid-cols-2 gap-6">
-                      {/* Client Selection */}
+                    <div className="grid grid-cols-1 gap-6">
+                      {/* Client Selection for small screens */}
                       <div className="space-y-3">
                         <label className="text-sm font-medium text-gray-700">Cliente</label>
                         {selectedClientId ? (
                           <div className="flex items-center gap-3">
                             <div className="flex-1 p-3 border rounded-lg bg-green-50 border-green-200 flex items-center gap-2">
                               <User className="h-4 w-4 text-green-600" />
-                              {/* Display selected client name */}
                               <span className="text-sm font-medium text-green-700">{selectedClientName}</span>
                             </div>
-                            {/* Button to clear client selection */}
                             <Button variant="ghost" size="icon" onClick={clearClient} className="text-gray-500 hover:text-red-500">
                               <X className="h-4 w-4" />
                             </Button>
@@ -290,7 +346,7 @@ const CreateOrder = () => {
                         )}
                       </div>
 
-                      {/* Table Selection */}
+                      {/* Table Selection for small screens */}
                       <FormField
                         control={form.control}
                         name="tableNumber"
@@ -409,16 +465,16 @@ const CreateOrder = () => {
                 </div>
               </div>
             </div>
-          </form>
-        </Form>
+          </div>
+        </form> {/* End of HTML form element */}
+        
+        <CancelOrderConfirmation
+          open={isCancelConfirmationOpen}
+          onOpenChange={setIsCancelConfirmationOpen}
+          onConfirm={handleConfirmCancel}
+        />
       </div>
-      
-      <CancelOrderConfirmation
-        open={isCancelConfirmationOpen}
-        onOpenChange={setIsCancelConfirmationOpen}
-        onConfirm={handleConfirmCancel}
-      />
-    </div>
+    </Form>
   );
 };
 
