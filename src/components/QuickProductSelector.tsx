@@ -10,7 +10,6 @@ import { Search, Plus, ShoppingCart, Filter } from 'lucide-react';
 import { SAMPLE_INVENTORY } from '@/components/InventoryList';
 import { OrderItem, Addition } from '@/models/order.model';
 import { productHasAdditions, getProductAdditions } from '@/lib/sample-additions';
-import { useLanguage } from '@/contexts/LanguageProvider';
 
 interface QuickProductSelectorProps {
   onAddProduct: (product: OrderItem) => void;
@@ -22,7 +21,6 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
   const [selectedAdditions, setSelectedAdditions] = useState<Addition[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [activeCategory, setActiveCategory] = useState<string>('all');
-  const { t } = useLanguage();
 
   // Get unique categories from inventory
   const categories = Array.from(new Set(SAMPLE_INVENTORY.map(product => product.category)));

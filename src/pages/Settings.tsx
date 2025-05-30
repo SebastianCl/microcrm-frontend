@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { useLanguage } from '@/contexts/LanguageProvider';
 import {
   Select,
   SelectContent,
@@ -17,7 +16,6 @@ import {
 
 const Settings = () => {
   const { toast } = useToast();
-  const { t } = useLanguage();
   
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();

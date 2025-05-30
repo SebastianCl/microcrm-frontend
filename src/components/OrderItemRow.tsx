@@ -8,7 +8,6 @@ import { Card } from '@/components/ui/card';
 import { Edit3, Trash2, Check, X } from 'lucide-react';
 import { OrderItem, Addition } from '@/models/order.model';
 import { productHasAdditions, getProductAdditions } from '@/lib/sample-additions';
-import { useLanguage } from '@/contexts/LanguageProvider';
 
 interface OrderItemRowProps {
   item: OrderItem & { discount?: number; discountType?: string };
@@ -20,7 +19,6 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({ item, onUpdate, onRemove })
   const [isEditing, setIsEditing] = useState(false);
   const [editQuantity, setEditQuantity] = useState(item.quantity);
   const [editAdditions, setEditAdditions] = useState<Addition[]>(item.additions || []);
-  const { t } = useLanguage();
 
   const hasAdditions = productHasAdditions(item.productId);
   const availableAdditions = getProductAdditions(item.productId);

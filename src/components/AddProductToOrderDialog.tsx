@@ -14,7 +14,6 @@ import { Label } from '@/components/ui/label';
 import { OrderItem, Addition } from '@/models/order.model';
 import { Checkbox } from '@/components/ui/checkbox';
 import { productHasAdditions, getProductAdditions } from '@/lib/sample-additions';
-import { useLanguage } from '@/contexts/LanguageProvider';
 
 interface AddProductToOrderDialogProps {
   open: boolean;
@@ -30,7 +29,6 @@ const AddProductToOrderDialog: React.FC<AddProductToOrderDialogProps> = ({
   const [selectedProductId, setSelectedProductId] = useState<string>('');
   const [quantity, setQuantity] = useState<number>(1);
   const [selectedAdditions, setSelectedAdditions] = useState<Addition[]>([]);
-  const { t } = useLanguage();
 
   // Effect to reset additions when product changes
   useEffect(() => {

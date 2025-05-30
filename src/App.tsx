@@ -23,11 +23,9 @@ import NotFound from "./pages/NotFound";
 import { AuthProvider, ProtectedRoute } from "./contexts/AuthContext";
 import { QueryProvider } from "./contexts/QueryProvider";
 import { ThemeProvider } from "./contexts/ThemeProvider";
-import { LanguageProvider } from "./contexts/LanguageProvider";
 
 const App = () => (
   <ThemeProvider defaultTheme="light">
-    <LanguageProvider defaultLanguage="es">
       <QueryProvider>
         <TooltipProvider>
           <Toaster />
@@ -61,7 +59,6 @@ const App = () => (
           </BrowserRouter>
         </TooltipProvider>
       </QueryProvider>
-    </LanguageProvider>
   </ThemeProvider>
 );
 

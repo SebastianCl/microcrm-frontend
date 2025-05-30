@@ -21,13 +21,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { useLanguage } from '@/contexts/LanguageProvider';
 import { Addition } from '@/models/order.model';
 
 const OrderDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { t } = useLanguage();
   
   const { data: order, isLoading, error } = useOrder(id!, {
     enabled: Boolean(id),

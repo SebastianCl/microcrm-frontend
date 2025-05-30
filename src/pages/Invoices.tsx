@@ -2,11 +2,9 @@
 import { useState } from 'react';
 import InvoiceList from '@/components/InvoiceList';
 import CreateInvoiceDialog from '@/components/CreateInvoiceDialog';
-import { useLanguage } from '@/contexts/LanguageProvider';
 
 const Invoices = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const { t } = useLanguage();
   
   return (
     <div className="space-y-6">
