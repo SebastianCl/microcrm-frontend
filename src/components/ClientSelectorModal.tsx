@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Dialog,
@@ -10,32 +9,40 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { User, Search, Plus } from "lucide-react";
-import { clients } from '@/lib/sample-data';
+// Remove sample data import
+// import { clients } from '@/lib/sample-data';
 import CreateClientDialog from './CreateClientDialog';
+import { Client } from '@/models/client.model'; // Import Client model
 
 interface ClientSelectorModalProps {
   selectedClientId?: string;
   onClientSelect: (clientId: string, clientName: string) => void;
   children?: React.ReactNode;
+  clients?: Client[]; // Add clients prop
+  isLoading?: boolean; // Add isLoading prop
+  error?: Error | null; // Add error prop
 }
 
 const ClientSelectorModal: React.FC<ClientSelectorModalProps> = ({
   selectedClientId,
   onClientSelect,
-  children
+  children,
+  clients = [], // Default to empty array
+  isLoading,
+  error
 }) => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredClients = clients.filter(client => 
-    client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    client.company?.toLowerCase().includes(searchQuery.toLowerCase())
+    client.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (client.telefono && client.telefono.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  const selectedClient = clients.find(client => client.id === selectedClientId);
+  const selectedClient = clients.find(client => client.id_cliente.toString() === selectedClientId);
 
-  const handleClientSelect = (client: typeof clients[0]) => {
-    onClientSelect(client.id, client.name);
+  const handleClientSelect = (client: Client) => { 
+    onClientSelect(client.id_cliente.toString(), client.nombre);
     setOpen(false);
     setSearchQuery('');
   };
@@ -46,7 +53,7 @@ const ClientSelectorModal: React.FC<ClientSelectorModalProps> = ({
         {children || (
           <Button variant="outline" className="w-full justify-start text-left h-11">
             <User className="h-4 w-4 mr-2" />
-            {selectedClient ? selectedClient.name : 'Agregar Cliente'}
+            {selectedClient ? selectedClient.nombre : 'Agregar Cliente'}
           </Button>
         )}
       </DialogTrigger>
@@ -70,19 +77,21 @@ const ClientSelectorModal: React.FC<ClientSelectorModalProps> = ({
           </div>
           
           <div className="max-h-80 overflow-y-auto space-y-2">
-            {filteredClients.map(client => (
+            {isLoading && <p className="text-center py-4">Cargando clientes...</p>}
+            {error && <p className="text-center py-4 text-red-500">Error al cargar clientes: {error.message}</p>}
+            {!isLoading && !error && filteredClients.map(client => (
               <div
-                key={client.id}
+                key={client.id_cliente} 
                 className="flex items-center justify-between p-4 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
                 onClick={() => handleClientSelect(client)}
               >
                 <div className="flex-1">
-                  <p className="font-medium text-gray-900">{client.name}</p>
-                  {client.company && (
-                    <p className="text-sm text-gray-500">{client.company}</p>
+                  <p className="font-medium text-gray-900">{client.nombre}</p>
+                  {client.telefono && ( 
+                    <p className="text-sm text-gray-500">{client.telefono}</p>
                   )}
-                  {client.email && (
-                    <p className="text-xs text-gray-400">{client.email}</p>
+                  {client.correo && ( 
+                    <p className="text-xs text-gray-400">{client.correo}</p>
                   )}
                 </div>
                 <div className="text-right">
@@ -91,7 +100,7 @@ const ClientSelectorModal: React.FC<ClientSelectorModalProps> = ({
               </div>
             ))}
             
-            {filteredClients.length === 0 && (
+            {!isLoading && !error && filteredClients.length === 0 && (
               <div className="text-center py-12 text-gray-500">
                 <User className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                 <p className="text-lg font-medium mb-1">No se encontraron clientes</p>

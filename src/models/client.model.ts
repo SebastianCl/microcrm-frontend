@@ -1,10 +1,8 @@
 export interface Client {
-  id: string;
-  name: string;
-  email: string;
-  company: string;
-  phone: string;
-  totalBilled: number;
-  invoiceCount: number;
-  status: 'active' | 'inactive';
+  id_cliente: number;
+  nombre: string;
+  correo: string;
+  telefono: string;
+  estado: boolean;
+  company?: string; // Mantenido como opcional por si se usa en otros contextos
 }

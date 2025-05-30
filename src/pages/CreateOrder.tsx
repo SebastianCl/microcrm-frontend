@@ -21,12 +21,12 @@ import OrderSummaryCard from '@/components/OrderSummaryCard';
 import { Addition } from '@/models/order.model';
 import { User, MapPin, ShoppingCart, X, Plus } from 'lucide-react';
 import { useTables } from '@/hooks/useTables';
+import { useClients } from '@/hooks/useClients';
 
 type FormValues = {
   tableNumber: string;
 };
 
-// Extended OrderItem type to include additions for local state
 type ExtendedOrderItem = OrderItem & { 
   discount?: number; 
   discountType?: string; 
@@ -39,18 +39,6 @@ const DiscountTypes = {
   NONE: 'none'
 };
 
-// Comentado ya que ahora se obtendrá de la API
-// const availableTables = [
-//   { id: 1, name: 'Mesa 1' },
-//   { id: 2, name: 'Mesa 2' },
-//   { id: 3, name: 'Mesa 3' },
-//   { id: 4, name: 'Mesa 4' },
-//   { id: 5, name: 'Mesa 5' },
-//   { id: 6, name: 'Mesa 6' },
-//   { id: 7, name: 'Mesa 7' },
-//   { id: 8, name: 'Mesa 8' },
-// ];
-
 const CreateOrder = () => {
   const navigate = useNavigate();
   const [orderItems, setOrderItems] = useState<ExtendedOrderItem[]>([]);
@@ -59,8 +47,9 @@ const CreateOrder = () => {
   const [orderDiscountType, setOrderDiscountType] = useState<string>(DiscountTypes.NONE);
   const [selectedClientId, setSelectedClientId] = useState<string>('');
   const [selectedClientName, setSelectedClientName] = useState<string>('');
-  const { data: tablesFromAPI, isLoading: isLoadingTables, error: tablesError } = useTables(); // Usar el hook useTables y renombrar la variable
-  
+  const { data: tablesFromAPI, isLoading: isLoadingTables, error: tablesError } = useTables();
+  const { data: clientsFromAPI, isLoading: isLoadingClients, error: clientsError } = useClients();
+
   const form = useForm<FormValues>({
     defaultValues: {
       tableNumber: '',
@@ -181,20 +170,8 @@ const CreateOrder = () => {
     if (selectedClientId) {
       clientName = selectedClientName;
     }
-    
-    // Create new order with the front-end structure
-    const newOrder: Order = {
-      clientId: selectedClientId || 'no-client',
-      clientName: clientName,
-      date: new Date().toISOString().split('T')[0],
-      status: 'pending',
-      items: orderItems,
-      total: getOrderTotal(),
-      // Add the table number if provided
-      tableNumber: values.tableNumber ? parseInt(values.tableNumber) : undefined
-    };
-    
-    // Transform the object to the format required by the backend (POST /api/pedido/)
+
+    // Transformar el objeto al formato requerido por el backend (POST /api/pedido/)
     const backendOrderPayload = {
       id_cliente: Number(selectedClientId.replace('client-', '')) || null,
       id_usuario: 1, // Default value for current user
@@ -289,26 +266,25 @@ const CreateOrder = () => {
                           <div className="flex items-center gap-3">
                             <div className="flex-1 p-3 border rounded-lg bg-green-50 border-green-200 flex items-center gap-2">
                               <User className="h-4 w-4 text-green-600" />
-                              <span className="text-sm font-medium text-green-800">{selectedClientName}</span>
+                              {/* Display selected client name */}
+                              <span className="text-sm font-medium text-green-700">{selectedClientName}</span>
                             </div>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              onClick={clearClient}
-                              className="text-red-600 hover:bg-red-50 border-red-200"
-                            >
+                            {/* Button to clear client selection */}
+                            <Button variant="ghost" size="icon" onClick={clearClient} className="text-gray-500 hover:text-red-500">
                               <X className="h-4 w-4" />
                             </Button>
                           </div>
                         ) : (
-                          <ClientSelectorModal 
+                          <ClientSelectorModal
                             selectedClientId={selectedClientId}
                             onClientSelect={handleClientSelect}
+                            clients={clientsFromAPI} // Pass clients data from API response
+                            isLoading={isLoadingClients} // Pass loading state
+                            error={clientsError} // Pass error state
                           >
-                            <Button type="button" variant="outline" className="w-full justify-start h-11">
-                              <Plus className="h-4 w-4 mr-2" />
-                              Agregar Cliente (Opcional)
+                            {/* Trigger button for the modal */}
+                            <Button variant="outline" className="w-full justify-start text-left font-normal hover:bg-gray-50">
+                              {isLoadingClients ? 'Cargando clientes...' : clientsError ? 'Error al cargar clientes' : 'Seleccionar Cliente'}
                             </Button>
                           </ClientSelectorModal>
                         )}
