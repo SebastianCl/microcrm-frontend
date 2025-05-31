@@ -1,15 +1,17 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
+// Checkbox no se usa, se puede eliminar si no se va a usar más adelante
+// import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, Plus, ShoppingCart, Filter } from 'lucide-react';
-import { SAMPLE_INVENTORY } from '@/components/InventoryList';
+import { Search, Plus, ShoppingCart, Filter, Loader2 } from 'lucide-react';
+// import { SAMPLE_INVENTORY } from '@/components/InventoryList'; // Eliminado
 import { OrderItem, Addition } from '@/models/order.model';
-import { productHasAdditions, getProductAdditions } from '@/lib/sample-additions';
+// import { productHasAdditions, getProductAdditions } from '@/lib/sample-additions'; // Eliminado
+import { useProducts, productHasAdditions, getProductAdditions } from '@/hooks/useProducts'; // Añadido
+import { AppProduct } from '@/models/product.model'; // Añadido
 
 interface QuickProductSelectorProps {
   onAddProduct: (product: OrderItem) => void;
@@ -18,28 +20,42 @@ interface QuickProductSelectorProps {
 const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduct }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProductId, setSelectedProductId] = useState<string>('');
-  const [selectedAdditions, setSelectedAdditions] = useState<Addition[]>([]);
+  const [selectedAdditions, setSelectedAdditions] = useState<Addition[]>([]); // Addition de order.model sigue siendo válido
   const [quantity, setQuantity] = useState(1);
   const [activeCategory, setActiveCategory] = useState<string>('all');
 
-  // Get unique categories from inventory
-  const categories = Array.from(new Set(SAMPLE_INVENTORY.map(product => product.category)));
+  const { data: productsData, isLoading: isLoadingProducts, error: productsError } = useProducts();
 
-  // Filter products based on search and category
-  const filteredProducts = SAMPLE_INVENTORY.filter(product => {
-    const matchesSearch = product.stockQuantity > 0 &&
-      product.name.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesCategory = activeCategory === 'all' || product.category === activeCategory;
-    
-    return matchesSearch && matchesCategory;
-  });
+  // Get unique categories from inventory - Se debe adaptar para usar productsData y manejar el caso de que sea undefined
+  const categories = React.useMemo(() => {
+    if (!productsData) return [];
+    // Asumimos que AppProduct no tiene 'category', si se necesita, se debe añadir a AppProduct o manejar de otra forma
+    // Por ahora, como no hay categorías desde la API, devolvemos un array vacío o una categoría 'all' por defecto.
+    // Si los productos de la API tuvieran una propiedad 'category', se usaría así:
+    // return Array.from(new Set(productsData.map(product => product.category)));
+    return ['all']; // Placeholder, ya que la API no devuelve categorías
+  }, [productsData]);
 
-  const selectedProduct = SAMPLE_INVENTORY.find(p => p.id === selectedProductId);
-  const hasAdditions = selectedProductId ? productHasAdditions(selectedProductId) : false;
-  const availableAdditions = selectedProductId ? getProductAdditions(selectedProductId) : [];
+  // Filter products based on search and category - Adaptar para usar productsData
+  const filteredProducts = React.useMemo(() => {
+    if (!productsData) return [];
+    return productsData.filter(product => {
+      const matchesSearch = product.isActive && // Usar isActive de AppProduct
+        product.name.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      // Si se implementan categorías reales, la lógica de activeCategory se usaría aquí
+      // const matchesCategory = activeCategory === 'all' || product.category === activeCategory;
+      // return matchesSearch && matchesCategory;
+      return matchesSearch; // Por ahora, solo filtra por búsqueda y estado activo
+    });
+  }, [productsData, searchQuery, activeCategory]);
 
-  const toggleAddition = (addition: Addition) => {
+  const selectedProduct = productsData?.find(p => p.id === selectedProductId);
+  // Adaptar llamadas a productHasAdditions y getProductAdditions
+  const hasAdditions = selectedProductId && productsData ? productHasAdditions(selectedProductId, productsData) : false;
+  const availableAdditions = selectedProductId && productsData ? getProductAdditions(selectedProductId, productsData) : [];
+
+  const toggleAddition = (addition: Addition) => { // La 'Addition' aquí es la de order.model, que es compatible con AppAddition
     const isSelected = selectedAdditions.some(item => item.id === addition.id);
     if (isSelected) {
       setSelectedAdditions(selectedAdditions.filter(item => item.id !== addition.id));
@@ -51,12 +67,13 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
   const calculateTotal = () => {
     if (!selectedProduct) return 0;
     const productTotal = selectedProduct.price * quantity;
+    // selectedAdditions usa 'price', que es compatible con AppAddition.price
     const additionsTotal = selectedAdditions.reduce((sum, addition) => sum + addition.price, 0) * quantity;
     return productTotal + additionsTotal;
   };
 
   const handleQuickAdd = (productId: string) => {
-    const product = SAMPLE_INVENTORY.find(p => p.id === productId);
+    const product = productsData?.find(p => p.id === productId);
     if (!product) return;
 
     const orderItem: OrderItem = {
@@ -73,6 +90,7 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
   const handleAddWithOptions = () => {
     if (!selectedProduct) return;
 
+    // selectedAdditions usa 'price'
     const additionsTotal = selectedAdditions.reduce((sum, addition) => sum + addition.price, 0) * quantity;
     const productTotal = selectedProduct.price * quantity;
 
@@ -96,12 +114,16 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
     setQuantity(1);
   };
 
+  // getProductsByCategory necesita adaptarse si se usan categorías reales
   const getProductsByCategory = (category: string) => {
+    if (!productsData) return [];
     if (category === 'all') return filteredProducts;
-    return filteredProducts.filter(product => product.category === category);
+    // return filteredProducts.filter(product => product.category === category); // Si AppProduct tuviera category
+    return filteredProducts; // Placeholder
   };
 
-  const ProductGrid = ({ products }: { products: typeof SAMPLE_INVENTORY }) => (
+  // ProductGrid ahora recibe AppProduct[]
+  const ProductGrid = ({ products }: { products: AppProduct[] }) => (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-80 overflow-y-auto">
       {products.map((product) => (
         <Card 
@@ -113,22 +135,14 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
         >
           <div className="flex justify-between items-start mb-2">
             <div className="flex-1">
-              <h4 className="font-medium text-sm">{product.name}</h4>
-              <p className="text-xs text-muted-foreground">${product.price}</p>
-              <div className="flex gap-1 mt-1">
-                <Badge variant="outline" className="text-xs">
-                  {product.stockQuantity} Disponible
-                </Badge>
-                <Badge variant="secondary" className="text-xs">
-                  {product.category}
-                </Badge>
-              </div>
+              <h4 className="font-medium text-sm">{product.name}</h4> {/* Mostrar nombre del producto */}
+              <p className="text-xs text-muted-foreground">Precio: ${product.price.toFixed(2)}</p> {/* Mostrar precio */}
             </div>
             <Button
               size="sm"
               variant="outline"
               onClick={(e) => {
-                e.stopPropagation();
+                e.stopPropagation(); // Evitar que el click en el botón seleccione la tarjeta
                 handleQuickAdd(product.id);
               }}
               className="h-8 w-8 p-0"
@@ -137,7 +151,8 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
             </Button>
           </div>
           
-          {productHasAdditions(product.id) && (
+          {/* Adaptar llamada a productHasAdditions */}
+          {productsData && productHasAdditions(product.id, productsData) && (
             <Badge variant="secondary" className="text-xs">
               Tiene adiciones
             </Badge>
@@ -151,6 +166,28 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
       )}
     </div>
   );
+
+  if (isLoadingProducts) {
+    return (
+      <div className="flex justify-center items-center h-40">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="ml-2">Cargando productos...</p>
+      </div>
+    );
+  }
+
+  if (productsError) {
+    return (
+      <div className="text-red-500 text-center p-4 border border-red-300 rounded-md">
+        <p>Error al cargar los productos: {productsError.message}</p>
+        <p>Por favor, intente recargar la página o contacte a soporte.</p>
+      </div>
+    );
+  }
+  
+  if (!productsData) {
+    return <div className="text-center p-4">No hay productos disponibles en este momento.</div>;
+  }
 
   return (
     <div className="space-y-4">
@@ -170,17 +207,11 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
         <div className="flex items-center gap-2 mb-4">
           <Filter className="h-4 w-4 text-muted-foreground" />
           <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
-            <TabsTrigger value="all" className="text-xs">
-              Todos ({filteredProducts.length})
-            </TabsTrigger>
-            {categories.map(category => {
-              const categoryProducts = getProductsByCategory(category);
-              return (
-                <TabsTrigger key={category} value={category} className="text-xs">
-                  {category} ({categoryProducts.length})
-                </TabsTrigger>
-              );
-            })}
+            {/* Renderizar TabsTrigger dinámicamente si hay categorías */}
+            <TabsTrigger value="all">Todos</TabsTrigger>
+            {/* {categories.map(category => (
+              category !== 'all' && <TabsTrigger key={category} value={category}>{category}</TabsTrigger>
+            ))} */}
           </TabsList>
         </div>
 
@@ -189,12 +220,14 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
           <ProductGrid products={filteredProducts} />
         </TabsContent>
 
-        {/* Category-specific Tabs */}
-        {categories.map(category => (
-          <TabsContent key={category} value={category} className="mt-0">
-            <ProductGrid products={getProductsByCategory(category)} />
-          </TabsContent>
-        ))}
+        {/* Category-specific Tabs - Adaptar si hay categorías */}
+        {/* {categories.map(category => (
+          category !== 'all' && (
+            <TabsContent key={category} value={category} className="mt-0">
+              <ProductGrid products={getProductsByCategory(category)} />
+            </TabsContent>
+          )
+        ))} */}
       </Tabs>
 
       {/* Selected Product Configuration */}
@@ -202,77 +235,58 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
         <Card className="p-4 border-primary">
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <div>
-                <h3 className="font-semibold">{selectedProduct.name}</h3>
-                <Badge variant="outline" className="text-xs mt-1">
-                  {selectedProduct.category}
-                </Badge>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedProductId('')}
-              >
-                ×
+              <h3 className="text-lg font-semibold">{selectedProduct.name}</h3> {/* Mostrar nombre */}
+              <Button variant="ghost" size="sm" onClick={() => { setSelectedProductId(''); setSelectedAdditions([]); setQuantity(1); }}>
+                Limpiar
               </Button>
             </div>
 
-            {/* Quantity */}
+            {/* Quantity Selector */}
             <div className="flex items-center space-x-2">
-              <label className="text-sm font-medium">Cantidad:</label>
-              <div className="flex items-center space-x-1">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="h-8 w-8 p-0"
-                >
-                  -
-                </Button>
-                <span className="w-8 text-center text-sm">{quantity}</span>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setQuantity(Math.min(selectedProduct.stockQuantity, quantity + 1))}
-                  className="h-8 w-8 p-0"
-                >
-                  +
-                </Button>
-              </div>
+              <label htmlFor="quantity" className="text-sm font-medium">Cantidad:</label>
+              <Input
+                type="number"
+                id="quantity"
+                value={quantity}
+                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                className="w-20"
+                min="1"
+              />
             </div>
 
-            {/* Additions */}
-            {hasAdditions && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Adiciones:</label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {availableAdditions.map(addition => (
-                    <div key={addition.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`quick-addition-${addition.id}`}
-                        checked={selectedAdditions.some(item => item.id === addition.id)}
-                        onCheckedChange={() => toggleAddition(addition)}
-                      />
-                      <label 
-                        htmlFor={`quick-addition-${addition.id}`} 
-                        className="text-sm flex-1 cursor-pointer"
+            {/* Additions Selector (if any) */}
+            {hasAdditions && availableAdditions.length > 0 && (
+              <div>
+                <h4 className="text-sm font-medium mb-2">Adiciones Disponibles:</h4>
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {availableAdditions.map((addition) => (
+                    <div key={addition.id} className="flex items-center justify-between p-2 border rounded-md">
+                      <div>
+                        <span className="text-sm">{addition.name}</span>
+                        <span className="text-xs text-muted-foreground ml-2">(+${addition.price.toFixed(2)})</span>
+                      </div>
+                      <Button 
+                        size="sm" 
+                        variant={selectedAdditions.some(a => a.id === addition.id) ? "default" : "outline"}
+                        onClick={() => toggleAddition(addition as unknown as Addition)} // Casting necesario si AppAddition y Addition (order.model) difieren estructuralmente más allá de los nombres de campo
                       >
-                        {addition.name} (+${addition.price})
-                      </label>
+                        {selectedAdditions.some(a => a.id === addition.id) ? "Seleccionado" : "Agregar"}
+                      </Button>
                     </div>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Total and Add Button */}
+            {/* Total Price & Add Button */}
             <div className="flex justify-between items-center pt-2 border-t">
-              <div className="text-sm">
-                <span className="font-medium">Total: ${calculateTotal()}</span>
+              <div>
+                <span className="text-sm">Total:</span>
+                <span className="font-bold text-lg ml-2">${calculateTotal().toFixed(2)}</span>
               </div>
-              <Button onClick={handleAddWithOptions} className="flex items-center space-x-1">
-                <ShoppingCart className="h-4 w-4" />
-                <span>Agregar</span>
+              <Button onClick={handleAddWithOptions} disabled={quantity <= 0}>
+                <ShoppingCart className="mr-2 h-4 w-4" />
+                Agregar a la Orden
               </Button>
             </div>
           </div>
