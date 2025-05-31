@@ -1,4 +1,3 @@
-
 export interface Order {
   id: string;
   clientId: string;
@@ -23,4 +22,5 @@ export interface Addition {
   id: string;
   name: string;
   price: number;
+  quantity: number; // Añadido para la cantidad de la adición
 }

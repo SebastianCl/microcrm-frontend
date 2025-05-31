@@ -11,7 +11,7 @@ import { Search, Plus, ShoppingCart, Filter, Loader2 } from 'lucide-react';
 import { OrderItem, Addition } from '@/models/order.model';
 // import { productHasAdditions, getProductAdditions } from '@/lib/sample-additions'; // Eliminado
 import { useProducts, productHasAdditions, getProductAdditions } from '@/hooks/useProducts'; // Añadido
-import { AppProduct } from '@/models/product.model'; // Añadido
+import { AppProduct, AppAddition as AppAdditionFromProduct } from '@/models/product.model'; // Renombrar AppAddition para evitar conflicto
 
 interface QuickProductSelectorProps {
   onAddProduct: (product: OrderItem) => void;
@@ -20,7 +20,7 @@ interface QuickProductSelectorProps {
 const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduct }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProductId, setSelectedProductId] = useState<string>('');
-  const [selectedAdditions, setSelectedAdditions] = useState<Addition[]>([]); // Addition de order.model sigue siendo válido
+  const [selectedAdditions, setSelectedAdditions] = useState<Addition[]>([]); // Addition de order.model ahora incluye cantidad
   const [quantity, setQuantity] = useState(1);
   const [activeCategory, setActiveCategory] = useState<string>('all');
 
@@ -55,21 +55,38 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
   const hasAdditions = selectedProductId && productsData ? productHasAdditions(selectedProductId, productsData) : false;
   const availableAdditions = selectedProductId && productsData ? getProductAdditions(selectedProductId, productsData) : [];
 
-  const toggleAddition = (addition: Addition) => { // La 'Addition' aquí es la de order.model, que es compatible con AppAddition
-    const isSelected = selectedAdditions.some(item => item.id === addition.id);
-    if (isSelected) {
-      setSelectedAdditions(selectedAdditions.filter(item => item.id !== addition.id));
+  const handleAdditionQuantityChange = (additionId: string, newQuantity: number) => {
+    const updatedAdditions = selectedAdditions.map(add => {
+      if (add.id === additionId) {
+        return { ...add, quantity: Math.max(1, newQuantity) }; // Asegurar cantidad positiva
+      }
+      return add;
+    });
+    setSelectedAdditions(updatedAdditions);
+  };
+
+  const toggleAddition = (productAddition: AppAdditionFromProduct) => {
+    const existingAddition = selectedAdditions.find(item => item.id === productAddition.id);
+    if (existingAddition) {
+      // Si ya existe, la eliminamos (el botón actuará como un toggle)
+      setSelectedAdditions(selectedAdditions.filter(item => item.id !== productAddition.id));
     } else {
-      setSelectedAdditions([...selectedAdditions, addition]);
+      // Si no existe, la agregamos con cantidad 1 por defecto
+      setSelectedAdditions([...selectedAdditions, { 
+        id: productAddition.id, 
+        name: productAddition.name, 
+        price: productAddition.price, 
+        quantity: 1 
+      }]);
     }
   };
 
   const calculateTotal = () => {
     if (!selectedProduct) return 0;
     const productTotal = selectedProduct.price * quantity;
-    // selectedAdditions usa 'price', que es compatible con AppAddition.price
-    const additionsTotal = selectedAdditions.reduce((sum, addition) => sum + addition.price, 0) * quantity;
-    return productTotal + additionsTotal;
+    // Corregido: selectedAdditions es un array de Addition (de order.model), que ya tiene price y quantity
+    const additionsSubTotal = selectedAdditions.reduce((sum, addition) => sum + (addition.price * addition.quantity), 0);
+    return productTotal + (additionsSubTotal * quantity); // El subtotal de adiciones se multiplica por la cantidad del producto principal
   };
 
   const handleQuickAdd = (productId: string) => {
@@ -79,9 +96,9 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
     const orderItem: OrderItem = {
       productId: product.id,
       name: product.name,
-      quantity: 1,
+      quantity: 1, // Cantidad base del producto
       price: product.price,
-      total: product.price
+      total: product.price // El total inicial es solo el precio del producto
     };
 
     onAddProduct(orderItem);
@@ -90,21 +107,19 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
   const handleAddWithOptions = () => {
     if (!selectedProduct) return;
 
-    // selectedAdditions usa 'price'
-    const additionsTotal = selectedAdditions.reduce((sum, addition) => sum + addition.price, 0) * quantity;
-    const productTotal = selectedProduct.price * quantity;
+    // El precio base del producto ya está en selectedProduct.price
+    // Las adiciones se manejan por separado y su costo se suma al total del OrderItem
+    const baseProductTotal = selectedProduct.price * quantity;
+    const additionsTotalForOrderItem = selectedAdditions.reduce((sum, addition) => sum + (addition.price * addition.quantity), 0);
 
     const orderItem: OrderItem = {
       productId: selectedProduct.id,
       name: selectedProduct.name,
       quantity: quantity,
-      price: selectedProduct.price,
-      total: productTotal + additionsTotal
+      price: selectedProduct.price, // Precio unitario del producto base
+      total: baseProductTotal + additionsTotalForOrderItem, // Total para esta cantidad de producto, incluyendo sus adiciones
+      additions: selectedAdditions.length > 0 ? selectedAdditions : undefined
     };
-
-    if (selectedAdditions.length > 0) {
-      orderItem.additions = selectedAdditions;
-    }
 
     onAddProduct(orderItem);
     
@@ -258,22 +273,37 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
             {hasAdditions && availableAdditions.length > 0 && (
               <div>
                 <h4 className="text-sm font-medium mb-2">Adiciones Disponibles:</h4>
-                <div className="space-y-2 max-h-32 overflow-y-auto">
-                  {availableAdditions.map((addition) => (
-                    <div key={addition.id} className="flex items-center justify-between p-2 border rounded-md">
-                      <div>
-                        <span className="text-sm">{addition.name}</span>
-                        <span className="text-xs text-muted-foreground ml-2">(+${addition.price.toFixed(2)})</span>
+                <div className="space-y-2 max-h-40 overflow-y-auto pr-2">
+                  {availableAdditions.map((productAddition) => {
+                    const currentSelectedAddition = selectedAdditions.find(sa => sa.id === productAddition.id);
+                    return (
+                      <div key={productAddition.id} className="flex items-center justify-between p-2 border rounded-md">
+                        <div>
+                          <span className="text-sm">{productAddition.name}</span>
+                          <span className="text-xs text-muted-foreground ml-2">(+${productAddition.price.toFixed(2)})</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {currentSelectedAddition && (
+                            <Input
+                              type="number"
+                              value={currentSelectedAddition.quantity}
+                              onChange={(e) => handleAdditionQuantityChange(productAddition.id, parseInt(e.target.value) || 1)}
+                              className="w-16 h-8 text-sm"
+                              min="1"
+                            />
+                          )}
+                          <Button 
+                            size="sm" 
+                            variant={currentSelectedAddition ? "default" : "outline"}
+                            onClick={() => toggleAddition(productAddition)}
+                            className="h-8"
+                          >
+                            {currentSelectedAddition ? "Quitar" : "Agregar"}
+                          </Button>
+                        </div>
                       </div>
-                      <Button 
-                        size="sm" 
-                        variant={selectedAdditions.some(a => a.id === addition.id) ? "default" : "outline"}
-                        onClick={() => toggleAddition(addition as unknown as Addition)} // Casting necesario si AppAddition y Addition (order.model) difieren estructuralmente más allá de los nombres de campo
-                      >
-                        {selectedAdditions.some(a => a.id === addition.id) ? "Seleccionado" : "Agregar"}
-                      </Button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}

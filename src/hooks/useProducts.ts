@@ -17,6 +17,7 @@ const transformProductData = (apiProducts: ApiProduct[]): AppProduct[] => {
             name: a.nombre,
             price: a.precio_extra,
             isActive: a.estado,
+            // quantity: 1 // Cantidad por defecto para AppAddition si fuera necesario aquí
         })),
         // category: 'default' // Se puede asignar una categoría por defecto o manejarla de otra forma si es necesario
     }));
@@ -40,5 +41,6 @@ export const productHasAdditions = (productId: string, products: AppProduct[]): 
 
 export const getProductAdditions = (productId: string, products: AppProduct[]): AppAddition[] => {
     const product = products.find(p => p.id === productId);
-    return product ? product.additions.filter(a => a.isActive) : [];
+    // Asegurarse de que las adiciones devueltas incluyan la cantidad si se define en AppAddition
+    return product ? product.additions.filter(a => a.isActive).map(a => ({ ...a /*, quantity: a.quantity || 1 */ })) : [];
 };
