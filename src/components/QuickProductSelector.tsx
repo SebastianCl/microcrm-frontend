@@ -152,8 +152,8 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
             <div className="flex-1">
               <h4 className="font-medium text-sm">{product.name}</h4> {/* Mostrar nombre del producto */}
               <p className="text-xs text-muted-foreground">Precio: ${product.price.toFixed(2)}</p> {/* Mostrar precio */}
-            </div>
-            <Button
+            </div>            <Button
+              type="button"
               size="sm"
               variant="outline"
               onClick={(e) => {
@@ -291,8 +291,8 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
                               className="w-16 h-8 text-sm"
                               min="1"
                             />
-                          )}
-                          <Button 
+                          )}                          <Button 
+                            type="button"
                             size="sm" 
                             variant={currentSelectedAddition ? "default" : "outline"}
                             onClick={() => toggleAddition(productAddition)}
@@ -313,8 +313,7 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
               <div>
                 <span className="text-sm">Total:</span>
                 <span className="font-bold text-lg ml-2">${calculateTotal().toFixed(2)}</span>
-              </div>
-              <Button onClick={handleAddWithOptions} disabled={quantity <= 0}>
+              </div>              <Button type="button" onClick={handleAddWithOptions} disabled={quantity <= 0}>
                 <ShoppingCart className="mr-2 h-4 w-4" />
                 Agregar a la Orden
               </Button>
