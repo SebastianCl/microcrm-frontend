@@ -110,7 +110,7 @@ const OrderDetail = () => {
           <ChevronLeft className="h-4 w-4 mr-1" />
           Volver
         </Button>
-        <h1 className="text-3xl font-bold">Pedido #{order.id}</h1>
+        <h1 className="text-3xl font-bold">Pedido #{order.id_pedido}</h1>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -224,7 +224,7 @@ const OrderDetail = () => {
               <Button className="w-full" variant="outline">
                 Enviar a email
               </Button>
-              <Link to={`/orders/${order.id}/edit`}>
+              <Link to={`/orders/${order.id_pedido}/edit`}>
                 <Button className="w-full">
                   Editar orden
                 </Button>

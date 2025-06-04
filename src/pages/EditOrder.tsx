@@ -128,7 +128,7 @@ const EditOrder = () => {
           Volver
         </Button>
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-          Editar orden #{order.id}
+          Editar orden #{order.id_pedido}
         </h1>
       </div>
 

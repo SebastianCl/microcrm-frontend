@@ -16,94 +16,109 @@ interface OrderCardProps {
 
 const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
   const navigate = useNavigate();
-  const updateStatus = useUpdateOrderStatus(order.id);
+  const updateStatus = useUpdateOrderStatus(order.id_pedido);
   const [showCancelDialog, setShowCancelDialog] = React.useState(false);
 
-  const getStatusBadge = (status: 'pending' | 'processed' | 'canceled' | 'completed') => {
+  const getStatusBadge = (status: 'Pendiente' | 'Preparando' | 'Cancelado' | 'Entregado' | 'Finalizado') => {
     switch (status) {
-      case 'completed':
-        return (
-          <Badge className="bg-green-100 text-green-800 hover:bg-green-200 flex items-center gap-1">
-            <Check className="h-3 w-3" />
-            <span>Completada</span>
-          </Badge>
-        );
-      case 'pending':
+      case 'Pendiente':
         return (
           <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 flex items-center gap-1">
             <Clock className="h-3 w-3" />
             <span>Pendiente</span>
           </Badge>
         );
-      case 'processed':
+      case 'Preparando':
         return (
           <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 flex items-center gap-1">
             <Loader className="h-3 w-3" />
-            <span>Procesando</span>
+            <span>Preparando</span>
           </Badge>
-        );
-      case 'canceled':
+        );      case 'Cancelado':
         return (
           <Badge className="bg-red-100 text-red-800 hover:bg-red-200 flex items-center gap-1">
             <X className="h-3 w-3" />
-            <span>Cancelada</span>
+            <span>Cancelado</span>
+          </Badge>
+        );
+      case 'Entregado':
+        return (
+          <Badge className="bg-red-100 text-red-800 hover:bg-red-200 flex items-center gap-1">
+            <X className="h-3 w-3" />
+            <span>Entregado</span>
+          </Badge>
+        );
+      case 'Finalizado':
+        return (
+          <Badge className="bg-red-100 text-red-800 hover:bg-red-200 flex items-center gap-1">
+            <X className="h-3 w-3" />
+            <span>Finalizado</span>
           </Badge>
         );
     }
   };
 
   const getOrderTypeBadge = () => {
-    if (order.tableNumber) {
-      return (
-        <Badge variant="outline" className="flex items-center gap-1 font-medium">
-          <UtensilsCrossed className="h-3 w-3" />
-          <span>Mesa {order.tableNumber}</span>
-        </Badge>
-      );
-    } else {
+    if (order.nombre_mesa === 'Para llevar') {
       return (
         <Badge variant="outline" className="flex items-center gap-1 font-medium">
           <ShoppingBag className="h-3 w-3" />
           <span>Para Llevar</span>
         </Badge>
       );
+    } else {
+      return (
+        <Badge variant="outline" className="flex items-center gap-1 font-medium">
+          <UtensilsCrossed className="h-3 w-3" />
+          <span>{order.nombre_mesa}</span>
+        </Badge>
+      );
     }
-  };
-
-  const getNextStatus = (currentStatus: string) => {
+  };  const getNextStatus = (currentStatus: string) => {
     switch (currentStatus) {
-      case 'pending': return 'processed';
-      case 'processed': return 'completed';
+      case 'Pendiente': return 'Preparando';    // 1 -> 2
+      case 'Preparando': return 'Entregado';    // 2 -> 3  
+      case 'Entregado': return 'Finalizado';    // 3 -> 5
       default: return null;
     }
   };
 
   const getNextStatusLabel = (currentStatus: string) => {
     switch (currentStatus) {
-      case 'pending': return 'Procesar';
-      case 'processed': return 'Completar';
+      case 'Pendiente': return 'Iniciar Preparación';
+      case 'Preparando': return 'Marcar como Entregado';
+      case 'Entregado': return 'Finalizar';
       default: return null;
     }
   };
-
   const handleNextStatus = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const nextStatus = getNextStatus(order.status);
+    const nextStatus = getNextStatus(order.estado);
     if (!nextStatus) return;
 
+    // Mapear estados en español a IDs de estado que espera el backend
+    const statusIdMap: Record<string, number> = {
+      'Pendiente': 1,     // Pendiente
+      'Preparando': 2,    // Preparando  
+      'Entregado': 3,     // Entregado
+      'Finalizado': 5,    // Finalizado
+      'Cancelado': 4      // Cancelado
+    };
+
+    const estadoId = statusIdMap[nextStatus];
+    if (!estadoId) return;
+
     try {
-      await updateStatus.mutateAsync(nextStatus as 'pending' | 'processed' | 'canceled' | 'completed');
-      toast.success(`Estado de orden ${order.id} actualizado`);
+      await updateStatus.mutateAsync(estadoId);
+      toast.success(`Estado de orden ${order.id_pedido} actualizado`);
     } catch (error) {
       toast.error('Error al actualizar el estado');
       console.error('Error updating status:', error);
     }
-  };
-
-  const handleCancel = async () => {
+  };  const handleCancel = async () => {
     try {
-      await updateStatus.mutateAsync('canceled');
-      toast.success(`Orden ${order.id} cancelada`);
+      await updateStatus.mutateAsync(4); // ID 4 = Cancelado
+      toast.success(`Orden ${order.id_pedido} cancelada`);
       setShowCancelDialog(false);
     } catch (error) {
       toast.error('Error al cancelar la orden');
@@ -111,39 +126,39 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
     }
   };
 
-  const nextStatus = getNextStatus(order.status);
-  const nextStatusLabel = getNextStatusLabel(order.status);
+  const nextStatus = getNextStatus(order.estado);
+  const nextStatusLabel = getNextStatusLabel(order.estado);
 
   return (
     <>
-      <Card 
+      <Card
         className="cursor-pointer hover:shadow-md transition-shadow duration-200 p-4"
-        onClick={() => navigate(`/orders/${order.id}`)}
+        onClick={() => navigate(`/orders/${order.id_pedido}`)}
       >
         <CardContent className="p-0">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             {/* Order Info */}
             <div className="flex-1 space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                <h3 className="font-semibold text-lg">#{order.id}</h3>
+                <h3 className="font-semibold text-lg">#{order.id_pedido}</h3>
                 <div className="flex gap-2">
-                  {getStatusBadge(order.status)}
+                  {getStatusBadge(order.estado)}
                   {getOrderTypeBadge()}
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-muted-foreground">
                 <div>
-                  <span className="font-medium">Cliente:</span> {order.clientName}
+                  <span className="font-medium">Cliente:</span> {order.nombre_cliente}
                 </div>
-                <div>
+                {/* <div>
                   <span className="font-medium">Items:</span> {order.items.length} producto{order.items.length !== 1 ? 's' : ''}
-                </div>
+                </div> */}
               </div>
-              
-              <div className="text-lg font-bold text-primary">
+
+              {/* <div className="text-lg font-bold text-primary">
                 ${order.total.toFixed(2)}
-              </div>
+              </div> */}
             </div>
 
             {/* Action Buttons */}
@@ -160,8 +175,8 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
                   {nextStatusLabel}
                 </Button>
               )}
-              
-              {order.status !== 'canceled' && order.status !== 'completed' && (
+
+              {order.estado !== 'Cancelado' && order.estado !== 'Finalizado' && (
                 <Button
                   variant="outline"
                   size="sm"

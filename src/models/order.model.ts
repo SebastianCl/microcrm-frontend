@@ -1,12 +1,10 @@
 export interface Order {
-  id: string;
-  clientId: string;
-  clientName: string;
-  date: string;
-  status: 'pending' | 'processed' | 'canceled' | 'completed';
-  items: OrderItem[];
-  total: number;
-  tableNumber?: number; // Optional table number
+  id_pedido: string;
+  fecha: string;
+  tipo_pedido: string;
+  estado: "Pendiente" | "Cancelado" | "Preparando" | "Entregado" | "Finalizado";
+  nombre_mesa?: string;
+  nombre_cliente: string;
 }
 
 export interface OrderItem {

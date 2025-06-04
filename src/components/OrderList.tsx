@@ -59,22 +59,22 @@ const OrderList: React.FC<OrderListProps> = ({
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter(order => 
-        order.id.toLowerCase().includes(query) ||
-        (order.clientName && order.clientName.toLowerCase().includes(query))
+        order.id_pedido.toLowerCase().includes(query) ||
+        (order.nombre_cliente && order.nombre_cliente.toLowerCase().includes(query))
       );
     }
 
     // Aplicar filtro de estado
     if (activeFilters.status) {
-      result = result.filter(order => order.status === activeFilters.status);
+      result = result.filter(order => order.estado === activeFilters.status);
     }
 
     // Aplicar filtro de tipo de pedido
     if (activeFilters.orderType) {
       if (activeFilters.orderType === 'dine-in') {
-        result = result.filter(order => order.tableNumber);
+        result = result.filter(order => order.nombre_mesa);
       } else if (activeFilters.orderType === 'takeout') {
-        result = result.filter(order => !order.tableNumber);
+        result = result.filter(order => !order.nombre_mesa);
       }
     }
 
@@ -82,9 +82,9 @@ const OrderList: React.FC<OrderListProps> = ({
     if (activeFilters._sort) {
       result.sort((a, b) => {
         if (activeFilters._sort === 'asc') {
-          return a.id > b.id ? 1 : -1;
+          return a.id_pedido > b.id_pedido ? 1 : -1;
         } else {
-          return a.id < b.id ? 1 : -1;
+          return a.id_pedido < b.id_pedido ? 1 : -1;
         }
       });
     }
@@ -231,7 +231,7 @@ const OrderList: React.FC<OrderListProps> = ({
             </div>
           ) : (
             displayOrders.map((order) => (
-              <OrderCard key={order.id} order={order} />
+              <OrderCard key={order.id_pedido} order={order} />
             ))
           )}
         </div>

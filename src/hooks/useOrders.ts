@@ -70,8 +70,8 @@ export const useUpdateOrderStatus = (id: string) => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (status: 'pending' | 'processed' | 'canceled' | 'completed') => 
-      orderService.updateStatus(id, status),
+    mutationFn: (estadoId: number) => 
+      orderService.updateStatus(id, estadoId),
     onSuccess: (updatedOrder) => {
       // Actualizar la orden en la caché
       queryClient.setQueryData(ORDER_QUERY_KEYS.ORDER(id), updatedOrder);
