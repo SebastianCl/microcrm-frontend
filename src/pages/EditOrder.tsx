@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { useOrder, useUpdateOrder } from '@/hooks/useOrders';
+import { useOrderDetail, useUpdateOrderWithItems } from '@/hooks/useOrders';
 import { OrderItem } from '@/models/order.model';
 import { toast } from "sonner";
 import { Separator } from '@/components/ui/separator';
@@ -14,20 +14,31 @@ import OrderItemRow from '@/components/OrderItemRow';
 const EditOrder = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-
-  const { data: order, isLoading, error } = useOrder(id!, {
+  const { data: orderData, isLoading, error } = useOrderDetail(id!, {
     enabled: Boolean(id),
   });
 
-  const updateOrder = useUpdateOrder(id!);
+  const updateOrder = useUpdateOrderWithItems(id!);
   
   const [orderItems, setOrderItems] = useState<(OrderItem & { discount?: number; discountType?: string })[]>([]);
 
   useEffect(() => {
-    if (order?.items) {
-      setOrderItems(order.items);
+    if (orderData?.items) {
+      // Transformar los items del detalle al formato esperado por el componente
+      const transformedItems = orderData.items.map(item => ({
+        id_detalle_pedido: item.id_detalle_pedido,
+        productId: item.productId,
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price,
+        total: item.total + (item.additions?.reduce((sum, add) => sum + (add.price * add.quantity), 0) || 0),
+        discount: item.discount || 0,
+        discountType: 'none',
+        additions: item.additions || [],
+      }));
+      setOrderItems(transformedItems);
     }
-  }, [order]);
+  }, [orderData]);
 
   const handleAddProduct = (product: OrderItem) => {
     // Check if product already exists in order
@@ -69,7 +80,6 @@ const EditOrder = () => {
   const calculateTotal = () => {
     return orderItems.reduce((sum, item) => sum + item.total, 0);
   };
-
   const handleSaveOrder = async () => {
     if (orderItems.length === 0) {
       toast.error('Error: No hay productos');
@@ -78,7 +88,16 @@ const EditOrder = () => {
 
     try {
       await updateOrder.mutateAsync({
-        items: orderItems,
+        items: orderItems.map(item => ({
+          id_detalle_pedido: item.id_detalle_pedido,
+          productId: item.productId,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          total: item.total,
+          discount: item.discount,
+          additions: item.additions,
+        })),
         total: calculateTotal()
       });
       
@@ -97,8 +116,7 @@ const EditOrder = () => {
       </div>
     );
   }
-
-  if (error || !order) {
+  if (error || !orderData) {
     return (
       <div className="text-center py-8">
         <h2 className="text-2xl font-bold text-destructive">
@@ -115,6 +133,8 @@ const EditOrder = () => {
     );
   }
 
+  const order = orderData.order;
+
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       <div className="flex items-center space-x-2">
@@ -126,28 +146,32 @@ const EditOrder = () => {
         >
           <ChevronLeft className="h-4 w-4 mr-1" />
           Volver
-        </Button>
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+        </Button>        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
           Editar orden #{order.id_pedido}
         </h1>
       </div>
 
       <Card className="p-4 md:p-6">
         <div className="space-y-6">
-          {/* Order Info */}
-          <div className="grid md:grid-cols-3 gap-4 p-4 bg-muted/30 rounded-lg">
+          {/* Order Info */}          <div className="grid md:grid-cols-3 gap-4 p-4 bg-muted/30 rounded-lg">
             <div>
               <h4 className="font-medium">Cliente</h4>
-              <p className="text-muted-foreground">{order.clientName}</p>
+              <p className="text-muted-foreground">{order.nombre_cliente}</p>
             </div>
             <div>
-              <h4 className="font-medium">Fecha</h4>
-              <p className="text-muted-foreground">{order.date}</p>
+              <h4 className="font-medium">Estado</h4>
+              <p className="text-muted-foreground">{order.estado}</p>
             </div>
-            {order.tableNumber && (
+            {order.nombre_mesa && order.nombre_mesa !== 'Para llevar' && (
               <div>
                 <h4 className="font-medium">Mesa</h4>
-                <p className="text-muted-foreground">Mesa #{order.tableNumber}</p>
+                <p className="text-muted-foreground">{order.nombre_mesa}</p>
+              </div>
+            )}
+            {order.nombre_mesa === 'Para llevar' && (
+              <div>
+                <h4 className="font-medium">Tipo</h4>
+                <p className="text-muted-foreground">Para llevar</p>
               </div>
             )}
           </div>

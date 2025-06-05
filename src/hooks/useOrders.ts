@@ -32,6 +32,18 @@ export const useOrder = (id: string, options = {}) => {
 };
 
 /**
+ * Hook para obtener el detalle completo de una orden por su ID
+ */
+export const useOrderDetail = (id: string, options = {}) => {
+  return useQuery({
+    queryKey: [...ORDER_QUERY_KEYS.ORDER(id), 'detail'],
+    queryFn: () => orderService.getOrderDetail(id),
+    enabled: Boolean(id), // Solo realizar la consulta si hay un ID
+    ...options,
+  });
+};
+
+/**
  * Hook para crear una nueva orden
  */
 export const useCreateOrder = () => {
@@ -59,6 +71,41 @@ export const useUpdateOrder = (id: string) => {
       queryClient.setQueryData(ORDER_QUERY_KEYS.ORDER(id), updatedOrder);
       // Invalidar la lista de pedidos
       queryClient.invalidateQueries({ queryKey: [ORDER_QUERY_KEYS.ORDERS] });
+    },
+  });
+};
+
+/**
+ * Hook para actualizar una orden con sus items
+ */
+export const useUpdateOrderWithItems = (id: string) => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (data: {
+      items: Array<{
+        id_detalle_pedido?: number;
+        productId: string;
+        name: string;
+        quantity: number;
+        price: number;
+        total: number;
+        discount?: number;
+        additions?: Array<{
+          id: string;
+          name: string;
+          price: number;
+          quantity: number;
+        }>;
+      }>;
+      total: number;
+    }) => orderService.updateOrderWithItems(id, data),
+    onSuccess: (updatedOrder) => {
+      // Actualizar la orden en la caché
+      queryClient.setQueryData(ORDER_QUERY_KEYS.ORDER(id), updatedOrder);
+      // Invalidar las consultas relacionadas
+      queryClient.invalidateQueries({ queryKey: [ORDER_QUERY_KEYS.ORDERS] });
+      queryClient.invalidateQueries({ queryKey: [...ORDER_QUERY_KEYS.ORDER(id), 'detail'] });
     },
   });
 };

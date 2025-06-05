@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useOrder, useUpdateOrderStatus } from '@/hooks/useOrders';
+import { useOrderDetail, useUpdateOrderStatus } from '@/hooks/useOrders';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -27,19 +27,27 @@ const OrderDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   
-  const { data: order, isLoading, error } = useOrder(id!, {
+  const { data: orderData, isLoading, error } = useOrderDetail(id!, {
     enabled: Boolean(id),
   });
   
   const updateOrderStatus = useUpdateOrderStatus(id!);
-  
-  const handleStatusChange = (newStatus: 'pending' | 'processed' | 'canceled' | 'completed') => {
-    updateOrderStatus.mutate(newStatus, {
+    const handleStatusChange = (newStatus: 'Pendiente' | 'Preparando' | 'Cancelado' | 'Entregado' | 'Finalizado') => {
+    // Mapear los estados del frontend a los valores que espera la API
+    const statusMap = {
+      'Pendiente': 1,
+      'Preparando': 2, 
+      'Entregado': 3,
+      'Cancelado': 4,
+      'Finalizado': 5
+    };
+    
+    updateOrderStatus.mutate(statusMap[newStatus], {
       onSuccess: () => {
-        toast.success(t('order_status_updated'));
+        toast.success('Estado del pedido actualizado');
       },
       onError: () => {
-        toast.error(t('error_updating_order'));
+        toast.error('Error actualizando el estado del pedido');
       }
     });
   };
@@ -51,8 +59,7 @@ const OrderDetail = () => {
       </div>
     );
   }
-  
-  if (error || !order) {
+    if (error || !orderData) {
     return (
       <div className="text-center py-8">
         <h2 className="text-2xl font-bold text-destructive">
@@ -72,19 +79,23 @@ const OrderDetail = () => {
     );
   }
 
+  const order = orderData.order;
+  const orderItems = orderData.items;
   // Helper function to get status icon
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'pending':
+      case 'Pendiente':
         return <Clock className="h-5 w-5 text-yellow-500" />;
-      case 'processed':
+      case 'Preparando':
         return <RefreshCw className="h-5 w-5 text-blue-500" />;
-      case 'completed':
+      case 'Entregado':
         return <CheckCircle2 className="h-5 w-5 text-green-500" />;
-      case 'canceled':
+      case 'Cancelado':
         return <Ban className="h-5 w-5 text-red-500" />;
+      case 'Finalizado':
+        return <CheckCircle2 className="h-5 w-5 text-green-600" />;
       default:
-        return null;
+        return <Clock className="h-5 w-5 text-gray-500" />;
     }
   };
   
@@ -114,32 +125,38 @@ const OrderDetail = () => {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="md:col-span-2 p-6">
-          <div className="flex justify-between items-start">
+        <Card className="md:col-span-2 p-6">          <div className="flex justify-between items-start">
             <div>
               <h2 className="text-xl font-semibold">Detalle de la orden</h2>
-              <p className="text-muted-foreground">{formatDate(order.date)}</p>
-            </div>
-            <div className="flex items-center space-x-2">
-              {getStatusIcon(order.status)}
+              <p className="text-muted-foreground">
+                {order.fecha ? formatDate(order.fecha) : 'Fecha no disponible'}
+              </p>
+            </div><div className="flex items-center space-x-2">
+              {getStatusIcon(order.estado)}
               <span className="capitalize font-medium">
-                {t(`status_${order.status}`)}
+                {order.estado}
               </span>
             </div>
           </div>
           
           <Separator className="my-4" />
-          
-          <div className="space-y-4">
+            <div className="space-y-4">
             <div>
               <h3 className="font-medium">Cliente</h3>
-              <p>{order.clientName}</p>
+              <p>{order.nombre_cliente}</p>
             </div>
             
-            {order.tableNumber && (
+            {order.nombre_mesa && order.nombre_mesa !== 'Para llevar' && (
               <div>
                 <h3 className="font-medium">Mesa</h3>
-                <p>Mesa #{order.tableNumber}</p>
+                <p>{order.nombre_mesa}</p>
+              </div>
+            )}
+
+            {order.nombre_mesa === 'Para llevar' && (
+              <div>
+                <h3 className="font-medium">Tipo</h3>
+                <p>Para llevar</p>
               </div>
             )}
             
@@ -157,13 +174,13 @@ const OrderDetail = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {order.items.map((item, index) => (
+                      {orderItems.map((item, index) => (
                         <React.Fragment key={`${item.productId}-${index}`}>
                           <tr className="border-t">
                             <td className="p-2 px-4">{item.name}</td>
                             <td className="text-center p-2">{item.quantity}</td>
-                            <td className="text-right p-2 px-4">${item.price}</td>
-                            <td className="text-right p-2 px-4">${item.total}</td>
+                            <td className="text-right p-2 px-4">${item.price.toLocaleString()}</td>
+                            <td className="text-right p-2 px-4">${item.total.toLocaleString()}</td>
                           </tr>
                           {item.additions && item.additions.length > 0 && (
                             <tr className="bg-muted/30">
@@ -172,8 +189,8 @@ const OrderDetail = () => {
                                   <span className="font-medium">Adiciones:</span>{' '}
                                   {item.additions.map((addition: Addition, i: number) => (
                                     <React.Fragment key={`addition-${addition.id}`}>
-                                      {addition.name} (+${addition.price})
-                                      {i < item.additions.length - 1 ? ', ' : ''}
+                                      {addition.name} (x{addition.quantity}) (+${addition.price.toLocaleString()})
+                                      {i < item.additions!.length - 1 ? ', ' : ''}
                                     </React.Fragment>
                                   ))}
                                 </div>
@@ -184,11 +201,12 @@ const OrderDetail = () => {
                       ))}
                     </tbody>
                   </table>
-                </div>
-              </div>
+                </div>              </div>
               
               <div className="mt-4 text-right">
-                <p className="text-xl font-bold">Total: ${order.total}</p>
+                <p className="text-xl font-bold">
+                  Total: ${orderItems.reduce((sum, item) => sum + item.total, 0).toLocaleString()}
+                </p>
               </div>
             </div>
           </div>
@@ -196,34 +214,26 @@ const OrderDetail = () => {
         
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Gestionar pedidos</h2>
-          
-          <div className="space-y-4">
+            <div className="space-y-4">
             <div>
-              <label className="block font-medium mb-2">Cambiar estado:</label>
-              <Select 
-                value={order.status} 
-                onValueChange={(value: 'pending' | 'processed' | 'canceled' | 'completed') => handleStatusChange(value)}
+              <label className="block font-medium mb-2">Cambiar estado:</label>              <Select 
+                value={order.estado} 
+                onValueChange={(value: 'Pendiente' | 'Preparando' | 'Cancelado' | 'Entregado' | 'Finalizado') => handleStatusChange(value)}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="pending">Pendiente</SelectItem>
-                  <SelectItem value="processed">Preparando</SelectItem>
-                  <SelectItem value="completed">Entregado</SelectItem>
-                  <SelectItem value="canceled">Cancelado</SelectItem>
-                  <SelectItem value="finalizado">Finalizado</SelectItem>
+                  <SelectItem value="Pendiente">Pendiente</SelectItem>
+                  <SelectItem value="Preparando">Preparando</SelectItem>
+                  <SelectItem value="Entregado">Entregado</SelectItem>
+                  <SelectItem value="Cancelado">Cancelado</SelectItem>
+                  <SelectItem value="Finalizado">Finalizado</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             
-            <div className="pt-4 space-y-4">
-              <Button className="w-full" variant="outline">
-                Imprimir
-              </Button>
-              <Button className="w-full" variant="outline">
-                Enviar a email
-              </Button>
+            <div className="pt-4 space-y-4">              
               <Link to={`/orders/${order.id_pedido}/edit`}>
                 <Button className="w-full">
                   Editar orden
