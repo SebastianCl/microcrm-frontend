@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -15,38 +15,55 @@ interface OrderItemRowProps {
   onRemove: () => void;
 }
 
-const OrderItemRow: React.FC<OrderItemRowProps> = ({ item, onUpdate, onRemove }) => {
-  const [isEditing, setIsEditing] = useState(false);
+const OrderItemRow: React.FC<OrderItemRowProps> = ({ item, onUpdate, onRemove }) => {  const [isEditing, setIsEditing] = useState(false);
   const [editQuantity, setEditQuantity] = useState(item.quantity);
   const [editAdditions, setEditAdditions] = useState<Addition[]>(item.additions || []);
+
+  // Sincronizar el estado cuando cambie el item
+  useEffect(() => {
+    setEditQuantity(item.quantity);
+    setEditAdditions(item.additions || []);
+  }, [item.quantity, item.additions]);
 
   // Obtener productos de la API
   const { data: products = [], isLoading, isError } = useProducts();
 
   // Si hay error o está cargando, mostrar los datos sin funcionalidad de edición de adiciones
   const hasAdditions = !isLoading && !isError ? productHasAdditions(item.productId, products) : false;
-  const availableAdditions = !isLoading && !isError ? getProductAdditions(item.productId, products) : [];
-
-  // Convertir AppAddition a Addition cuando sea necesario
-  const convertToAddition = (appAddition: typeof availableAdditions[0]): Addition => ({
-    id: appAddition.id,
-    name: appAddition.name,
-    price: appAddition.price,
-    quantity: 1
-  });
+  const availableAdditions = !isLoading && !isError ? getProductAdditions(item.productId, products) : [];  // Convertir AppAddition a Addition cuando sea necesario
+  const convertToAddition = (appAddition: typeof availableAdditions[0]): Addition => {
+    // Verificar si ya existe en editAdditions para preservar la cantidad
+    const existingAddition = editAdditions.find(a => a.id === appAddition.id);
+    return {
+      id: appAddition.id,
+      name: appAddition.name,
+      price: appAddition.price,
+      quantity: existingAddition?.quantity || 1
+    };
+  };
+  
   const toggleEditAddition = (appAddition: typeof availableAdditions[0]) => {
-    const addition = convertToAddition(appAddition);
-    const isSelected = editAdditions.some(a => a.id === addition.id);
+    const isSelected = editAdditions.some(a => a.id === appAddition.id);
     if (isSelected) {
-      setEditAdditions(editAdditions.filter(a => a.id !== addition.id));
+      setEditAdditions(editAdditions.filter(a => a.id !== appAddition.id));
     } else {
+      const addition = convertToAddition(appAddition);
       setEditAdditions([...editAdditions, addition]);
     }
   };
 
+  const updateAdditionQuantity = (additionId: string, newQuantity: number) => {
+    if (newQuantity <= 0) {
+      setEditAdditions(editAdditions.filter(a => a.id !== additionId));
+    } else {
+      setEditAdditions(editAdditions.map(a => 
+        a.id === additionId ? { ...a, quantity: newQuantity } : a
+      ));
+    }
+  };
   const calculateNewTotal = () => {
     const productTotal = item.price * editQuantity;
-    const additionsTotal = editAdditions.reduce((sum, addition) => sum + addition.price, 0) * editQuantity;
+    const additionsTotal = editAdditions.reduce((sum, addition) => sum + (addition.price * addition.quantity), 0) * editQuantity;
     return productTotal + additionsTotal;
   };
 
@@ -84,7 +101,8 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({ item, onUpdate, onRemove })
 
           {/* Quantity Editor */}
           <div className="flex items-center space-x-2">
-            <label className="text-sm">Cantidad:</label>            <div className="flex items-center space-x-1">
+            <label className="text-sm">Cantidad:</label>
+            <div className="flex items-center space-x-1">
               <Button
                 type="button"
                 size="sm"
@@ -122,26 +140,55 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({ item, onUpdate, onRemove })
             <div className="text-sm text-red-500">
               Error al cargar las adiciones
             </div>
-          )}
-          {hasAdditions && availableAdditions.length > 0 && (
+          )}          {hasAdditions && availableAdditions.length > 0 && (
             <div className="space-y-2">
               <label className="text-sm font-medium">Adiciones:</label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
-                {availableAdditions.map(appAddition => (
-                  <div key={appAddition.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`edit-addition-${appAddition.id}`}
-                      checked={editAdditions.some(a => a.id === appAddition.id)}
-                      onCheckedChange={() => toggleEditAddition(appAddition)}
-                    />
-                    <label 
-                      htmlFor={`edit-addition-${appAddition.id}`} 
-                      className="text-xs cursor-pointer"
-                    >
-                      {appAddition.name} (+${appAddition.price})
-                    </label>
-                  </div>
-                ))}
+              <div className="space-y-2">
+                {availableAdditions.map(appAddition => {
+                  const selectedAddition = editAdditions.find(a => a.id === appAddition.id);
+                  const isSelected = !!selectedAddition;
+                  
+                  return (
+                    <div key={appAddition.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`edit-addition-${appAddition.id}`}
+                        checked={isSelected}
+                        onCheckedChange={() => toggleEditAddition(appAddition)}
+                      />
+                      <label
+                        htmlFor={`edit-addition-${appAddition.id}`}
+                        className="text-xs cursor-pointer flex-1"
+                      >
+                        {appAddition.name} (+${appAddition.price})
+                      </label>
+                      
+                      {/* Controles de cantidad para adición seleccionada */}
+                      {isSelected && (
+                        <div className="flex items-center space-x-1">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => updateAdditionQuantity(appAddition.id, selectedAddition.quantity - 1)}
+                            className="h-6 w-6 p-0 text-xs"
+                          >
+                            -
+                          </Button>
+                          <span className="text-xs w-6 text-center">{selectedAddition.quantity}</span>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => updateAdditionQuantity(appAddition.id, selectedAddition.quantity + 1)}
+                            className="h-6 w-6 p-0 text-xs"
+                          >
+                            +
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -158,12 +205,11 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({ item, onUpdate, onRemove })
     <tr className="border-b hover:bg-muted/30">
       <td className="p-3">
         <div>
-          <div className="font-medium">{item.name}</div>
-          {item.additions && item.additions.length > 0 && (
+          <div className="font-medium">{item.name}</div>          {item.additions && item.additions.length > 0 && (
             <div className="text-xs text-muted-foreground mt-1">
               {item.additions.map((addition, i) => (
                 <Badge key={addition.id} variant="secondary" className="text-xs mr-1">
-                  {addition.name}
+                  {addition.name} {addition.quantity > 1 && `x${addition.quantity}`}
                 </Badge>
               ))}
             </div>
@@ -174,25 +220,25 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({ item, onUpdate, onRemove })
       <td className="p-3 text-right">${item.price}</td>
       <td className="p-3 text-right">${item.total}</td>
       <td className="p-3">        <div className="flex space-x-1">
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            onClick={() => setIsEditing(true)}
-            className="h-7 w-7 p-0"
-          >
-            <Edit3 className="h-3 w-3" />
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            onClick={onRemove}
-            className="h-7 w-7 p-0 hover:text-red-500"
-          >
-            <Trash2 className="h-3 w-3" />
-          </Button>
-        </div>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          onClick={() => setIsEditing(true)}
+          className="h-7 w-7 p-0"
+        >
+          <Edit3 className="h-3 w-3" />
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          onClick={onRemove}
+          className="h-7 w-7 p-0 hover:text-red-500"
+        >
+          <Trash2 className="h-3 w-3" />
+        </Button>
+      </div>
       </td>
     </tr>
   );

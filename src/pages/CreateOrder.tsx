@@ -27,9 +27,9 @@ type FormValues = {
   tableNumber: string;
 };
 
-type ExtendedOrderItem = OrderItem & { 
-  discount?: number; 
-  discountType?: string; 
+type ExtendedOrderItem = OrderItem & {
+  discount?: number;
+  discountType?: string;
   additions?: Addition[];
 };
 
@@ -55,7 +55,7 @@ const CreateOrder = () => {
       tableNumber: '',
     },
   });
-  
+
   const handleCancelClick = () => {
     if (orderItems.length > 0 || form.formState.isDirty || selectedClientId) {
       setIsCancelConfirmationOpen(true);
@@ -81,10 +81,10 @@ const CreateOrder = () => {
   const handleAddProduct = (product: OrderItem) => {
     // Check if product already exists in order
     const existingProductIndex = orderItems.findIndex(
-      item => item.productId === product.productId && 
-      JSON.stringify((item as ExtendedOrderItem).additions || []) === JSON.stringify((product as ExtendedOrderItem).additions || [])
+      item => item.productId === product.productId &&
+        JSON.stringify((item as ExtendedOrderItem).additions || []) === JSON.stringify((product as ExtendedOrderItem).additions || [])
     );
-    
+
     if (existingProductIndex >= 0) {
       // Update existing product quantity
       const updatedItems = [...orderItems];
@@ -93,16 +93,16 @@ const CreateOrder = () => {
       setOrderItems(updatedItems);
     } else {
       // Add new product
-      setOrderItems([...orderItems, { 
-        ...product, 
-        discount: 0, 
-        discountType: DiscountTypes.NONE 
+      setOrderItems([...orderItems, {
+        ...product,
+        discount: 0,
+        discountType: DiscountTypes.NONE
       }]);
     }
-    
+
     toast.success(`${product.name} agregado a la orden`);
   };
-  
+
   const handleUpdateOrderItem = (index: number, updatedItem: ExtendedOrderItem) => {
     const updatedItems = [...orderItems];
     updatedItems[index] = updatedItem;
@@ -114,58 +114,58 @@ const CreateOrder = () => {
     setOrderItems(orderItems.filter((_, i) => i !== index));
     toast.success("Producto removido");
   };
-  
+
   const calculateProductFinalPrice = (product: ExtendedOrderItem) => {
     if (!product.discount || product.discount <= 0 || product.discountType === DiscountTypes.NONE) {
       return product.total;
     }
-    
+
     if (product.discountType === DiscountTypes.PERCENTAGE) {
       return product.total * (1 - product.discount / 100);
     }
-    
+
     if (product.discountType === DiscountTypes.FIXED) {
       return Math.max(0, product.total - product.discount);
     }
-    
+
     return product.total;
   };
-  
+
   const getProductsSubtotal = () => {
     return orderItems.reduce((sum, item) => sum + calculateProductFinalPrice(item), 0);
   };
-  
+
   const calculateOrderDiscount = () => {
     const subtotal = getProductsSubtotal();
-    
+
     if (orderDiscountType === DiscountTypes.PERCENTAGE) {
       return subtotal * (orderDiscount / 100);
     }
-    
+
     if (orderDiscountType === DiscountTypes.FIXED) {
       return Math.min(subtotal, orderDiscount);
     }
-    
+
     return 0;
   };
-  
+
   const getOrderTotal = () => {
     const subtotal = getProductsSubtotal();
     const discount = calculateOrderDiscount();
     return Math.max(0, subtotal - discount);
   };
-  
+
   const handleDiscountChange = (discount: number, type: string) => {
     setOrderDiscount(discount);
     setOrderDiscountType(type);
   };
-  
+
   const onSubmit = async (values: FormValues) => {
     if (orderItems.length === 0) {
       toast.error('Error: No hay productos');
       return;
     }
-    
+
     let clientName = 'Cliente no especificado';
     if (selectedClientId) {
       clientName = selectedClientName;
@@ -183,14 +183,14 @@ const CreateOrder = () => {
         precio_unitario: item.price,
         adiciones: item.additions ? item.additions.map(addition => ({
           id_adicion: Number(addition.id),
-          cantidad: 1,
+          cantidad: addition.quantity, // Usar la cantidad real de la adición
         })) : []
       })),
       id_estado: 1
     };
-    
+
     const token = localStorage.getItem('authToken');
-    
+
     try {
       // Configure headers with authentication token
       const headers = {
@@ -218,7 +218,7 @@ const CreateOrder = () => {
       console.error("Error creating order:", error);
     }
   };
-  
+
   return (
     <Form {...form}> {/* Form provider wraps the entire page content that needs form context */}
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -441,21 +441,21 @@ const CreateOrder = () => {
                     total={getOrderTotal()}
                     onDiscountChange={handleDiscountChange}
                   />
-                  
+
                   {/* Action Buttons */}
                   <div className="space-y-3">
-                    <Button 
-                      type="submit" 
+                    <Button
+                      type="submit"
                       disabled={orderItems.length === 0}
                       className="w-full h-12 text-base font-medium shadow-sm hover:shadow-md transition-shadow"
                       size="lg"
                     >
                       Crear Orden
                     </Button>
-                    
-                    <Button 
-                      type="button" 
-                      variant="outline" 
+
+                    <Button
+                      type="button"
+                      variant="outline"
                       onClick={handleCancelClick}
                       className="w-full h-10 hover:bg-gray-50"
                     >
@@ -467,7 +467,7 @@ const CreateOrder = () => {
             </div>
           </div>
         </form> {/* End of HTML form element */}
-        
+
         <CancelOrderConfirmation
           open={isCancelConfirmationOpen}
           onOpenChange={setIsCancelConfirmationOpen}

@@ -8,12 +8,11 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from '@/components/ui/button';
-import { SAMPLE_INVENTORY } from '@/components/InventoryList';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { OrderItem, Addition } from '@/models/order.model';
 import { Checkbox } from '@/components/ui/checkbox';
-import { productHasAdditions, getProductAdditions } from '@/lib/sample-additions';
+import { useProducts, productHasAdditions, getProductAdditions } from '@/hooks/useProducts';
 
 interface AddProductToOrderDialogProps {
   open: boolean;
@@ -30,17 +29,19 @@ const AddProductToOrderDialog: React.FC<AddProductToOrderDialogProps> = ({
   const [quantity, setQuantity] = useState<number>(1);
   const [selectedAdditions, setSelectedAdditions] = useState<Addition[]>([]);
 
+  // Obtener productos de la API
+  const { data: products = [], isLoading, isError } = useProducts();
+
   // Effect to reset additions when product changes
   useEffect(() => {
     setSelectedAdditions([]);
   }, [selectedProductId]);
-  
-  const handleAddProduct = () => {
-    const product = SAMPLE_INVENTORY.find(p => p.id === selectedProductId);
+    const handleAddProduct = () => {
+    const product = products.find(p => p.id === selectedProductId);
     if (!product) return;
     
     // Calculate total including additions
-    const additionsTotal = selectedAdditions.reduce((sum, addition) => sum + addition.price, 0) * quantity;
+    const additionsTotal = selectedAdditions.reduce((sum, addition) => sum + (addition.price * addition.quantity), 0) * quantity;
     const productTotal = product.price * quantity;
     
     const orderItem: OrderItem = {
@@ -63,33 +64,53 @@ const AddProductToOrderDialog: React.FC<AddProductToOrderDialogProps> = ({
     setSelectedAdditions([]);
     onOpenChange(false);
   };
-  
-  // Find selected product
-  const selectedProduct = SAMPLE_INVENTORY.find(p => p.id === selectedProductId);
+    // Find selected product
+  const selectedProduct = products.find(p => p.id === selectedProductId);
   
   // Check if product has additions
-  const hasAdditions = selectedProductId ? productHasAdditions(selectedProductId) : false;
+  const hasAdditions = selectedProductId && !isLoading && !isError ? productHasAdditions(selectedProductId, products) : false;
   
   // Get additions for selected product
-  const availableAdditions = selectedProductId ? getProductAdditions(selectedProductId) : [];
+  const availableAdditions = selectedProductId && !isLoading && !isError ? getProductAdditions(selectedProductId, products) : [];
+  // Convertir AppAddition a Addition cuando sea necesario
+  const convertToAddition = (appAddition: typeof availableAdditions[0]): Addition => {
+    // Verificar si ya existe en selectedAdditions para preservar la cantidad
+    const existingAddition = selectedAdditions.find(a => a.id === appAddition.id);
+    return {
+      id: appAddition.id,
+      name: appAddition.name,
+      price: appAddition.price,
+      quantity: existingAddition?.quantity || 1
+    };
+  };
   
   // Toggle addition selection
-  const toggleAddition = (addition: Addition) => {
-    const isSelected = selectedAdditions.some(item => item.id === addition.id);
+  const toggleAddition = (appAddition: typeof availableAdditions[0]) => {
+    const isSelected = selectedAdditions.some(item => item.id === appAddition.id);
     
     if (isSelected) {
-      setSelectedAdditions(selectedAdditions.filter(item => item.id !== addition.id));
+      setSelectedAdditions(selectedAdditions.filter(item => item.id !== appAddition.id));
     } else {
+      const addition = convertToAddition(appAddition);
       setSelectedAdditions([...selectedAdditions, addition]);
     }
   };
-  
-  // Calculate subtotal with additions
+
+  const updateAdditionQuantity = (additionId: string, newQuantity: number) => {
+    if (newQuantity <= 0) {
+      setSelectedAdditions(selectedAdditions.filter(a => a.id !== additionId));
+    } else {
+      setSelectedAdditions(selectedAdditions.map(a => 
+        a.id === additionId ? { ...a, quantity: newQuantity } : a
+      ));
+    }
+  };
+    // Calculate subtotal with additions
   const calculateSubtotal = () => {
     if (!selectedProduct) return 0;
     
     const productTotal = selectedProduct.price * quantity;
-    const additionsTotal = selectedAdditions.reduce((sum, addition) => sum + addition.price, 0) * quantity;
+    const additionsTotal = selectedAdditions.reduce((sum, addition) => sum + (addition.price * addition.quantity), 0) * quantity;
     
     return productTotal + additionsTotal;
   };
@@ -108,48 +129,80 @@ const AddProductToOrderDialog: React.FC<AddProductToOrderDialogProps> = ({
               id="product"
               className="flex w-full h-10 px-3 py-2 text-sm rounded-md border border-input bg-background ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               value={selectedProductId}
-              onChange={(e) => setSelectedProductId(e.target.value)}
-            >
+              onChange={(e) => setSelectedProductId(e.target.value)}            >
               <option value="">Seleccionar producto</option>
-              {SAMPLE_INVENTORY.filter(p => p.stockQuantity > 0).map((product) => (
-                <option key={product.id} value={product.id}>
-                  {product.name} - ${product.price} ({product.stockQuantity} Disponible)
-                </option>
-              ))}
+              {isLoading ? (
+                <option disabled>Cargando productos...</option>
+              ) : isError ? (
+                <option disabled>Error al cargar productos</option>
+              ) : (
+                products.filter(p => p.isActive).map((product) => (
+                  <option key={product.id} value={product.id}>
+                    {product.name} - ${product.price}
+                  </option>
+                ))
+              )}
             </select>
           </div>
           
           {selectedProductId && selectedProduct && (
             <>
               <div>
-                <Label htmlFor="quantity">Cantidad</Label>
-                <Input
+                <Label htmlFor="quantity">Cantidad</Label>                <Input
                   id="quantity"
                   type="number"
                   min="1"
-                  max={selectedProduct.stockQuantity}
                   value={quantity}
                   onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
                 />
               </div>
-              
-              {/* Display additions if available */}
-              {hasAdditions && (
+                {/* Display additions if available */}
+              {hasAdditions && availableAdditions.length > 0 && (
                 <div className="space-y-2">
                   <Label>Adiciones</Label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 border rounded-md p-3">
-                    {availableAdditions.map(addition => (
-                      <div key={addition.id} className="flex items-center space-x-2">
-                        <Checkbox 
-                          id={`addition-${addition.id}`} 
-                          checked={selectedAdditions.some(item => item.id === addition.id)}
-                          onCheckedChange={() => toggleAddition(addition)}
-                        />
-                        <Label htmlFor={`addition-${addition.id}`} className="flex-1">
-                          {addition.name} (+${addition.price})
-                        </Label>
-                      </div>
-                    ))}
+                  <div className="space-y-2 border rounded-md p-3 max-h-40 overflow-y-auto">
+                    {availableAdditions.map(appAddition => {
+                      const selectedAddition = selectedAdditions.find(a => a.id === appAddition.id);
+                      const isSelected = !!selectedAddition;
+                      
+                      return (
+                        <div key={appAddition.id} className="flex items-center space-x-2">
+                          <Checkbox 
+                            id={`addition-${appAddition.id}`} 
+                            checked={isSelected}
+                            onCheckedChange={() => toggleAddition(appAddition)}
+                          />
+                          <Label htmlFor={`addition-${appAddition.id}`} className="flex-1 text-sm">
+                            {appAddition.name} (+${appAddition.price})
+                          </Label>
+                          
+                          {/* Controles de cantidad para adición seleccionada */}
+                          {isSelected && (
+                            <div className="flex items-center space-x-1">
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updateAdditionQuantity(appAddition.id, selectedAddition.quantity - 1)}
+                                className="h-6 w-6 p-0 text-xs"
+                              >
+                                -
+                              </Button>
+                              <span className="text-xs w-6 text-center">{selectedAddition.quantity}</span>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updateAdditionQuantity(appAddition.id, selectedAddition.quantity + 1)}
+                                className="h-6 w-6 p-0 text-xs"
+                              >
+                                +
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
