@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Edit3, Trash2, Check, X } from 'lucide-react';
 import { OrderItem, Addition } from '@/models/order.model';
-import { productHasAdditions, getProductAdditions } from '@/lib/sample-additions';
+import { useProducts, productHasAdditions, getProductAdditions } from '@/hooks/useProducts';
 
 interface OrderItemRowProps {
   item: OrderItem & { discount?: number; discountType?: string };
@@ -20,10 +20,22 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({ item, onUpdate, onRemove })
   const [editQuantity, setEditQuantity] = useState(item.quantity);
   const [editAdditions, setEditAdditions] = useState<Addition[]>(item.additions || []);
 
-  const hasAdditions = productHasAdditions(item.productId);
-  const availableAdditions = getProductAdditions(item.productId);
+  // Obtener productos de la API
+  const { data: products = [], isLoading, isError } = useProducts();
 
-  const toggleEditAddition = (addition: Addition) => {
+  // Si hay error o está cargando, mostrar los datos sin funcionalidad de edición de adiciones
+  const hasAdditions = !isLoading && !isError ? productHasAdditions(item.productId, products) : false;
+  const availableAdditions = !isLoading && !isError ? getProductAdditions(item.productId, products) : [];
+
+  // Convertir AppAddition a Addition cuando sea necesario
+  const convertToAddition = (appAddition: typeof availableAdditions[0]): Addition => ({
+    id: appAddition.id,
+    name: appAddition.name,
+    price: appAddition.price,
+    quantity: 1
+  });
+  const toggleEditAddition = (appAddition: typeof availableAdditions[0]) => {
+    const addition = convertToAddition(appAddition);
     const isSelected = editAdditions.some(a => a.id === addition.id);
     if (isSelected) {
       setEditAdditions(editAdditions.filter(a => a.id !== addition.id));
@@ -60,12 +72,11 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({ item, onUpdate, onRemove })
       <Card className="p-3 border-primary">
         <div className="space-y-3">
           <div className="flex justify-between items-center">
-            <h4 className="font-medium">{item.name}</h4>
-            <div className="flex space-x-1">
-              <Button size="sm" onClick={handleSave} className="h-7 w-7 p-0">
+            <h4 className="font-medium">{item.name}</h4>            <div className="flex space-x-1">
+              <Button type="button" size="sm" onClick={handleSave} className="h-7 w-7 p-0">
                 <Check className="h-3 w-3" />
               </Button>
-              <Button size="sm" variant="outline" onClick={handleCancel} className="h-7 w-7 p-0">
+              <Button type="button" size="sm" variant="outline" onClick={handleCancel} className="h-7 w-7 p-0">
                 <X className="h-3 w-3" />
               </Button>
             </div>
@@ -73,9 +84,9 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({ item, onUpdate, onRemove })
 
           {/* Quantity Editor */}
           <div className="flex items-center space-x-2">
-            <label className="text-sm">Cantidad:</label>
-            <div className="flex items-center space-x-1">
+            <label className="text-sm">Cantidad:</label>            <div className="flex items-center space-x-1">
               <Button
+                type="button"
                 size="sm"
                 variant="outline"
                 onClick={() => setEditQuantity(Math.max(1, editQuantity - 1))}
@@ -91,6 +102,7 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({ item, onUpdate, onRemove })
                 min="1"
               />
               <Button
+                type="button"
                 size="sm"
                 variant="outline"
                 onClick={() => setEditQuantity(editQuantity + 1)}
@@ -98,26 +110,35 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({ item, onUpdate, onRemove })
               >
                 +
               </Button>
-            </div>
-          </div>
+            </div></div>
 
           {/* Additions Editor */}
-          {hasAdditions && (
+          {isLoading && (
+            <div className="text-sm text-muted-foreground">
+              Cargando adiciones...
+            </div>
+          )}
+          {isError && (
+            <div className="text-sm text-red-500">
+              Error al cargar las adiciones
+            </div>
+          )}
+          {hasAdditions && availableAdditions.length > 0 && (
             <div className="space-y-2">
               <label className="text-sm font-medium">Adiciones:</label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
-                {availableAdditions.map(addition => (
-                  <div key={addition.id} className="flex items-center space-x-2">
+                {availableAdditions.map(appAddition => (
+                  <div key={appAddition.id} className="flex items-center space-x-2">
                     <Checkbox
-                      id={`edit-addition-${addition.id}`}
-                      checked={editAdditions.some(a => a.id === addition.id)}
-                      onCheckedChange={() => toggleEditAddition(addition)}
+                      id={`edit-addition-${appAddition.id}`}
+                      checked={editAdditions.some(a => a.id === appAddition.id)}
+                      onCheckedChange={() => toggleEditAddition(appAddition)}
                     />
                     <label 
-                      htmlFor={`edit-addition-${addition.id}`} 
+                      htmlFor={`edit-addition-${appAddition.id}`} 
                       className="text-xs cursor-pointer"
                     >
-                      {addition.name} (+${addition.price})
+                      {appAddition.name} (+${appAddition.price})
                     </label>
                   </div>
                 ))}
@@ -152,9 +173,9 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({ item, onUpdate, onRemove })
       <td className="p-3 text-center">{item.quantity}</td>
       <td className="p-3 text-right">${item.price}</td>
       <td className="p-3 text-right">${item.total}</td>
-      <td className="p-3">
-        <div className="flex space-x-1">
+      <td className="p-3">        <div className="flex space-x-1">
           <Button
+            type="button"
             size="sm"
             variant="ghost"
             onClick={() => setIsEditing(true)}
@@ -163,6 +184,7 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({ item, onUpdate, onRemove })
             <Edit3 className="h-3 w-3" />
           </Button>
           <Button
+            type="button"
             size="sm"
             variant="ghost"
             onClick={onRemove}
