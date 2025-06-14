@@ -38,4 +38,11 @@ export const invoiceService = {
   async delete(id: string): Promise<void> {
     return apiClient.delete<void>(`${API_CONFIG.ENDPOINTS.INVOICES}/${id}`);
   },
+
+  /**
+   * Genera la factura para un pedido específico
+   */
+  async generateInvoice(orderId: number): Promise<{ success: boolean; data: { base64: string } }> {
+    return apiClient.post<{ success: boolean; data: { base64: string } }>(`${API_CONFIG.ENDPOINTS.INVOICES}/${orderId}/generar`, {});
+  },
 };

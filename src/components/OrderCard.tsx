@@ -1,14 +1,14 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, X, Clock, Loader, ArrowRight, Ban, UtensilsCrossed, ShoppingBag } from 'lucide-react';
+import { Check, X, Clock, Loader, ArrowRight, Ban, UtensilsCrossed, ShoppingBag, Download } from 'lucide-react';
 import { Order } from '@/models/order.model';
 import { useUpdateOrderStatus } from '@/hooks/useOrders';
 import { toast } from 'sonner';
 import CancelOrderConfirmation from './CancelOrderConfirmation';
+import { invoiceService } from '@/services/invoiceService';
 
 interface OrderCardProps {
   order: Order;
@@ -115,7 +115,36 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
       toast.error('Error al actualizar el estado');
       console.error('Error updating status:', error);
     }
-  };  const handleCancel = async () => {
+  };  const handleDownloadInvoice = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      // Asegurarse de que id_pedido es un número
+      const orderId = typeof order.id_pedido === 'string' ? parseInt(order.id_pedido, 10) : order.id_pedido;
+      if (isNaN(orderId)) {
+        toast.error('ID de pedido inválido');
+        return;
+      }
+      const response = await invoiceService.generateInvoice(orderId);
+      if (response.success && response.data && response.data.base64) {
+        const pdfBlob = new Blob([Uint8Array.from(atob(response.data.base64), c => c.charCodeAt(0))], { type: 'application/pdf' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(pdfBlob);
+        link.download = `factura-${order.id_pedido}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success('Factura descargada');
+      } else {
+        toast.error('Error al obtener la factura de la respuesta');
+        console.error('Invalid response structure for invoice:', response);
+      }
+    } catch (error) {
+      toast.error('Error al descargar la factura');
+      console.error('Error downloading invoice:', error);
+    }
+  };
+
+  const handleCancel = async () => {
     try {
       await updateStatus.mutateAsync(4); // ID 4 = Cancelado
       toast.success(`Orden ${order.id_pedido} cancelada`);
@@ -173,6 +202,18 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
                 >
                   <ArrowRight className="h-3 w-3" />
                   {nextStatusLabel}
+                </Button>
+              )}
+
+              {order.estado === 'Finalizado' && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={handleDownloadInvoice} 
+                  className="flex items-center gap-1 whitespace-nowrap bg-green-500 hover:bg-green-600"
+                >
+                  <Download className="h-3 w-3" />
+                  Descargar Factura
                 </Button>
               )}
 
