@@ -26,27 +26,27 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
 
   const { data: productsData, isLoading: isLoadingProducts, error: productsError } = useProducts();
 
-  // Get unique categories from inventory - Se debe adaptar para usar productsData y manejar el caso de que sea undefined
+  // Get unique categories from inventory
   const categories = React.useMemo(() => {
     if (!productsData) return [];
-    // Asumimos que AppProduct no tiene 'category', si se necesita, se debe añadir a AppProduct o manejar de otra forma
-    // Por ahora, como no hay categorías desde la API, devolvemos un array vacío o una categoría 'all' por defecto.
-    // Si los productos de la API tuvieran una propiedad 'category', se usaría así:
-    // return Array.from(new Set(productsData.map(product => product.category)));
-    return ['all']; // Placeholder, ya que la API no devuelve categorías
+    const uniqueCategories = new Map<number, string>();
+    productsData.forEach(product => {
+      if (product.categoryId && product.categoryName) {
+        uniqueCategories.set(product.categoryId, product.categoryName);
+      }
+    });
+    return Array.from(uniqueCategories.entries()).map(([id, name]) => ({ id, name }));
   }, [productsData]);
 
-  // Filter products based on search and category - Adaptar para usar productsData
+  // Filter products based on search and category
   const filteredProducts = React.useMemo(() => {
     if (!productsData) return [];
     return productsData.filter(product => {
-      const matchesSearch = product.isActive && // Usar isActive de AppProduct
+      const matchesSearch = product.isActive &&
         product.name.toLowerCase().includes(searchQuery.toLowerCase());
       
-      // Si se implementan categorías reales, la lógica de activeCategory se usaría aquí
-      // const matchesCategory = activeCategory === 'all' || product.category === activeCategory;
-      // return matchesSearch && matchesCategory;
-      return matchesSearch; // Por ahora, solo filtra por búsqueda y estado activo
+      const matchesCategory = activeCategory === 'all' || product.categoryName === activeCategory;
+      return matchesSearch && matchesCategory;
     });
   }, [productsData, searchQuery, activeCategory]);
 
@@ -129,12 +129,11 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
     setQuantity(1);
   };
 
-  // getProductsByCategory necesita adaptarse si se usan categorías reales
-  const getProductsByCategory = (category: string) => {
+  const getProductsByCategory = (categoryName: string) => {
     if (!productsData) return [];
-    if (category === 'all') return filteredProducts;
-    // return filteredProducts.filter(product => product.category === category); // Si AppProduct tuviera category
-    return filteredProducts; // Placeholder
+    if (categoryName === 'all') return filteredProducts;
+    // Ahora filtramos por categoryName en lugar de una propiedad 'category' que no existía
+    return filteredProducts.filter(product => product.categoryName === categoryName);
   };
 
   // ProductGrid ahora recibe AppProduct[]
@@ -222,27 +221,24 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
         <div className="flex items-center gap-2 mb-4">
           <Filter className="h-4 w-4 text-muted-foreground" />
           <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
-            {/* Renderizar TabsTrigger dinámicamente si hay categorías */}
             <TabsTrigger value="all">Todos</TabsTrigger>
-            {/* {categories.map(category => (
-              category !== 'all' && <TabsTrigger key={category} value={category}>{category}</TabsTrigger>
-            ))} */}
+            {categories.map(category => (
+              <TabsTrigger key={category.id} value={category.name}>{category.name}</TabsTrigger>
+            ))}
           </TabsList>
         </div>
 
-        {/* All Products Tab */}
+        {/* All Products Tab */} 
         <TabsContent value="all" className="mt-0">
-          <ProductGrid products={filteredProducts} />
+          <ProductGrid products={getProductsByCategory('all')} />
         </TabsContent>
 
-        {/* Category-specific Tabs - Adaptar si hay categorías */}
-        {/* {categories.map(category => (
-          category !== 'all' && (
-            <TabsContent key={category} value={category} className="mt-0">
-              <ProductGrid products={getProductsByCategory(category)} />
-            </TabsContent>
-          )
-        ))} */}
+        {/* Category-specific Tabs */}
+        {categories.map(category => (
+          <TabsContent key={category.id} value={category.name} className="mt-0">
+            <ProductGrid products={getProductsByCategory(category.name)} />
+          </TabsContent>
+        ))}
       </Tabs>
 
       {/* Selected Product Configuration */}

@@ -34,5 +34,6 @@ export interface AppProduct {
   managesInventory: boolean;
   isActive: boolean; // Basado en el campo estado de la API
   additions: AppAddition[];
-  // category?: string; // Se omite ya que no viene de la API
+  categoryId: number; // Añadido para la categoría
+  categoryName: string; // Añadido para el nombre de la categoría
 }

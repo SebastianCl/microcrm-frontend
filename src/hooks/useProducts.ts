@@ -1,9 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/services/apiClient';
-import { ApiProduct, AppProduct, AppAddition } from '@/models/product.model';
+// Asegúrate de que ApiProduct incluya id_categoria y nombre_categoria si vienen de la API
+interface ApiProductWithCategory extends ApiProduct {
+  id_categoria: number;
+  nombre_categoria: string;
+}
+
+import { AppProduct, AppAddition, ApiProduct } from '@/models/product.model';
 
 // Función para transformar la respuesta de la API al formato de la aplicación
-const transformProductData = (apiProducts: ApiProduct[]): AppProduct[] => {
+const transformProductData = (apiProducts: ApiProductWithCategory[]): AppProduct[] => {
     return apiProducts.map(p => ({
         id: p.id_producto.toString(),
         name: p.nombre,
@@ -19,7 +25,8 @@ const transformProductData = (apiProducts: ApiProduct[]): AppProduct[] => {
             isActive: a.estado,
             // quantity: 1 // Cantidad por defecto para AppAddition si fuera necesario aquí
         })),
-        // category: 'default' // Se puede asignar una categoría por defecto o manejarla de otra forma si es necesario
+        categoryId: p.id_categoria, // Añadido
+        categoryName: p.nombre_categoria, // Añadido
     }));
 };
 
@@ -27,7 +34,8 @@ export const useProducts = () => {
     return useQuery<AppProduct[], Error>({
         queryKey: ['products'],
         queryFn: async () => {
-            const data  = await apiClient.get<ApiProduct[]>('/products');
+            // Asegúrate de que el endpoint /products devuelve id_categoria y nombre_categoria
+            const data = await apiClient.get<ApiProductWithCategory[]>('/products');
             return transformProductData(data);
         },
     });
