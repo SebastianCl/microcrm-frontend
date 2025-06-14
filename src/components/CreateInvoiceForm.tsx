@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -11,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { X, Plus } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 // Schema for invoice creation form
 const invoiceFormSchema = z.object({
@@ -40,6 +40,7 @@ interface CreateInvoiceFormProps {
 
 const CreateInvoiceForm: React.FC<CreateInvoiceFormProps> = ({ onClose }) => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   // Default form values
   const defaultValues: InvoiceFormValues = {
@@ -74,6 +75,7 @@ const CreateInvoiceForm: React.FC<CreateInvoiceFormProps> = ({ onClose }) => {
       description: `Invoice for ${clients.find(c => c.id === data.client)?.name || data.client} with total $${total} has been created.`,
     });
     
+    queryClient.invalidateQueries({ queryKey: ['orders'] });
     onClose();
   }
 
