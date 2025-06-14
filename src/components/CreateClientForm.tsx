@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { clientService } from '@/services/clientService'; // Nueva importación
+import { useCreateClient } from '@/hooks/useClients';
 
 // Schema for client creation form
 const clientFormSchema = z.object({
@@ -23,8 +23,9 @@ interface CreateClientFormProps {
 
 const CreateClientForm: React.FC<CreateClientFormProps> = ({ onClose }) => {
   const { toast } = useToast();
-  
-  // Default form values
+  const createClientMutation = useCreateClient();
+
+  // Valor por defecto para el formulario
   const defaultValues: ClientFormValues = {
     nombre: "",
     correo: "",
@@ -37,21 +38,23 @@ const CreateClientForm: React.FC<CreateClientFormProps> = ({ onClose }) => {
   });
   
   async function onSubmit(data: ClientFormValues) {
-    try {
-      await clientService.create(data);
-      toast({
-        title: "Cliente creado",
-        description: `${data.nombre} ha sido añadido a tus clientes.`,
-      });
-      onClose(); // Llamar a onClose después de crear el cliente
-    } catch (error) {
-      console.error("Error al crear el cliente:", error);
-      toast({
-        title: "Error al crear cliente",
-        description: "Hubo un problema al intentar crear el cliente. Por favor, inténtalo de nuevo.",
-        variant: "destructive",
-      });
-    }
+    createClientMutation.mutate(data, {
+      onSuccess: (nuevoCliente) => {
+        toast({
+          title: "Cliente creado",
+          description: `${nuevoCliente.nombre} ha sido añadido a tus clientes.`,
+        });
+        onClose(); 
+      },
+      onError: (error) => {
+        console.error("Error al crear el cliente:", error);
+        toast({
+          title: "Error al crear cliente",
+          description: "Hubo un problema al intentar crear el cliente. Por favor, inténtalo de nuevo.",
+          variant: "destructive",
+        });
+      }
+    });
   }
 
   return (
@@ -108,7 +111,9 @@ const CreateClientForm: React.FC<CreateClientFormProps> = ({ onClose }) => {
           <Button type="button" variant="outline" onClick={onClose}>
             Cancelar
           </Button>
-          <Button type="submit">Crear Cliente</Button>
+          <Button type="submit" disabled={createClientMutation.isPending}>
+            {createClientMutation.isPending ? "Creando..." : "Crear Cliente"}
+          </Button>
         </div>
       </form>
     </Form>
