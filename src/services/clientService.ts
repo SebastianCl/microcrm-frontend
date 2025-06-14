@@ -21,7 +21,7 @@ export const clientService = {
   /**
    * Crea un nuevo cliente
    */
-  async create(client: Omit<Client, 'id'>): Promise<Client> {
+  async create(client: Client): Promise<Client> {
     return apiClient.post<Client>(API_CONFIG.ENDPOINTS.CLIENTS, client);
   },
   

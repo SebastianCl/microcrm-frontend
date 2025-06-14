@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -7,15 +6,13 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { clientService } from '@/services/clientService'; // Nueva importación
 
 // Schema for client creation form
 const clientFormSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  email: z.string().email("Invalid email address"),
-  company: z.string().min(1, "Company name is required"),
-  phone: z.string().min(7, "Phone number is required"),
-  status: z.enum(["active", "inactive"]),
+  nombre: z.string().min(1, "El nombre es obligatorio"),
+  correo: z.string().email("Dirección de correo electrónico inválida"),
+  telefono: z.string().min(7, "El número de teléfono es obligatorio"),
 });
 
 type ClientFormValues = z.infer<typeof clientFormSchema>;
@@ -29,11 +26,9 @@ const CreateClientForm: React.FC<CreateClientFormProps> = ({ onClose }) => {
   
   // Default form values
   const defaultValues: ClientFormValues = {
-    name: "",
-    email: "",
-    company: "",
-    phone: "",
-    status: "active",
+    nombre: "",
+    correo: "",
+    telefono: "",
   };
 
   const form = useForm<ClientFormValues>({
@@ -41,16 +36,22 @@ const CreateClientForm: React.FC<CreateClientFormProps> = ({ onClose }) => {
     defaultValues,
   });
   
-  function onSubmit(data: ClientFormValues) {
-    // In a real app, this would save to a database
-    console.log("Client created:", data);
-
-    toast({
-      title: "Client created",
-      description: `${data.name} from ${data.company} has been added to your clients.`,
-    });
-    
-    onClose();
+  async function onSubmit(data: ClientFormValues) {
+    try {
+      await clientService.create(data);
+      toast({
+        title: "Cliente creado",
+        description: `${data.nombre} ha sido añadido a tus clientes.`,
+      });
+      onClose(); // Llamar a onClose después de crear el cliente
+    } catch (error) {
+      console.error("Error al crear el cliente:", error);
+      toast({
+        title: "Error al crear cliente",
+        description: "Hubo un problema al intentar crear el cliente. Por favor, inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    }
   }
 
   return (
@@ -60,10 +61,10 @@ const CreateClientForm: React.FC<CreateClientFormProps> = ({ onClose }) => {
           {/* Client Name */}
           <FormField
             control={form.control}
-            name="name"
+            name="nombre"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Full Name</FormLabel>
+                <FormLabel>Nombre completo</FormLabel>
                 <FormControl>
                   <Input placeholder="John Doe" {...field} />
                 </FormControl>
@@ -75,27 +76,12 @@ const CreateClientForm: React.FC<CreateClientFormProps> = ({ onClose }) => {
           {/* Email */}
           <FormField
             control={form.control}
-            name="email"
+            name="correo"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email Address</FormLabel>
+                <FormLabel>Dirección de correo electrónico</FormLabel>
                 <FormControl>
                   <Input type="email" placeholder="john@example.com" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Company */}
-          <FormField
-            control={form.control}
-            name="company"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Company</FormLabel>
-                <FormControl>
-                  <Input placeholder="Acme Inc." {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -105,36 +91,13 @@ const CreateClientForm: React.FC<CreateClientFormProps> = ({ onClose }) => {
           {/* Phone */}
           <FormField
             control={form.control}
-            name="phone"
+            name="telefono"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Phone Number</FormLabel>
+                <FormLabel>Número de teléfono</FormLabel>
                 <FormControl>
                   <Input placeholder="(555) 123-4567" {...field} />
                 </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Status */}
-          <FormField
-            control={form.control}
-            name="status"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Status</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select client status" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                  </SelectContent>
-                </Select>
                 <FormMessage />
               </FormItem>
             )}
@@ -143,9 +106,9 @@ const CreateClientForm: React.FC<CreateClientFormProps> = ({ onClose }) => {
 
         <div className="flex justify-end space-x-2">
           <Button type="button" variant="outline" onClick={onClose}>
-            Cancel
+            Cancelar
           </Button>
-          <Button type="submit">Create Client</Button>
+          <Button type="submit">Crear Cliente</Button>
         </div>
       </form>
     </Form>
