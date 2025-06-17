@@ -34,7 +34,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
             <Loader className="h-3 w-3" />
             <span>Preparando</span>
           </Badge>
-        );      case 'Cancelado':
+        ); case 'Cancelado':
         return (
           <Badge className="bg-red-100 text-red-800 hover:bg-red-200 flex items-center gap-1">
             <X className="h-3 w-3" />
@@ -74,7 +74,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
         </Badge>
       );
     }
-  };  const getNextStatus = (currentStatus: string) => {
+  }; const getNextStatus = (currentStatus: string) => {
     switch (currentStatus) {
       case 'Pendiente': return 'Preparando';    // 1 -> 2
       case 'Preparando': return 'Entregado';    // 2 -> 3  
@@ -115,21 +115,23 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
       toast.error('Error al actualizar el estado');
       console.error('Error updating status:', error);
     }
-  };  const handleDownloadInvoice = async (e: React.MouseEvent) => {
+  }; 
+  
+  const handleDownloadInvoice = async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      // Asegurarse de que id_pedido es un número
-      const orderId = typeof order.id_pedido === 'string' ? parseInt(order.id_pedido, 10) : order.id_pedido;
-      if (isNaN(orderId)) {
+      // Asegurarse de que id_venta es un número
+      const ventdaID = typeof order.id_venta === 'string' ? parseInt(order.id_venta, 10) : order.id_venta;
+      if (isNaN(ventdaID)) {
         toast.error('ID de pedido inválido');
         return;
       }
-      const response = await invoiceService.generateInvoice(orderId);
+      const response = await invoiceService.generateInvoice(ventdaID);
       if (response.success && response.data && response.data.base64) {
         const pdfBlob = new Blob([Uint8Array.from(atob(response.data.base64), c => c.charCodeAt(0))], { type: 'application/pdf' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(pdfBlob);
-        link.download = `factura-${order.id_pedido}.pdf`;
+        link.download = `factura-${order.id_venta}.pdf`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -209,7 +211,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
                 <Button
                   variant="default"
                   size="sm"
-                  onClick={handleDownloadInvoice} 
+                  onClick={handleDownloadInvoice}
                   className="flex items-center gap-1 whitespace-nowrap bg-green-500 hover:bg-green-600"
                 >
                   <Download className="h-3 w-3" />

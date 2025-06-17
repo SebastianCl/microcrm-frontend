@@ -8,6 +8,7 @@ export interface Order {
   correo_cliente?: string;
   nombre_usuario?: string;
   total_pedido?: string;
+  id_venta ?: number;
 }
 
 export interface OrderItem {
