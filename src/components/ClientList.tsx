@@ -151,12 +151,10 @@ const ClientList: React.FC<ClientListProps> = ({
     },    {
       header: 'Acciones',
       accessorKey: (client: Client) => (
-        <div className="flex space-x-2 justify-end">
-          <Button variant="outline" size="sm">Ver</Button>
+        <div className="flex justify-center">
           <Button 
             variant="outline" 
-            size="sm" 
-            className="hidden md:inline-flex"
+            size="sm"
             onClick={(e) => {
               e.stopPropagation();
               setEditingClient(client);
@@ -166,7 +164,7 @@ const ClientList: React.FC<ClientListProps> = ({
           </Button>
         </div>
       ),
-      className: "w-[100px] md:w-[180px]"
+      className: "w-[100px] md:w-[180px] text-center"
     },
   ];
 
