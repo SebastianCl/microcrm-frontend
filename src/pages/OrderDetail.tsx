@@ -11,17 +11,14 @@ import {
   CheckCircle2, 
   Clock, 
   RefreshCw,
-  Loader2 
+  Loader2,
+  ArrowRight,
+  Download
 } from 'lucide-react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { toast } from 'sonner';
 import { Addition } from '@/models/order.model';
+import CancelOrderConfirmation from '@/components/CancelOrderConfirmation';
+import { invoiceService } from '@/services/invoiceService';
 
 const OrderDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -32,24 +29,88 @@ const OrderDetail = () => {
   });
   
   const updateOrderStatus = useUpdateOrderStatus(id!);
-    const handleStatusChange = (newStatus: 'Pendiente' | 'Preparando' | 'Cancelado' | 'Entregado' | 'Finalizado') => {
-    // Mapear los estados del frontend a los valores que espera la API
-    const statusMap = {
+  const [showCancelDialog, setShowCancelDialog] = React.useState(false);
+
+  const getNextStatus = (currentStatus: string) => {
+    switch (currentStatus) {
+      case 'Pendiente': return 'Preparando';    // 1 -> 2
+      case 'Preparando': return 'Entregado';    // 2 -> 3  
+      case 'Entregado': return 'Finalizado';    // 3 -> 5
+      default: return null;
+    }
+  };
+
+  const getNextStatusLabel = (currentStatus: string) => {
+    switch (currentStatus) {
+      case 'Pendiente': return 'Iniciar Preparación';
+      case 'Preparando': return 'Marcar como Entregado';
+      case 'Entregado': return 'Finalizar';
+      default: return null;
+    }
+  };
+
+  const handleNextStatus = async () => {
+    const nextStatus = getNextStatus(order.estado);
+    if (!nextStatus) return;
+
+    // Mapear estados en español a IDs de estado que espera el backend
+    const statusIdMap: Record<string, number> = {
       'Pendiente': 1,
-      'Preparando': 2, 
+      'Preparando': 2,
       'Entregado': 3,
-      'Cancelado': 4,
-      'Finalizado': 5
+      'Finalizado': 5,
+      'Cancelado': 4 
     };
-    
-    updateOrderStatus.mutate(statusMap[newStatus], {
-      onSuccess: () => {
-        toast.success('Estado del pedido actualizado');
-      },
-      onError: () => {
-        toast.error('Error actualizando el estado del pedido');
+
+    const estadoId = statusIdMap[nextStatus];
+    if (!estadoId) return;
+
+    try {
+      await updateOrderStatus.mutateAsync(estadoId);
+      toast.success(`Estado de orden ${order.id_pedido} actualizado`);
+    } catch (error) {
+      toast.error('Error al actualizar el estado');
+      console.error('Error updating status:', error);
+    }
+  };
+
+  const handleDownloadInvoice = async () => {
+    try {
+      // Asegurarse de que id_pedido es un número
+      const orderId = typeof order.id_pedido === 'string' ? parseInt(order.id_pedido, 10) : order.id_pedido;
+      if (isNaN(orderId)) {
+        toast.error('ID de pedido inválido');
+        return;
       }
-    });
+      const response = await invoiceService.generateInvoice(orderId);
+      if (response.success && response.data && response.data.base64) {
+        const pdfBlob = new Blob([Uint8Array.from(atob(response.data.base64), c => c.charCodeAt(0))], { type: 'application/pdf' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(pdfBlob);
+        link.download = `factura-${order.id_pedido}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success('Factura descargada');
+      } else {
+        toast.error('Error al obtener la factura de la respuesta');
+        console.error('Invalid response structure for invoice:', response);
+      }
+    } catch (error) {
+      toast.error('Error al descargar la factura');
+      console.error('Error downloading invoice:', error);
+    }
+  };
+
+  const handleCancel = async () => {
+    try {
+      await updateOrderStatus.mutateAsync(4); // ID 4 = Cancelado
+      toast.success(`Orden ${order.id_pedido} cancelada`);
+      setShowCancelDialog(false);
+    } catch (error) {
+      toast.error('Error al cancelar la orden');
+      console.error('Error canceling order:', error);
+    }
   };
   
   if (isLoading) {
@@ -78,9 +139,11 @@ const OrderDetail = () => {
       </div>
     );
   }
-
   const order = orderData.order;
   const orderItems = orderData.items;
+  
+  const nextStatus = getNextStatus(order.estado);
+  const nextStatusLabel = getNextStatusLabel(order.estado);
   // Helper function to get status icon
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -211,31 +274,51 @@ const OrderDetail = () => {
             </div>
           </div>
         </Card>
-        
-        <Card className="p-6">
+          <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Gestionar pedidos</h2>
-            <div className="space-y-4">
-            <div>
-              <label className="block font-medium mb-2">Cambiar estado:</label>              <Select 
-                value={order.estado} 
-                onValueChange={(value: 'Pendiente' | 'Preparando' | 'Cancelado' | 'Entregado' | 'Finalizado') => handleStatusChange(value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Pendiente">Pendiente</SelectItem>
-                  <SelectItem value="Preparando">Preparando</SelectItem>
-                  <SelectItem value="Entregado">Entregado</SelectItem>
-                  <SelectItem value="Cancelado">Cancelado</SelectItem>
-                  <SelectItem value="Finalizado">Finalizado</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-4">
             
-            <div className="pt-4 space-y-4">              
+            {/* Botón de siguiente estado */}
+            {nextStatus && (
+              <Button
+                variant="default"
+                onClick={handleNextStatus}
+                disabled={updateOrderStatus.isPending}
+                className="w-full flex items-center justify-center gap-2"
+              >
+                <ArrowRight className="h-4 w-4" />
+                {nextStatusLabel}
+              </Button>
+            )}
+
+            {/* Botón de descargar factura para órdenes finalizadas */}
+            {order.estado === 'Finalizado' && (
+              <Button
+                variant="default"
+                onClick={handleDownloadInvoice}
+                className="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600"
+              >
+                <Download className="h-4 w-4" />
+                Descargar Factura
+              </Button>
+            )}
+
+            {/* Botón de cancelar para órdenes no canceladas ni finalizadas */}
+            {order.estado !== 'Cancelado' && order.estado !== 'Finalizado' && (
+              <Button
+                variant="outline"
+                onClick={() => setShowCancelDialog(true)}
+                className="w-full flex items-center justify-center gap-2 text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
+              >
+                <Ban className="h-4 w-4" />
+                Cancelar Orden
+              </Button>
+            )}
+            
+            {/* Botón de editar orden */}
+            <div className="pt-4 border-t">
               <Link to={`/orders/${order.id_pedido}/edit`}>
-                <Button className="w-full">
+                <Button variant="secondary" className="w-full">
                   Editar orden
                 </Button>
               </Link>
@@ -243,6 +326,13 @@ const OrderDetail = () => {
           </div>
         </Card>
       </div>
+
+      {/* Modal de confirmación de cancelación */}
+      <CancelOrderConfirmation
+        open={showCancelDialog}
+        onOpenChange={setShowCancelDialog}
+        onConfirm={handleCancel}
+      />
     </div>
   );
 };
