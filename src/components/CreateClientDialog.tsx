@@ -30,7 +30,7 @@ const CreateClientDialog: React.FC<CreateClientDialogProps> = ({ children }) => 
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Añadir Nuevo Cliente</DialogTitle>
+          <DialogTitle>Nuevo cliente</DialogTitle>
         </DialogHeader>
         <CreateClientForm onClose={() => setOpen(false)} />
       </DialogContent>

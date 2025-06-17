@@ -38,11 +38,18 @@ const CreateClientForm: React.FC<CreateClientFormProps> = ({ onClose }) => {
   });
   
   async function onSubmit(data: ClientFormValues) {
-    createClientMutation.mutate(data, {
+    const payload = {
+      nombre: data.nombre,
+      correo: data.correo,
+      telefono: data.telefono,
+      id_cliente: 0,
+      estado: true,
+    };
+    createClientMutation.mutate(payload, {
       onSuccess: (nuevoCliente) => {
         toast({
           title: "Cliente creado",
-          description: `${nuevoCliente.nombre} ha sido añadido a tus clientes.`,
+          description: `${data.nombre} ha sido añadido a tus clientes.`,
         });
         onClose(); 
       },
@@ -69,7 +76,7 @@ const CreateClientForm: React.FC<CreateClientFormProps> = ({ onClose }) => {
               <FormItem>
                 <FormLabel>Nombre completo</FormLabel>
                 <FormControl>
-                  <Input placeholder="John Doe" {...field} />
+                  <Input {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -84,7 +91,7 @@ const CreateClientForm: React.FC<CreateClientFormProps> = ({ onClose }) => {
               <FormItem>
                 <FormLabel>Dirección de correo electrónico</FormLabel>
                 <FormControl>
-                  <Input type="email" placeholder="john@example.com" {...field} />
+                  <Input type="email" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -99,7 +106,7 @@ const CreateClientForm: React.FC<CreateClientFormProps> = ({ onClose }) => {
               <FormItem>
                 <FormLabel>Número de teléfono</FormLabel>
                 <FormControl>
-                  <Input placeholder="(555) 123-4567" {...field} />
+                  <Input {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
