@@ -28,37 +28,37 @@ interface OrderListProps {
 
 const ITEMS_PER_PAGE = 10;
 
-const OrderList: React.FC<OrderListProps> = ({ 
-  limit, 
-  showCreateButton = true 
+const OrderList: React.FC<OrderListProps> = ({
+  limit,
+  showCreateButton = true
 }) => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
   const [currentPage, setCurrentPage] = useState(1);
-  
+
   // Verificar conectividad de red
   const { isOnline } = useNetwork();
-  
+
   // Usar React Query para obtener las pedidos
-  const { 
-    data: orders = [], 
-    isLoading, 
-    isError, 
-    error, 
-    refetch 
+  const {
+    data: orders = [],
+    isLoading,
+    isError,
+    error,
+    refetch
   } = useOrders();
 
   // Estado para pedidos filtradas usando useMemo para evitar re-renders innecesarios
   const filteredOrders = useMemo(() => {
     if (!orders) return [];
-    
+
     let result = [...orders];
 
     // Aplicar filtro de busqueda
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      result = result.filter(order => 
+      result = result.filter(order =>
         order.id_pedido.toLowerCase().includes(query) ||
         (order.nombre_cliente && order.nombre_cliente.toLowerCase().includes(query))
       );
@@ -67,14 +67,18 @@ const OrderList: React.FC<OrderListProps> = ({
     // Aplicar filtro de estado
     if (activeFilters.status) {
       result = result.filter(order => order.estado === activeFilters.status);
-    }
-
-    // Aplicar filtro de tipo de pedido
+    }    // Aplicar filtro de tipo de pedido
     if (activeFilters.orderType) {
-      if (activeFilters.orderType === 'dine-in') {
-        result = result.filter(order => order.nombre_mesa);
-      } else if (activeFilters.orderType === 'takeout') {
-        result = result.filter(order => !order.nombre_mesa);
+      if (activeFilters.orderType === 'En Mesa') {
+        result = result.filter(order =>
+          order.tipo_pedido === 'en_mesa' ||
+          (order.nombre_mesa && order.nombre_mesa !== 'Para llevar')
+        );
+      } else if (activeFilters.orderType === 'Para Llevar') {
+        result = result.filter(order =>
+          order.tipo_pedido === 'para_llevar' ||
+          order.nombre_mesa === 'Para llevar'
+        );
       }
     }
 
@@ -91,15 +95,15 @@ const OrderList: React.FC<OrderListProps> = ({
 
     return result;
   }, [searchQuery, activeFilters.status, activeFilters.orderType, activeFilters._sort, orders]);
-  
+
   // Calcular paginación
   const totalPages = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
-  
+
   // Aplicar límite si se especifica, sino usar paginación
-  const displayOrders = limit 
-    ? filteredOrders.slice(0, limit) 
+  const displayOrders = limit
+    ? filteredOrders.slice(0, limit)
     : filteredOrders.slice(startIndex, endIndex);
 
   const handleSearch = useCallback((query: string) => {
@@ -121,16 +125,13 @@ const OrderList: React.FC<OrderListProps> = ({
       id: 'status',
       label: 'Estado',
       type: 'select' as const,
-      options: ['pending', 'processed', 'canceled', 'completed']
+      options: ['Pendiente', 'Preparando', 'Finalizado', 'Cancelado']
     },
     {
       id: 'orderType',
       label: 'Tipo',
       type: 'select' as const,
-      options: [
-        { value: 'dine-in', label: 'En Mesa' },
-        { value: 'takeout', label: 'Para Llevar' }
-      ]
+      options: ['En Mesa', 'Para Llevar']
     }
   ];
 
@@ -138,32 +139,32 @@ const OrderList: React.FC<OrderListProps> = ({
   const getVisiblePages = () => {
     const delta = 2;
     const pages = [];
-    
+
     if (totalPages <= 5) {
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
       }
     } else {
       pages.push(1);
-      
+
       const rangeStart = Math.max(2, currentPage - delta);
       const rangeEnd = Math.min(totalPages - 1, currentPage + delta);
-      
+
       if (rangeStart > 2) {
         pages.push(-1);
       }
-      
+
       for (let i = rangeStart; i <= rangeEnd; i++) {
         pages.push(i);
       }
-      
+
       if (rangeEnd < totalPages - 1) {
         pages.push(-2);
       }
-      
+
       pages.push(totalPages);
     }
-    
+
     return pages;
   };
 
@@ -175,15 +176,15 @@ const OrderList: React.FC<OrderListProps> = ({
           <div className="flex gap-2 items-center">
             {!isOnline && <Badge variant="destructive">Sin conexión</Badge>}
             {isError && (
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => refetch()}
               >
                 <RefreshCcw className="h-4 w-4 mr-1" /> Reintentar
               </Button>
             )}
-            <Button 
+            <Button
               onClick={() => navigate('/orders/new')}
               className="w-full md:w-auto"
             >
@@ -195,7 +196,7 @@ const OrderList: React.FC<OrderListProps> = ({
 
       {!limit && (
         <div className="mb-6">
-          <SearchAndFilter 
+          <SearchAndFilter
             search={searchQuery}
             onSearchChange={handleSearch}
             filters={filterOptions}
@@ -204,15 +205,15 @@ const OrderList: React.FC<OrderListProps> = ({
           />
         </div>
       )}
-      
+
       {/* Mostrar error si existe */}
       {isError && (
-        <ErrorDisplay 
-          error={error instanceof Error ? error : 'Error al cargar las pedidos'} 
+        <ErrorDisplay
+          error={error instanceof Error ? error : 'Error al cargar las pedidos'}
           onRetry={() => refetch()}
         />
       )}
-      
+
       {/* Mostrar esqueleto durante la carga */}
       {isLoading && (
         <div className="space-y-4">
@@ -221,7 +222,7 @@ const OrderList: React.FC<OrderListProps> = ({
           <Skeleton className="h-32 w-full" />
         </div>
       )}
-      
+
       {/* Mostrar cards cuando no hay error y no está cargando */}
       {!isLoading && !isError && (
         <div className="space-y-4">
@@ -246,12 +247,12 @@ const OrderList: React.FC<OrderListProps> = ({
           <Pagination className="order-1 sm:order-2">
             <PaginationContent>
               <PaginationItem>
-                <PaginationPrevious 
+                <PaginationPrevious
                   onClick={() => handlePageChange(currentPage - 1)}
                   className={currentPage <= 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
                 />
               </PaginationItem>
-              
+
               {getVisiblePages().map((page, i) => (
                 <PaginationItem key={page < 0 ? `ellipsis-${i}` : page}>
                   {page < 0 ? (
@@ -267,9 +268,9 @@ const OrderList: React.FC<OrderListProps> = ({
                   )}
                 </PaginationItem>
               ))}
-              
+
               <PaginationItem>
-                <PaginationNext 
+                <PaginationNext
                   onClick={() => handlePageChange(currentPage + 1)}
                   className={currentPage >= totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
                 />
