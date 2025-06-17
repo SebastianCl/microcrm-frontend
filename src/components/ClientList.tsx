@@ -76,7 +76,6 @@ const ClientList: React.FC<ClientListProps> = ({
   //     });
   //   }    setFilteredClients(result);
   // }, [searchQuery, activeFilters, clients]);
-
   const filteredClients = React.useMemo(() => {
     if (!clients) return [];
 
@@ -86,32 +85,18 @@ const ClientList: React.FC<ClientListProps> = ({
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter(client => 
-        client.name.toLowerCase().includes(query) ||
-        client.email.toLowerCase().includes(query) ||
-        client.company.toLowerCase().includes(query)
+        client.nombre.toLowerCase().includes(query) ||
+        client.correo.toLowerCase().includes(query) ||
+        client.telefono.toLowerCase().includes(query)
       );
     }
 
     // Aplicar filtro de estado
     if (activeFilters.status) {
-      result = result.filter(client => client.status === activeFilters.status);
+      const isActive = activeFilters.status === 'active';
+      result = result.filter(client => client.estado === isActive);
     }
 
-    // Aplicar filtro de facturación mínima
-    if (activeFilters.minBilled) {
-      result = result.filter(client => client.totalBilled >= parseFloat(activeFilters.minBilled as string));
-    }
-
-    // Applicar ordenar
-    if (activeFilters._sort) {
-      result.sort((a, b) => {
-        if (activeFilters._sort === 'asc') {
-          return a.totalBilled > b.totalBilled ? 1 : -1;
-        } else {
-          return a.totalBilled < b.totalBilled ? 1 : -1;
-        }
-      });
-    }
     return result;
   }, [clients, searchQuery, activeFilters]);
   
@@ -126,53 +111,40 @@ const ClientList: React.FC<ClientListProps> = ({
     setActiveFilters(filters);
     setCurrentPage(1);
   }, []);
-
   const filterOptions = [
     {
       id: 'status',
       label: 'Estado',
       type: 'select' as const,
-      options: ['active', 'inactive']
-    },
-    {
-      id: 'minBilled',
-      label: 'Facturación mínima',
-      type: 'number' as const
+      options: [
+        { value: 'active', label: 'Activo' },
+        { value: 'inactive', label: 'Inactivo' }
+      ]
     }
   ];
-
   const columns = [
     {
       header: 'Nombre',
-      accessorKey: 'name' as keyof Client,
+      accessorKey: 'nombre' as keyof Client,
     },
     {
       header: 'Email',
-      accessorKey: 'email' as keyof Client,
-      hideOnMobile: true
-    },
-    {
-      header: 'Empresa',
-      accessorKey: 'company' as keyof Client,
+      accessorKey: 'correo' as keyof Client,
       hideOnMobile: true
     },
     {
       header: 'Teléfono',
-      accessorKey: 'phone' as keyof Client,
+      accessorKey: 'telefono' as keyof Client,
       hideOnMobile: true
     },
     {
-      header: 'Total Facturado',
-      accessorKey: (client: Client) => `$${client.totalBilled}`,
-    },
-    {
       header: 'Estado',
-      accessorKey: 'status' as keyof Client,
+      accessorKey: 'estado' as keyof Client,
       cell: (client: Client) => (
-        <Badge className={client.status === 'active' 
+        <Badge className={client.estado 
           ? 'bg-green-100 text-green-800 hover:bg-green-200' 
           : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}>
-          {client.status === 'active' ? 'Activo' : 'Inactivo'}
+          {client.estado ? 'Activo' : 'Inactivo'}
         </Badge>
       ),
     },
@@ -213,13 +185,12 @@ const ClientList: React.FC<ClientListProps> = ({
       </div>
 
       {!limit && (
-        <div className="mb-4">
-          <SearchAndFilter 
+        <div className="mb-4">          <SearchAndFilter 
             search={searchQuery}
             onSearchChange={handleSearch}
             filters={filterOptions}
             onFilter={handleFilter}
-            placeholder="Buscar por nombre, email o empresa..."
+            placeholder="Buscar por nombre, email o teléfono..."
           />
         </div>
       )}
