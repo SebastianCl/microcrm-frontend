@@ -221,27 +221,27 @@ const CreateOrder = () => {
 
   return (
     <Form {...form}> {/* Form provider wraps the entire page content that needs form context */}
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen bg-background">
         {/* Header */}
-        <div className="bg-white shadow-sm border-b sticky top-0 z-20">
+        <div className="bg-card shadow-sm border-b sticky top-0 z-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
               <div className="flex items-center space-x-3">
                 <div className="p-2 bg-primary/10 rounded-lg">
                   <ShoppingCart className="h-5 w-5 text-primary" />
                 </div>
-                <h1 className="text-xl md:text-2xl font-bold text-gray-900">Nueva Orden</h1>
+                <h1 className="text-xl md:text-2xl font-bold text-foreground">Nueva Orden</h1>
               </div>
               <div className="flex items-center gap-4"> {/* Contenedor para alinear elementos a la derecha */}
                 {/* Client Selection */}
                 <div className="hidden sm:block"> {/* Ocultar en pantallas pequeñas, ajustar según sea necesario */}
                   {selectedClientId ? (
                     <div className="flex items-center gap-3">
-                      <div className="flex-1 p-2 border rounded-lg bg-green-50 border-green-200 flex items-center gap-2">
-                        <User className="h-4 w-4 text-green-600" />
-                        <span className="text-sm font-medium text-green-700">{selectedClientName}</span>
+                      <div className="flex-1 p-2 border rounded-lg bg-green-100 dark:bg-green-800 border-green-300 dark:border-green-700 flex items-center gap-2">
+                        <User className="h-4 w-4 text-green-700 dark:text-green-300" />
+                        <span className="text-sm font-medium text-green-800 dark:text-green-200">{selectedClientName}</span>
                       </div>
-                      <Button variant="ghost" size="icon" onClick={clearClient} className="text-gray-500 hover:text-red-500">
+                      <Button variant="ghost" size="icon" onClick={clearClient} className="text-muted-foreground hover:text-red-500 dark:hover:text-red-400">
                         <X className="h-4 w-4" />
                       </Button>
                     </div>
@@ -253,7 +253,7 @@ const CreateOrder = () => {
                       isLoading={isLoadingClients}
                       error={clientsError}
                     >
-                      <Button variant="outline" className="justify-start text-left font-normal hover:bg-gray-50">
+                      <Button variant="outline" className="justify-start text-left font-normal hover:bg-muted/50">
                         {isLoadingClients ? 'Cargando...' : clientsError ? 'Error' : 'Seleccionar Cliente'}
                       </Button>
                     </ClientSelectorModal>
@@ -269,7 +269,7 @@ const CreateOrder = () => {
                       <FormItem>
                         <FormControl>
                           <select
-                            className="flex h-10 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 hover:border-gray-300"
+                            className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-ring hover:border-muted-foreground"
                             onChange={field.onChange}
                             value={field.value}
                           >
@@ -319,14 +319,14 @@ const CreateOrder = () => {
                     <div className="grid grid-cols-1 gap-6">
                       {/* Client Selection for small screens */}
                       <div className="space-y-3">
-                        <label className="text-sm font-medium text-gray-700">Cliente</label>
+                        <label className="text-sm font-medium text-foreground">Cliente</label>
                         {selectedClientId ? (
                           <div className="flex items-center gap-3">
-                            <div className="flex-1 p-3 border rounded-lg bg-green-50 border-green-200 flex items-center gap-2">
-                              <User className="h-4 w-4 text-green-600" />
-                              <span className="text-sm font-medium text-green-700">{selectedClientName}</span>
+                            <div className="flex-1 p-3 border rounded-lg bg-green-100 dark:bg-green-800 border-green-300 dark:border-green-700 flex items-center gap-2">
+                              <User className="h-4 w-4 text-green-700 dark:text-green-300" />
+                              <span className="text-sm font-medium text-green-800 dark:text-green-200">{selectedClientName}</span>
                             </div>
-                            <Button variant="ghost" size="icon" onClick={clearClient} className="text-gray-500 hover:text-red-500">
+                            <Button variant="ghost" size="icon" onClick={clearClient} className="text-muted-foreground hover:text-red-500 dark:hover:text-red-400">
                               <X className="h-4 w-4" />
                             </Button>
                           </div>
@@ -339,7 +339,7 @@ const CreateOrder = () => {
                             error={clientsError} // Pass error state
                           >
                             {/* Trigger button for the modal */}
-                            <Button variant="outline" className="w-full justify-start text-left font-normal hover:bg-gray-50">
+                            <Button variant="outline" className="w-full justify-start text-left font-normal hover:bg-muted/50">
                               {isLoadingClients ? 'Cargando clientes...' : clientsError ? 'Error al cargar clientes' : 'Seleccionar Cliente'}
                             </Button>
                           </ClientSelectorModal>
@@ -352,13 +352,13 @@ const CreateOrder = () => {
                         name="tableNumber"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                            <FormLabel className="flex items-center gap-2 text-sm font-medium text-foreground">
                               <MapPin className="h-4 w-4 text-primary" />
                               Mesa
                             </FormLabel>
                             <FormControl>
                               <select
-                                className="flex h-11 w-full rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 hover:border-gray-300"
+                                className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2 text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-ring hover:border-muted-foreground"
                                 onChange={field.onChange}
                                 value={field.value}
                               >
@@ -400,15 +400,15 @@ const CreateOrder = () => {
                       <CardTitle className="text-lg">Productos en el Pedido</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="border rounded-lg overflow-hidden bg-white">
+                      <div className="border rounded-lg overflow-hidden bg-card">
                         <div className="overflow-x-auto">
                           <table className="w-full">
                             <thead>
-                              <tr className="border-b bg-gray-50">
-                                <th className="text-left p-4 font-medium text-gray-700">Producto</th>
-                                <th className="text-center p-4 font-medium text-gray-700">Cantidad</th>
-                                <th className="text-right p-4 font-medium text-gray-700">Precio</th>
-                                <th className="text-right p-4 font-medium text-gray-700">Total</th>
+                              <tr className="border-b bg-muted">
+                                <th className="text-left p-4 font-medium text-muted-foreground">Producto</th>
+                                <th className="text-center p-4 font-medium text-muted-foreground">Cantidad</th>
+                                <th className="text-right p-4 font-medium text-muted-foreground">Precio</th>
+                                <th className="text-right p-4 font-medium text-muted-foreground">Total</th>
                                 <th className="p-4 w-[100px]">Acciones</th>
                               </tr>
                             </thead>
@@ -457,7 +457,7 @@ const CreateOrder = () => {
                       type="button"
                       variant="outline"
                       onClick={handleCancelClick}
-                      className="w-full h-10 hover:bg-gray-50"
+                      className="w-full h-10 hover:bg-muted/50"
                     >
                       Cancelar
                     </Button>
