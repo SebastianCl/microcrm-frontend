@@ -27,12 +27,12 @@ const Dashboard = () => {
             icon={<ShoppingCart className="h-6 w-6 text-muted-foreground" />}
             href="/orders/new"
           />
-          <QuickActionCard
+          {/*<QuickActionCard
             title="Ver Facturas"
             description="Consulta y gestiona tus facturas."
             icon={<Receipt className="h-6 w-6 text-muted-foreground" />}
             href="/invoices"
-          />
+          />*/}
           <QuickActionCard
             title="Gestionar Clientes"
             description="Añade o edita la información de tus clientes."

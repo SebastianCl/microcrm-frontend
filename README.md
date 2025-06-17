@@ -90,13 +90,6 @@ src/
 └── pages/            # Páginas principales
 ```
 
-## 📝 Licencia
-
-Este proyecto está bajo la Licencia EULA. Consulta el archivo `LICENSE` para más información.
-
-## 👥 Contribución
-
-Las contribuciones son bienvenidas. Por favor, lee las directrices de contribución antes de enviar un pull request.
 
 ## 📞 Contacto
 
