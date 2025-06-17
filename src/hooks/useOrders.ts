@@ -129,6 +129,40 @@ export const useUpdateOrderStatus = (id: string) => {
 };
 
 /**
+ * Hook para ajustar una orden (agregar, modificar, eliminar items)
+ */
+export const useAdjustOrder = (id: string) => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (data: {
+      agregados: Array<{
+        id_producto: number;
+        cantidad: number;
+        precio_unitario: number;
+        adiciones?: Array<{
+          id_adicion: number;
+          cantidad: number;
+        }>;
+      }>;
+      modificados: Array<{
+        id_detalle_pedido: number;
+        cantidad: number;
+        descuento?: number;
+      }>;
+      eliminados: Array<number>;
+    }) => orderService.adjustOrder(id, data),
+    onSuccess: (updatedOrder) => {
+      // Actualizar la orden en la caché
+      queryClient.setQueryData(ORDER_QUERY_KEYS.ORDER(id), updatedOrder);
+      // Invalidar las consultas relacionadas
+      queryClient.invalidateQueries({ queryKey: [ORDER_QUERY_KEYS.ORDERS] });
+      queryClient.invalidateQueries({ queryKey: [...ORDER_QUERY_KEYS.ORDER(id), 'detail'] });
+    },
+  });
+};
+
+/**
  * Hook para eliminar una orden
  */
 export const useDeleteOrder = () => {

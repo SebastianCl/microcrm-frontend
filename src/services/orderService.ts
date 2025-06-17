@@ -204,6 +204,30 @@ export const orderService = {
   },
 
   /**
+   * Ajusta una orden con productos agregados, modificados y eliminados
+   */
+  async adjustOrder(id: string, data: {
+    agregados: Array<{
+      id_producto: number;
+      cantidad: number;
+      precio_unitario: number;
+      adiciones?: Array<{
+        id_adicion: number;
+        cantidad: number;
+      }>;
+    }>;
+    modificados: Array<{
+      id_detalle_pedido: number;
+      cantidad: number;
+      descuento?: number;
+    }>;
+    eliminados: Array<number>;
+  }): Promise<Order> {
+    const response = await apiClient.put<ApiOrderSingleResponse>(`${API_CONFIG.ENDPOINTS.ORDERS}/${id}/ajustar`, data);
+    return response.data;
+  },
+
+  /**
    * Obtiene el detalle de una orden
    */
   async getDetail(orderId: string): Promise<OrderDetailItem[]> {

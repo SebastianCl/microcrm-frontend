@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { useOrderDetail, useUpdateOrderWithItems } from '@/hooks/useOrders';
+import { useOrderDetail, useAdjustOrder } from '@/hooks/useOrders';
 import { OrderItem } from '@/models/order.model';
 import { toast } from "sonner";
 import { Separator } from '@/components/ui/separator';
@@ -18,9 +18,13 @@ const EditOrder = () => {
     enabled: Boolean(id),
   });
 
-  const updateOrder = useUpdateOrderWithItems(id!);
+  const adjustOrder = useAdjustOrder(id!);
   
-  const [orderItems, setOrderItems] = useState<(OrderItem & { discount?: number; discountType?: string })[]>([]);
+  // Estados para rastrear cambios
+  const [originalItems, setOriginalItems] = useState<(OrderItem & { discount?: number; discountType?: string })[]>([]);
+  const [currentItems, setCurrentItems] = useState<(OrderItem & { discount?: number; discountType?: string })[]>([]);
+  const [newItems, setNewItems] = useState<(OrderItem & { discount?: number; discountType?: string })[]>([]);
+  const [removedItemIds, setRemovedItemIds] = useState<number[]>([]);
 
   useEffect(() => {
     if (orderData?.items) {
@@ -36,70 +40,98 @@ const EditOrder = () => {
         discountType: 'none',
         additions: item.additions || [],
       }));
-      setOrderItems(transformedItems);
+      setOriginalItems(transformedItems);
+      setCurrentItems(transformedItems);
     }
   }, [orderData]);
-
   const handleAddProduct = (product: OrderItem) => {
-    // Check if product already exists in order
-    const existingProductIndex = orderItems.findIndex(
-      item => item.productId === product.productId && 
-      JSON.stringify(item.additions || []) === JSON.stringify(product.additions || [])
-    );
+    // Agregar como nuevo item
+    const newProductWithId = {
+      ...product,
+      id_detalle_pedido: undefined, // Sin ID significa que es nuevo
+      discount: 0,
+      discountType: 'none'
+    };
     
-    if (existingProductIndex >= 0) {
-      // Update existing product quantity
-      const updatedItems = [...orderItems];
-      updatedItems[existingProductIndex].quantity += product.quantity;
-      updatedItems[existingProductIndex].total += product.total;
-      setOrderItems(updatedItems);
-    } else {
-      // Add new product
-      setOrderItems([...orderItems, { 
-        ...product, 
-        discount: 0, 
-        discountType: 'none' 
-      }]);
-    }
-    
-    toast.success(`${product.name} Agregar a la orden`);
+    setNewItems([...newItems, newProductWithId]);
+    toast.success(`${product.name} agregado a la orden`);
   };
 
-  const handleUpdateOrderItem = (index: number, updatedItem: OrderItem & { discount?: number; discountType?: string }) => {
-    const updatedItems = [...orderItems];
+  const handleUpdateCurrentItem = (index: number, updatedItem: OrderItem & { discount?: number; discountType?: string }) => {
+    const updatedItems = [...currentItems];
     updatedItems[index] = updatedItem;
-    setOrderItems(updatedItems);
+    setCurrentItems(updatedItems);
     toast.success('Producto actualizado');
   };
 
-  const handleRemoveProduct = (index: number) => {
-    setOrderItems(orderItems.filter((_, i) => i !== index));
+  const handleUpdateNewItem = (index: number, updatedItem: OrderItem & { discount?: number; discountType?: string }) => {
+    const updatedItems = [...newItems];
+    updatedItems[index] = updatedItem;
+    setNewItems(updatedItems);
+    toast.success('Producto actualizado');
+  };
+
+  const handleRemoveCurrentItem = (index: number) => {
+    const item = currentItems[index];
+    if (item.id_detalle_pedido) {
+      // Es un item original, agregar a eliminados
+      setRemovedItemIds([...removedItemIds, item.id_detalle_pedido]);
+    }
+    setCurrentItems(currentItems.filter((_, i) => i !== index));
+    toast.success('Producto removido');
+  };
+
+  const handleRemoveNewItem = (index: number) => {
+    setNewItems(newItems.filter((_, i) => i !== index));
     toast.success('Producto removido');
   };
 
   const calculateTotal = () => {
-    return orderItems.reduce((sum, item) => sum + item.total, 0);
+    const currentTotal = currentItems.reduce((sum, item) => sum + item.total, 0);
+    const newTotal = newItems.reduce((sum, item) => sum + item.total, 0);
+    return currentTotal + newTotal;
   };
-  const handleSaveOrder = async () => {
-    if (orderItems.length === 0) {
+
+  const getAllItems = () => {
+    return [...currentItems, ...newItems];
+  };  const handleSaveOrder = async () => {
+    const allItems = getAllItems();
+    if (allItems.length === 0) {
       toast.error('Error: No hay productos');
       return;
     }
 
     try {
-      await updateOrder.mutateAsync({
-        items: orderItems.map(item => ({
-          id_detalle_pedido: item.id_detalle_pedido,
-          productId: item.productId,
-          name: item.name,
-          quantity: item.quantity,
-          price: item.price,
-          total: item.total,
-          discount: item.discount,
-          additions: item.additions,
+      // Preparar datos para el endpoint de ajustar
+      const adjustData = {
+        agregados: newItems.map(item => ({
+          id_producto: parseInt(item.productId),
+          cantidad: item.quantity,
+          precio_unitario: item.price,
+          adiciones: item.additions?.map(add => ({
+            id_adicion: parseInt(add.id),
+            cantidad: add.quantity,
+          })) || [],
         })),
-        total: calculateTotal()
-      });
+        modificados: currentItems
+          .filter(item => {
+            // Buscar el item original correspondiente
+            const originalItem = originalItems.find(orig => orig.id_detalle_pedido === item.id_detalle_pedido);
+            if (!originalItem) return false;
+            
+            // Verificar si hay cambios en cantidad o descuento
+            return originalItem.quantity !== item.quantity || 
+                   (originalItem.discount || 0) !== (item.discount || 0);
+          })
+          .map(item => ({
+            id_detalle_pedido: item.id_detalle_pedido!,
+            cantidad: item.quantity,
+            descuento: item.discount || 0,
+          })),
+        eliminados: removedItemIds,
+      };
+
+      await adjustOrder.mutateAsync(adjustData);
       
       toast.success('Orden actualizada');
       navigate(`/orders/${id}`);
@@ -184,9 +216,7 @@ const EditOrder = () => {
             <QuickProductSelector onAddProduct={handleAddProduct} />
           </div>
 
-          <Separator />
-
-          {/* Order Items */}
+          <Separator />          {/* Order Items */}
           <div className="space-y-4">
             
             <div className="border rounded-md overflow-hidden">
@@ -202,21 +232,33 @@ const EditOrder = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {orderItems.length === 0 ? (
+                    {getAllItems().length === 0 ? (
                       <tr>
                         <td colSpan={5} className="text-center p-8 text-muted-foreground">
                           Sin productos
                         </td>
                       </tr>
                     ) : (
-                      orderItems.map((item, index) => (
-                        <OrderItemRow
-                          key={`${item.productId}-${index}`}
-                          item={item}
-                          onUpdate={(updatedItem) => handleUpdateOrderItem(index, updatedItem)}
-                          onRemove={() => handleRemoveProduct(index)}
-                        />
-                      ))
+                      <>
+                        {/* Items actuales (originales y modificados) */}
+                        {currentItems.map((item, index) => (
+                          <OrderItemRow
+                            key={`current-${item.id_detalle_pedido || index}`}
+                            item={item}
+                            onUpdate={(updatedItem) => handleUpdateCurrentItem(index, updatedItem)}
+                            onRemove={() => handleRemoveCurrentItem(index)}
+                          />
+                        ))}
+                        {/* Items nuevos */}
+                        {newItems.map((item, index) => (
+                          <OrderItemRow
+                            key={`new-${index}`}
+                            item={item}
+                            onUpdate={(updatedItem) => handleUpdateNewItem(index, updatedItem)}
+                            onRemove={() => handleRemoveNewItem(index)}
+                          />
+                        ))}
+                      </>
                     )}
                   </tbody>
                 </table>
@@ -231,9 +273,7 @@ const EditOrder = () => {
                 </div>
               </div>
             </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row sm:justify-between gap-4 pt-6">
+          </div>          <div className="flex flex-col sm:flex-row sm:justify-between gap-4 pt-6">
             <Button 
               variant="outline" 
               onClick={() => navigate(`/orders/${id}`)}
@@ -243,10 +283,10 @@ const EditOrder = () => {
             </Button>
             <Button 
               onClick={handleSaveOrder}
-              disabled={orderItems.length === 0 || updateOrder.isPending}
+              disabled={getAllItems().length === 0 || adjustOrder.isPending}
               className="w-full sm:w-auto"
             >
-              {updateOrder.isPending ? (
+              {adjustOrder.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : null}
               Guardar cambios
