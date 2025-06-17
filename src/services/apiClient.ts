@@ -1,5 +1,6 @@
 import { ApiError } from '@/types/api';
 import { API_CONFIG } from '@/config/api';
+import { getGlobalForceLogout } from '@/contexts/AuthContext';
 
 /**
  * Cliente centralizado para realizar peticiones a la API
@@ -49,7 +50,11 @@ class ApiClient {
           // Fallar silenciosamente si no es JSON
           errorData = null;
         }
-        
+        // Si el error es 401 o 403, forzar logout (el toast se muestra en el AuthProvider)
+        if (response.status === 401 || response.status === 403) {
+          const forceLogout = getGlobalForceLogout();
+          if (forceLogout) forceLogout();
+        }
         throw new ApiError(
           errorData?.message || `Error ${response.status}: ${response.statusText}`,
           response.status,
