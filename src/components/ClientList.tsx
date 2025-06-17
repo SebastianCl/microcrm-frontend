@@ -4,6 +4,7 @@ import { Client } from '@/models/client.model';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import CreateClientDialog from './CreateClientDialog';
+import EditClientDialog from './EditClientDialog';
 import { Button } from '@/components/ui/button';
 import SearchAndFilter from './ui/SearchAndFilter';
 import { useClients } from '@/hooks/useClients';
@@ -19,10 +20,10 @@ interface ClientListProps {
 const ClientList: React.FC<ClientListProps> = ({ 
   limit, 
   showCreateButton = true 
-}) => {
-  const [currentPage, setCurrentPage] = useState(1);
+}) => {  const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
   const pageSize = 5;
   
   // Verificar conectividad de red
@@ -147,13 +148,22 @@ const ClientList: React.FC<ClientListProps> = ({
           {client.estado ? 'Activo' : 'Inactivo'}
         </Badge>
       ),
-    },
-    {
+    },    {
       header: 'Acciones',
       accessorKey: (client: Client) => (
         <div className="flex space-x-2 justify-end">
           <Button variant="outline" size="sm">Ver</Button>
-          <Button variant="outline" size="sm" className="hidden md:inline-flex">Editar</Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="hidden md:inline-flex"
+            onClick={(e) => {
+              e.stopPropagation();
+              setEditingClient(client);
+            }}
+          >
+            Editar
+          </Button>
         </div>
       ),
       className: "w-[100px] md:w-[180px]"
@@ -223,6 +233,18 @@ const ClientList: React.FC<ClientListProps> = ({
             totalItems: filteredClients.length,
             onPageChange: setCurrentPage,
           } : undefined}
+        />      )}
+      
+      {/* Modal de edición de cliente */}
+      {editingClient && (
+        <EditClientDialog
+          client={editingClient}
+          open={!!editingClient}
+          onOpenChange={(open) => {
+            if (!open) {
+              setEditingClient(null);
+            }
+          }}
         />
       )}
     </Card>
