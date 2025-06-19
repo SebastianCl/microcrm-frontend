@@ -73,16 +73,22 @@ const OrderDetail = () => {
       console.error('Error updating status:', error);
     }
   };
-
   const handleDownloadInvoice = async () => {
     try {
-      // Asegurarse de que id_pedido es un número
-      const orderId = typeof order.id_pedido === 'string' ? parseInt(order.id_pedido, 10) : order.id_pedido;
-      if (isNaN(orderId)) {
-        toast.error('ID de pedido inválido');
+      // Verificar que id_venta existe
+      if (!order.id_venta) {
+        toast.error('ID de venta no disponible');
         return;
       }
-      const response = await invoiceService.generateInvoice(orderId);
+
+      // Asegurarse de que id_venta es un número
+      const id_venta = typeof order.id_venta === 'string' ? parseInt(order.id_venta, 10) : order.id_venta;
+      if (isNaN(id_venta)) {
+        toast.error('ID de venta inválido');
+        return;
+      }
+      
+      const response = await invoiceService.generateInvoice(id_venta);
       if (response.success && response.data && response.data.base64) {
         const pdfBlob = new Blob([Uint8Array.from(atob(response.data.base64), c => c.charCodeAt(0))], { type: 'application/pdf' });
         const link = document.createElement('a');
@@ -289,10 +295,8 @@ const OrderDetail = () => {
                 <ArrowRight className="h-4 w-4" />
                 {nextStatusLabel}
               </Button>
-            )}
-
-            {/* Botón de descargar factura para órdenes finalizadas */}
-            {order.estado === 'Finalizado' && (
+            )}            {/* Botón de descargar factura para órdenes finalizadas */}
+            {order.estado === 'Finalizado' && order.id_venta && (
               <Button
                 variant="default"
                 onClick={handleDownloadInvoice}

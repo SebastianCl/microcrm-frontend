@@ -30,8 +30,8 @@ interface OrderDetailItem {
   estado_pedido: string;
   nombre_cliente: string;
   nombre_usuario: string;
-  correo_cliente: string;
-  total_pedido: string;
+  correo_cliente: string;  total_pedido: string;
+  id_venta: number;
 }
 
 interface ApiOrderDetailResponse {
@@ -85,10 +85,10 @@ export const orderService = {
     }
     
     const firstItem = response.data[0];
-    
-    // Crear el objeto Order a partir del primer item
+      // Crear el objeto Order a partir del primer item
     const order: Order = {
       id_pedido: id,
+      id_venta: firstItem.id_venta,
       fecha: '', // No viene en la respuesta, se puede obtener de otro endpoint si es necesario
       tipo_pedido: firstItem.mesa === 'Para llevar' ? 'para_llevar' : 'en_mesa',
       estado: firstItem.estado_pedido as Order['estado'],
