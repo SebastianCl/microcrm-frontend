@@ -5,11 +5,11 @@ import { useOrderDetail, useUpdateOrderStatus } from '@/hooks/useOrders';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { 
-  ChevronLeft, 
-  Ban, 
-  CheckCircle2, 
-  Clock, 
+import {
+  ChevronLeft,
+  Ban,
+  CheckCircle2,
+  Clock,
   RefreshCw,
   Loader2,
   ArrowRight,
@@ -23,11 +23,11 @@ import { invoiceService } from '@/services/invoiceService';
 const OrderDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  
+
   const { data: orderData, isLoading, error } = useOrderDetail(id!, {
     enabled: Boolean(id),
   });
-  
+
   const updateOrderStatus = useUpdateOrderStatus(id!);
   const [showCancelDialog, setShowCancelDialog] = React.useState(false);
 
@@ -59,7 +59,7 @@ const OrderDetail = () => {
       'Preparando': 2,
       'Entregado': 3,
       'Finalizado': 5,
-      'Cancelado': 4 
+      'Cancelado': 4
     };
 
     const estadoId = statusIdMap[nextStatus];
@@ -87,7 +87,7 @@ const OrderDetail = () => {
         toast.error('ID de venta inválido');
         return;
       }
-      
+
       const response = await invoiceService.generateInvoice(id_venta);
       if (response.success && response.data && response.data.base64) {
         const pdfBlob = new Blob([Uint8Array.from(atob(response.data.base64), c => c.charCodeAt(0))], { type: 'application/pdf' });
@@ -118,7 +118,7 @@ const OrderDetail = () => {
       console.error('Error canceling order:', error);
     }
   };
-  
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -126,7 +126,7 @@ const OrderDetail = () => {
       </div>
     );
   }
-    if (error || !orderData) {
+  if (error || !orderData) {
     return (
       <div className="text-center py-8">
         <h2 className="text-2xl font-bold text-destructive">
@@ -135,8 +135,8 @@ const OrderDetail = () => {
         <p className="text-muted-foreground mt-2">
           Inténtalo de nuevo más tarde
         </p>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="mt-4"
           onClick={() => navigate('/orders')}
         >
@@ -147,7 +147,7 @@ const OrderDetail = () => {
   }
   const order = orderData.order;
   const orderItems = orderData.items;
-  
+
   const nextStatus = getNextStatus(order.estado);
   const nextStatusLabel = getNextStatusLabel(order.estado);
   // Helper function to get status icon
@@ -167,7 +167,7 @@ const OrderDetail = () => {
         return <Clock className="h-5 w-5 text-gray-500" />;
     }
   };
-  
+
   // Format date
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -192,29 +192,29 @@ const OrderDetail = () => {
         </Button>
         <h1 className="text-3xl font-bold">Pedido #{order.id_pedido}</h1>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="md:col-span-2 p-6">          <div className="flex justify-between items-start">
-            <div>
-              <h2 className="text-xl font-semibold">Detalle de la orden</h2>
-              <p className="text-muted-foreground">
-                {order.fecha ? formatDate(order.fecha) : 'Fecha no disponible'}
-              </p>
-            </div><div className="flex items-center space-x-2">
-              {getStatusIcon(order.estado)}
-              <span className="capitalize font-medium">
-                {order.estado}
-              </span>
-            </div>
+          <div>
+            <h2 className="text-xl font-semibold">Detalle de la orden</h2>
+            <p className="text-muted-foreground">
+              {order.fecha ? formatDate(order.fecha) : 'Fecha no disponible'}
+            </p>
+          </div><div className="flex items-center space-x-2">
+            {getStatusIcon(order.estado)}
+            <span className="capitalize font-medium">
+              {order.estado}
+            </span>
           </div>
-          
+        </div>
+
           <Separator className="my-4" />
-            <div className="space-y-4">
+          <div className="space-y-4">
             <div>
               <h3 className="font-medium">Cliente</h3>
               <p>{order.nombre_cliente}</p>
             </div>
-            
+
             {order.nombre_mesa && order.nombre_mesa !== 'Para llevar' && (
               <div>
                 <h3 className="font-medium">Mesa</h3>
@@ -228,7 +228,7 @@ const OrderDetail = () => {
                 <p>Para llevar</p>
               </div>
             )}
-            
+
             <div>
               <h3 className="font-medium mb-2">Artículos</h3>
               <div className="border rounded-md">
@@ -271,7 +271,7 @@ const OrderDetail = () => {
                     </tbody>
                   </table>
                 </div>              </div>
-              
+
               <div className="mt-4 text-right">
                 <p className="text-xl font-bold">
                   Total: ${orderItems.reduce((sum, item) => sum + item.total, 0).toLocaleString()}
@@ -280,10 +280,10 @@ const OrderDetail = () => {
             </div>
           </div>
         </Card>
-          <Card className="p-6">
+        <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Gestionar pedidos</h2>
           <div className="space-y-4">
-            
+
             {/* Botón de siguiente estado */}
             {nextStatus && (
               <Button
@@ -316,17 +316,18 @@ const OrderDetail = () => {
               >
                 <Ban className="h-4 w-4" />
                 Cancelar Orden
-              </Button>
+              </Button>)}
+
+            {/* Botón de editar orden - solo para órdenes no finalizadas */}
+            {order.estado !== 'Finalizado' && (
+              <div className="pt-4 border-t">
+                <Link to={`/orders/${order.id_pedido}/edit`}>
+                  <Button variant="secondary" className="w-full">
+                    Editar orden
+                  </Button>
+                </Link>
+              </div>
             )}
-            
-            {/* Botón de editar orden */}
-            <div className="pt-4 border-t">
-              <Link to={`/orders/${order.id_pedido}/edit`}>
-                <Button variant="secondary" className="w-full">
-                  Editar orden
-                </Button>
-              </Link>
-            </div>
           </div>
         </Card>
       </div>
