@@ -198,9 +198,6 @@ const OrderDetail = () => {
         <Card className="md:col-span-2 p-6">          <div className="flex justify-between items-start">
           <div>
             <h2 className="text-xl font-semibold">Detalle de la orden</h2>
-            <p className="text-muted-foreground">
-              {order.fecha ? formatDate(order.fecha) : 'Fecha no disponible'}
-            </p>
           </div><div className="flex items-center space-x-2">
             {getStatusIcon(order.estado)}
             <span className="capitalize font-medium">
