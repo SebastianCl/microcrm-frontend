@@ -314,8 +314,8 @@ const OrderDetail = () => {
                 Cancelar Orden
               </Button>)}
 
-            {/* Botón de editar orden - solo para órdenes no finalizadas */}
-            {order.estado !== 'Finalizado' && (
+            {/* Botón de editar orden - solo para órdenes no finalizadas o cancelados*/}
+            {order.estado !== 'Finalizado' && order.estado !== 'Cancelado' && (
               <div className="pt-4 border-t">
                 <Link to={`/orders/${order.id_pedido}/edit`}>
                   <Button variant="secondary" className="w-full">
