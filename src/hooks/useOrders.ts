@@ -50,7 +50,7 @@ export const useCreateOrder = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (order: Omit<Order, 'id'>) => orderService.create(order),
+    mutationFn: (order: Omit<Order, 'id_pedido'>) => orderService.create(order),
     onSuccess: () => {
       // Invalidar la caché para recargar los datos
       queryClient.invalidateQueries({ queryKey: [ORDER_QUERY_KEYS.ORDERS] });

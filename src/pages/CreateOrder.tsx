@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Order, OrderItem } from '@/lib/sample-data';
+import { OrderItem } from '@/lib/sample-data';
 import { useForm } from 'react-hook-form';
 import { toast } from "sonner";
 import {
@@ -22,6 +22,8 @@ import { Addition } from '@/models/order.model';
 import { User, MapPin, ShoppingCart, X, Plus } from 'lucide-react';
 import { useTables } from '@/hooks/useTables';
 import { useClients } from '@/hooks/useClients';
+import { ORDER_QUERY_KEYS } from '@/hooks/useOrders';
+import { useQueryClient } from '@tanstack/react-query';
 
 type FormValues = {
   tableNumber: string;
@@ -41,6 +43,7 @@ const DiscountTypes = {
 
 const CreateOrder = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [orderItems, setOrderItems] = useState<ExtendedOrderItem[]>([]);
   const [isCancelConfirmationOpen, setIsCancelConfirmationOpen] = useState(false);
   const [orderDiscount, setOrderDiscount] = useState<number>(0);
@@ -210,6 +213,9 @@ const CreateOrder = () => {
         }
         return response.json();
       });
+
+      // Invalidar la caché manualmente para que se actualice la lista de órdenes
+      queryClient.invalidateQueries({ queryKey: [ORDER_QUERY_KEYS.ORDERS] });
 
       toast.success('Orden creada');
       setTimeout(() => navigate('/orders'), 1000);
