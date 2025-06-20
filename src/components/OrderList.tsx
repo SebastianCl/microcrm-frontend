@@ -48,7 +48,6 @@ const OrderList: React.FC<OrderListProps> = ({
     error,
     refetch
   } = useOrders();
-
   // Estado para pedidos filtradas usando useMemo para evitar re-renders innecesarios
   const filteredOrders = useMemo(() => {
     if (!orders) return [];
@@ -80,18 +79,40 @@ const OrderList: React.FC<OrderListProps> = ({
           order.nombre_mesa === 'Para llevar'
         );
       }
-    }
+    }    // Definir el orden de prioridad de estados
+    const statusOrder = {
+      'Pendiente': 1,
+      'Preparando': 2,
+      'Finalizado': 3,
+      'Cancelado': 4
+    };
 
-    // Aplicar ordenar
-    if (activeFilters._sort) {
-      result.sort((a, b) => {
+    // Aplicar ordenamiento por defecto por estado, luego por filtro personalizado si existe
+    result.sort((a, b) => {
+      // Si hay filtro de ordenamiento personalizado, aplicarlo
+      if (activeFilters._sort) {
         if (activeFilters._sort === 'asc') {
-          return a.id_pedido > b.id_pedido ? 1 : -1;
+          return a.id_pedido.toString().localeCompare(b.id_pedido.toString());
         } else {
-          return a.id_pedido < b.id_pedido ? 1 : -1;
+          return b.id_pedido.toString().localeCompare(a.id_pedido.toString());
         }
-      });
-    }
+      }
+      
+      // Ordenamiento por defecto: por estado
+      const statusA = statusOrder[a.estado as keyof typeof statusOrder] || 999;
+      const statusB = statusOrder[b.estado as keyof typeof statusOrder] || 999;
+      
+      if (statusA !== statusB) {
+        return statusA - statusB;
+      }
+      
+      // Si tienen el mismo estado, ordenar por ID de pedido (convertir a string para comparación segura)
+      const idA = a.id_pedido?.toString() || '';
+      const idB = b.id_pedido?.toString() || '';
+      
+      // Ordenar alfabéticamente por ID (más reciente primero si son numéricos)
+      return idB.localeCompare(idA);
+    });
 
     return result;
   }, [searchQuery, activeFilters.status, activeFilters.orderType, activeFilters._sort, orders]);
