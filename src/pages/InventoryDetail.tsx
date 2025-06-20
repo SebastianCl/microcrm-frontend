@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import EditInventoryItemDialog from '@/components/EditInventoryItemDialog';
 import { InventoryItem } from '@/types/inventory';
+import { formatCurrency } from '@/lib/utils';
 
 const InventoryDetail = () => {
   const { id } = useParams();
@@ -114,10 +115,9 @@ const InventoryDetail = () => {
                 <div>
                   <p className="text-sm text-muted-foreground">Categoría</p>
                   <p className="font-medium">{item.category}</p>
-                </div>
-                <div>
+                </div>                <div>
                   <p className="text-sm text-muted-foreground">Precio</p>
-                  <p className="font-medium">${item.price}</p>
+                  <p className="font-medium">{formatCurrency(item.price)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Cantidad</p>

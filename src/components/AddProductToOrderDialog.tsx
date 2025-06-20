@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { OrderItem, Addition } from '@/models/order.model';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useProducts, productHasAdditions, getProductAdditions } from '@/hooks/useProducts';
+import { formatCurrency } from '@/lib/utils';
 
 interface AddProductToOrderDialogProps {
   open: boolean;
@@ -138,7 +139,7 @@ const AddProductToOrderDialog: React.FC<AddProductToOrderDialogProps> = ({
               ) : (
                 products.filter(p => p.isActive).map((product) => (
                   <option key={product.id} value={product.id}>
-                    {product.name} - ${product.price}
+                    {product.name} - {formatCurrency(product.price)}
                   </option>
                 ))
               )}
@@ -173,7 +174,7 @@ const AddProductToOrderDialog: React.FC<AddProductToOrderDialogProps> = ({
                             onCheckedChange={() => toggleAddition(appAddition)}
                           />
                           <Label htmlFor={`addition-${appAddition.id}`} className="flex-1 text-sm">
-                            {appAddition.name} (+${appAddition.price})
+                            {appAddition.name} (+{formatCurrency(appAddition.price)})
                           </Label>
                           
                           {/* Controles de cantidad para adición seleccionada */}
@@ -206,14 +207,13 @@ const AddProductToOrderDialog: React.FC<AddProductToOrderDialogProps> = ({
                   </div>
                 </div>
               )}
-              
-              <div>
+                <div>
                 <Label>Subtotal</Label>
                 <div className="text-xl font-semibold mt-1">
-                  ${calculateSubtotal()}
+                  {formatCurrency(calculateSubtotal())}
                   {selectedAdditions.length > 0 && (
                     <span className="text-sm font-normal text-muted-foreground ml-2">
-                      (${selectedProduct.price} + Adiciones)
+                      ({formatCurrency(selectedProduct.price)} + Adiciones)
                     </span>
                   )}
                 </div>

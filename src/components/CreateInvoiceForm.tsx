@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { X, Plus } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { formatCurrency } from '@/lib/utils';
 
 // Schema for invoice creation form
 const invoiceFormSchema = z.object({
@@ -72,7 +73,7 @@ const CreateInvoiceForm: React.FC<CreateInvoiceFormProps> = ({ onClose }) => {
 
     toast({
       title: "Invoice created",
-      description: `Invoice for ${clients.find(c => c.id === data.client)?.name || data.client} with total $${total} has been created.`,
+      description: `Invoice for ${clients.find(c => c.id === data.client)?.name || data.client} with total ${formatCurrency(total)} has been created.`,
     });
     
     queryClient.invalidateQueries({ queryKey: ['orders'] });
@@ -206,10 +207,9 @@ const CreateInvoiceForm: React.FC<CreateInvoiceFormProps> = ({ onClose }) => {
                   )}
                 />
               </div>
-              
-              <div className="w-full md:w-32 self-end">
+                <div className="w-full md:w-32 self-end">
                 <p className="text-sm font-medium mt-8">
-                  Amount: ${(form.watch(`items.${index}.quantity`, 0) * form.watch(`items.${index}.rate`, 0))}
+                  Amount: {formatCurrency(form.watch(`items.${index}.quantity`, 0) * form.watch(`items.${index}.rate`, 0))}
                 </p>
               </div>
               
@@ -238,7 +238,7 @@ const CreateInvoiceForm: React.FC<CreateInvoiceFormProps> = ({ onClose }) => {
           
           <div className="text-right">
             <p className="text-lg font-bold">
-              Total: ${calculateTotal()}
+              Total: {formatCurrency(calculateTotal())}
             </p>
           </div>
         </div>

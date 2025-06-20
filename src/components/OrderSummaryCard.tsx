@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
 import { Percent, DollarSign, ShoppingCart, Receipt } from 'lucide-react';
+import { formatCurrency } from '@/lib/utils';
 
 interface OrderSummaryCardProps {
   itemCount: number;
@@ -109,26 +110,24 @@ const OrderSummaryCard: React.FC<OrderSummaryCardProps> = ({
         <Separator />
 
         {/* Totals */}
-        <div className="space-y-3">
-          <div className="flex justify-between text-sm">
+        <div className="space-y-3">          <div className="flex justify-between text-sm">
             <span className="text-gray-600">Subtotal:</span>
-            <span className="font-medium">${subtotal.toFixed(2)}</span>
+            <span className="font-medium">{formatCurrency(subtotal)}</span>
           </div>
           
           {discountAmount > 0 && (
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">
-                Descuento {discountType === DiscountTypes.PERCENTAGE ? `(${discount}%)` : `($${discount})`}:
+                Descuento {discountType === DiscountTypes.PERCENTAGE ? `(${discount}%)` : `(${formatCurrency(discount)})`}:
               </span>
-              <span className="text-red-600 font-medium">-${discountAmount.toFixed(2)}</span>
+              <span className="text-red-600 font-medium">-{formatCurrency(discountAmount)}</span>
             </div>
           )}
           
           <Separator />
-          
-          <div className="flex justify-between text-lg font-bold">
+            <div className="flex justify-between text-lg font-bold">
             <span className="text-gray-900">Total:</span>
-            <span className="text-primary">${total.toFixed(2)}</span>
+            <span className="text-primary">{formatCurrency(total)}</span>
           </div>
         </div>
 

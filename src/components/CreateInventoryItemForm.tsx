@@ -129,10 +129,9 @@ const CreateInventoryItemForm: React.FC<CreateInventoryItemFormProps> = ({ onClo
           
           <FormField
             control={form.control}
-            name="price"
-            render={({ field }) => (
+            name="price"            render={({ field }) => (
               <FormItem>
-                <FormLabel>Precio ($)</FormLabel>
+                <FormLabel>Precio (COP)</FormLabel>
                 <FormControl>
                   <Input type="number" min="0" step="0.01" {...field} />
                 </FormControl>

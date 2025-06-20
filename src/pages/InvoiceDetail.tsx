@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import { formatCurrency } from '@/lib/utils';
 
 const InvoiceDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -124,31 +125,29 @@ const InvoiceDetail = () => {
             </tr>
           </thead>
           <tbody>
-            {invoice.items.map((item, index) => (
-              <tr key={index} className="border-b">
+            {invoice.items.map((item, index) => (              <tr key={index} className="border-b">
                 <td className="py-3 text-left">{item.description}</td>
                 <td className="py-3 text-center">{item.quantity}</td>
-                <td className="py-3 text-right">${item.rate}</td>
-                <td className="py-3 text-right">${item.amount}</td>
+                <td className="py-3 text-right">{formatCurrency(item.rate)}</td>
+                <td className="py-3 text-right">{formatCurrency(item.amount)}</td>
               </tr>
             ))}
           </tbody>
         </table>
         
-        <div className="flex justify-end">
-          <div className="w-full md:w-72">
+        <div className="flex justify-end">          <div className="w-full md:w-72">
             <div className="flex justify-between py-2">
               <span className="text-muted-foreground">Subtotal:</span>
-              <span>${subtotal}</span>
+              <span>{formatCurrency(subtotal)}</span>
             </div>
             <div className="flex justify-between py-2">
               <span className="text-muted-foreground">Impuesto (10%):</span>
-              <span>${tax}</span>
+              <span>{formatCurrency(tax)}</span>
             </div>
             <Separator className="my-2" />
             <div className="flex justify-between py-2 font-bold">
               <span>Total:</span>
-              <span>${total}</span>
+              <span>{formatCurrency(total)}</span>
             </div>
           </div>
         </div>

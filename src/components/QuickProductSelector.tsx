@@ -12,6 +12,7 @@ import { OrderItem, Addition } from '@/models/order.model';
 // import { productHasAdditions, getProductAdditions } from '@/lib/sample-additions'; // Eliminado
 import { useProducts, productHasAdditions, getProductAdditions } from '@/hooks/useProducts'; // Añadido
 import { AppProduct, AppAddition as AppAdditionFromProduct } from '@/models/product.model'; // Renombrar AppAddition para evitar conflicto
+import { formatCurrency } from '@/lib/utils';
 
 interface QuickProductSelectorProps {
   onAddProduct: (product: OrderItem) => void;
@@ -150,7 +151,7 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
           <div className="flex justify-between items-start mb-2">
             <div className="flex-1">
               <h4 className="font-medium text-sm">{product.name}</h4> {/* Mostrar nombre del producto */}
-              <p className="text-xs text-muted-foreground">Precio: ${product.price.toFixed(2)}</p> {/* Mostrar precio */}
+              <p className="text-xs text-muted-foreground">Precio: {formatCurrency(product.price)}</p>
             </div>            <Button
               type="button"
               size="sm"
@@ -276,7 +277,7 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
                       <div key={productAddition.id} className="flex items-center justify-between p-2 border rounded-md">
                         <div>
                           <span className="text-sm">{productAddition.name}</span>
-                          <span className="text-xs text-muted-foreground ml-2">(+${productAddition.price.toFixed(2)})</span>
+                          <span className="text-xs text-muted-foreground ml-2">(+{formatCurrency(productAddition.price)})</span>
                         </div>
                         <div className="flex items-center gap-2">
                           {currentSelectedAddition && (
@@ -304,12 +305,11 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
               </div>
             )}
 
-            {/* Total Price & Add Button */}
-            <div className="flex justify-between items-center pt-2 border-t">
+            {/* Total Price & Add Button */}            <div className="flex justify-between items-center pt-2 border-t">
               <div>
                 <span className="text-sm">Total:</span>
-                <span className="font-bold text-lg ml-2">${calculateTotal().toFixed(2)}</span>
-              </div>              <Button type="button" onClick={handleAddWithOptions} disabled={quantity <= 0}>
+                <span className="font-bold text-lg ml-2">{formatCurrency(calculateTotal())}</span>
+              </div><Button type="button" onClick={handleAddWithOptions} disabled={quantity <= 0}>
                 <ShoppingCart className="mr-2 h-4 w-4" />
                 Agregar a la Orden
               </Button>

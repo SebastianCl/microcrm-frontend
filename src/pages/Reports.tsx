@@ -1,6 +1,7 @@
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { dashboardStats, monthlyRevenue } from '@/lib/sample-data';
+import { formatCurrency } from '@/lib/utils';
 
 const Reports = () => {
   const invoiceStatusData = [
@@ -46,7 +47,7 @@ const Reports = () => {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => [`$${value}`, 'Cantidad']} />
+                  <Tooltip formatter={(value) => [formatCurrency(Number(value)), 'Cantidad']} />
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>
@@ -60,10 +61,9 @@ const Reports = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
+              <div className="grid grid-cols-2 gap-4">                <div className="space-y-1">
                   <p className="text-sm font-medium text-muted-foreground">Ingresos Totales</p>
-                  <p className="text-2xl font-bold">${dashboardStats.totalRevenue.toLocaleString()}</p>
+                  <p className="text-2xl font-bold">{formatCurrency(dashboardStats.totalRevenue)}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-muted-foreground">Total Facturas</p>
@@ -72,11 +72,10 @@ const Reports = () => {
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-muted-foreground">Total Clientes</p>
                   <p className="text-2xl font-bold">{dashboardStats.clientCount}</p>
-                </div>
-                <div className="space-y-1">
+                </div>                <div className="space-y-1">
                   <p className="text-sm font-medium text-muted-foreground">Factura Promedio</p>
                   <p className="text-2xl font-bold">
-                    ${Math.round(dashboardStats.totalRevenue / dashboardStats.invoiceCount.total).toLocaleString()}
+                    {formatCurrency(Math.round(dashboardStats.totalRevenue / dashboardStats.invoiceCount.total))}
                   </p>
                 </div>
               </div>
@@ -85,9 +84,8 @@ const Reports = () => {
                 <h3 className="font-medium mb-2">Resumen Mensual</h3>
                 <p className="text-sm text-muted-foreground mb-1">
                   Ingresos para {monthNames[currentMonth]}:
-                </p>
-                <p className="text-xl font-bold">
-                  ${monthlyRevenue[currentMonth % monthlyRevenue.length].revenue.toLocaleString()}
+                </p>                <p className="text-xl font-bold">
+                  {formatCurrency(monthlyRevenue[currentMonth % monthlyRevenue.length].revenue)}
                 </p>
                 
                 <div className="mt-4">
@@ -98,21 +96,21 @@ const Reports = () => {
                         <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
                         <span className="text-sm">Pagado</span>
                       </div>
-                      <span className="font-medium">${dashboardStats.paidInvoices.toLocaleString()}</span>
+                      <span className="font-medium">{formatCurrency(dashboardStats.paidInvoices)}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <div className="flex items-center">
                         <div className="w-3 h-3 rounded-full bg-yellow-500 mr-2"></div>
                         <span className="text-sm">Pendiente</span>
                       </div>
-                      <span className="font-medium">${dashboardStats.pendingAmount.toLocaleString()}</span>
+                      <span className="font-medium">{formatCurrency(dashboardStats.pendingAmount)}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <div className="flex items-center">
                         <div className="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
                         <span className="text-sm">Vencido</span>
                       </div>
-                      <span className="font-medium">${dashboardStats.overdueAmount.toLocaleString()}</span>
+                      <span className="font-medium">{formatCurrency(dashboardStats.overdueAmount)}</span>
                     </div>
                   </div>
                 </div>

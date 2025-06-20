@@ -5,6 +5,7 @@ import { useOrderDetail, useUpdateOrderStatus } from '@/hooks/useOrders';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { formatCurrency } from '@/lib/utils';
 import {
   ChevronLeft,
   Ban,
@@ -247,9 +248,8 @@ const OrderDetail = () => {
                         <React.Fragment key={`${item.productId}-${index}`}>
                           <tr className="border-t">
                             <td className="p-2 px-4">{item.name}</td>
-                            <td className="text-center p-2">{item.quantity}</td>
-                            <td className="text-right p-2 px-4">${item.price.toLocaleString()}</td>
-                            <td className="text-right p-2 px-4">${item.total.toLocaleString()}</td>
+                            <td className="text-center p-2">{item.quantity}</td>                            <td className="text-right p-2 px-4">{formatCurrency(item.price)}</td>
+                            <td className="text-right p-2 px-4">{formatCurrency(item.total)}</td>
                           </tr>
                           {item.additions && item.additions.length > 0 && (
                             <tr className="bg-muted/30">
@@ -258,7 +258,7 @@ const OrderDetail = () => {
                                   <span className="font-medium">Adiciones:</span>{' '}
                                   {item.additions.map((addition: Addition, i: number) => (
                                     <React.Fragment key={`addition-${addition.id}`}>
-                                      {addition.name} (x{addition.quantity}) (+${addition.price.toLocaleString()})
+                                      {addition.name} (x{addition.quantity}) (+{formatCurrency(addition.price)})
                                       {i < item.additions!.length - 1 ? ', ' : ''}
                                     </React.Fragment>
                                   ))}
@@ -272,9 +272,8 @@ const OrderDetail = () => {
                   </table>
                 </div>              </div>
 
-              <div className="mt-4 text-right">
-                <p className="text-xl font-bold">
-                  Total: ${orderItems.reduce((sum, item) => sum + item.total, 0).toLocaleString()}
+              <div className="mt-4 text-right">                <p className="text-xl font-bold">
+                  Total: {formatCurrency(orderItems.reduce((sum, item) => sum + item.total, 0))}
                 </p>
               </div>
             </div>

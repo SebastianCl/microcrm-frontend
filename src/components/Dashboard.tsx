@@ -7,6 +7,7 @@ import InvoiceList from './InvoiceList';
 import ClientList from './ClientList';
 import { dashboardStats } from '@/lib/sample-data';
 import QuickActionCard from './dashboard/QuickActionCard';
+import { formatCurrency } from '@/lib/utils';
 
 const Dashboard = () => {
   return (
@@ -56,28 +57,27 @@ const Dashboard = () => {
       
       <div className="space-y-4">
         <h2 className="text-xl font-semibold tracking-tight">Resumen Financiero</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">          <StatCard
             title="Ingresos Totales"
-            value={`$${dashboardStats.totalRevenue.toLocaleString()}`}
+            value={formatCurrency(dashboardStats.totalRevenue)}
             icon={<PiggyBank />}
             trend={{ value: 12, isPositive: true }}
           />
           <StatCard
             title="Facturas Pagadas"
-            value={`$${dashboardStats.paidInvoices.toLocaleString()}`}
+            value={formatCurrency(dashboardStats.paidInvoices)}
             icon={<CreditCard />}
             description={`${dashboardStats.invoiceCount.paid} facturas`}
           />
           <StatCard
             title="Cantidad Pendiente"
-            value={`$${dashboardStats.pendingAmount.toLocaleString()}`}
+            value={formatCurrency(dashboardStats.pendingAmount)}
             icon={<CreditCard />}
             description={`${dashboardStats.invoiceCount.pending} facturas`}
           />
           <StatCard
             title="Cantidad Vencida"
-            value={`$${dashboardStats.overdueAmount.toLocaleString()}`}
+            value={formatCurrency(dashboardStats.overdueAmount)}
             icon={<AlertCircle />}
             description={`${dashboardStats.invoiceCount.overdue} facturas`}
             trend={{ value: 5, isPositive: false }}

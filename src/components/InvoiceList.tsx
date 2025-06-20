@@ -12,6 +12,7 @@ import { useInvoices } from '@/hooks/useInvoices';
 import { ErrorDisplay } from '@/components/ui/error-display';
 import { useNetwork } from '@/hooks/useNetwork';
 import SearchAndFilter from './ui/SearchAndFilter';
+import { formatCurrency } from '@/lib/utils';
 
 interface InvoiceListProps {
   limit?: number;
@@ -136,10 +137,9 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
     {
       header: 'Cliente',
       accessorKey: (invoice: Invoice) => invoice.client,
-    },
-    {
+    },    {
       header: 'Importe',
-      accessorKey: (invoice: Invoice) => `$${invoice.amount}`,
+      accessorKey: (invoice: Invoice) => formatCurrency(invoice.amount),
     },
     {
       header: 'Fecha',

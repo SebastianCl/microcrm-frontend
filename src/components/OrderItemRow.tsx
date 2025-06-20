@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Edit3, Trash2, Check, X } from 'lucide-react';
 import { OrderItem, Addition } from '@/models/order.model';
 import { useProducts, productHasAdditions, getProductAdditions } from '@/hooks/useProducts';
+import { formatCurrency } from '@/lib/utils';
 
 interface OrderItemRowProps {
   item: OrderItem & { discount?: number; discountType?: string };
@@ -159,7 +160,7 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({ item, onUpdate, onRemove })
                         htmlFor={`edit-addition-${appAddition.id}`}
                         className="text-xs cursor-pointer flex-1"
                       >
-                        {appAddition.name} (+${appAddition.price})
+                        {appAddition.name} (+{formatCurrency(appAddition.price)})
                       </label>
                       
                       {/* Controles de cantidad para adición seleccionada */}
@@ -191,10 +192,8 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({ item, onUpdate, onRemove })
                 })}
               </div>
             </div>
-          )}
-
-          <div className="text-sm font-medium text-right">
-            Nuevo total: ${calculateNewTotal()}
+          )}          <div className="text-sm font-medium text-right">
+            Nuevo total: {formatCurrency(calculateNewTotal())}
           </div>
         </div>
       </Card>
@@ -215,10 +214,9 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({ item, onUpdate, onRemove })
             </div>
           )}
         </div>
-      </td>
-      <td className="p-3 text-center">{item.quantity}</td>
-      <td className="p-3 text-right">${item.price}</td>
-      <td className="p-3 text-right">${item.total}</td>
+      </td>      <td className="p-3 text-center">{item.quantity}</td>
+      <td className="p-3 text-right">{formatCurrency(item.price)}</td>
+      <td className="p-3 text-right">{formatCurrency(item.total)}</td>
       <td className="p-3">        <div className="flex space-x-1">
         <Button
           type="button"
