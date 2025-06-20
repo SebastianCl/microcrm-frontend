@@ -18,6 +18,7 @@ import QuickProductSelector from '@/components/QuickProductSelector';
 import OrderItemRow from '@/components/OrderItemRow';
 import ClientSelectorModal from '@/components/ClientSelectorModal';
 import OrderSummaryCard from '@/components/OrderSummaryCard';
+import TableSelectorModal from '@/components/TableSelectorModal';
 import { Addition } from '@/models/order.model';
 import { User, MapPin, ShoppingCart, X, Plus } from 'lucide-react';
 import { useTables } from '@/hooks/useTables';
@@ -46,10 +47,11 @@ const CreateOrder = () => {
   const queryClient = useQueryClient();
   const [orderItems, setOrderItems] = useState<ExtendedOrderItem[]>([]);
   const [isCancelConfirmationOpen, setIsCancelConfirmationOpen] = useState(false);
-  const [orderDiscount, setOrderDiscount] = useState<number>(0);
-  const [orderDiscountType, setOrderDiscountType] = useState<string>(DiscountTypes.NONE);
+  const [orderDiscount, setOrderDiscount] = useState<number>(0);  const [orderDiscountType, setOrderDiscountType] = useState<string>(DiscountTypes.NONE);
   const [selectedClientId, setSelectedClientId] = useState<string>('');
   const [selectedClientName, setSelectedClientName] = useState<string>('');
+  const [selectedTableId, setSelectedTableId] = useState<string>('');
+  const [selectedTableName, setSelectedTableName] = useState<string>('Para llevar');
   const { data: tablesFromAPI, isLoading: isLoadingTables, error: tablesError } = useTables();
   const { data: clientsFromAPI, isLoading: isLoadingClients, error: clientsError } = useClients();
 
@@ -58,9 +60,8 @@ const CreateOrder = () => {
       tableNumber: '',
     },
   });
-
   const handleCancelClick = () => {
-    if (orderItems.length > 0 || form.formState.isDirty || selectedClientId) {
+    if (orderItems.length > 0 || form.formState.isDirty || selectedClientId || selectedTableId) {
       setIsCancelConfirmationOpen(true);
     } else {
       navigate('/orders');
@@ -75,10 +76,22 @@ const CreateOrder = () => {
     setSelectedClientId(clientId);
     setSelectedClientName(clientName);
   };
-
   const clearClient = () => {
     setSelectedClientId('');
     setSelectedClientName('');
+  };
+
+  const handleTableSelect = (tableId: string, tableName: string) => {
+    setSelectedTableId(tableId);
+    setSelectedTableName(tableName);
+    // También actualizar el formulario
+    form.setValue('tableNumber', tableId);
+  };
+
+  const clearTable = () => {
+    setSelectedTableId('');
+    setSelectedTableName('Para llevar');
+    form.setValue('tableNumber', '');
   };
 
   const handleAddProduct = (product: OrderItem) => {
@@ -172,14 +185,12 @@ const CreateOrder = () => {
     let clientName = 'Cliente no especificado';
     if (selectedClientId) {
       clientName = selectedClientName;
-    }
-
-    // Transformar el objeto al formato requerido por el backend (POST /api/pedido/)
+    }    // Transformar el objeto al formato requerido por el backend (POST /api/pedido/)
     const backendOrderPayload = {
       id_cliente: Number(selectedClientId.replace('client-', '')) || null,
       id_usuario: 1, // Default value for current user
-      id_mesa: values.tableNumber ? parseInt(values.tableNumber) : null,
-      tipo_pedido: values.tableNumber ? "en_mesa" : "para_llevar",
+      id_mesa: selectedTableId ? parseInt(selectedTableId) : null,
+      tipo_pedido: selectedTableId ? "en_mesa" : "para_llevar",
       productos: orderItems.map(item => ({
         id_producto: Number(item.productId),
         cantidad: item.quantity,
@@ -264,35 +275,31 @@ const CreateOrder = () => {
                       </Button>
                     </ClientSelectorModal>
                   )}
-                </div>
-
-                {/* Table Selection */}
+                </div>                {/* Table Selection */}
                 <div className="hidden sm:block"> {/* Ocultar en pantallas pequeñas, ajustar según sea necesario */}
-                  <FormField
-                    control={form.control}
-                    name="tableNumber"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <select
-                            className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-ring hover:border-muted-foreground"
-                            onChange={field.onChange}
-                            value={field.value}
-                          >
-                            <option value="">Para llevar</option>
-                            {isLoadingTables && <option value="" disabled>Cargando...</option>}
-                            {tablesError && <option value="" disabled>Error</option>}
-                            {tablesFromAPI && tablesFromAPI.map(table => (
-                              <option key={table.id_mesa} value={table.id_mesa.toString()}>
-                                {table.nombre_mesa}
-                              </option>
-                            ))}
-                          </select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {selectedTableName !== 'Para llevar' ? (
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 p-2 border rounded-lg bg-blue-100 dark:bg-blue-800 border-blue-300 dark:border-blue-700 flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-blue-700 dark:text-blue-300" />
+                        <span className="text-sm font-medium text-blue-800 dark:text-blue-200">{selectedTableName}</span>
+                      </div>
+                      <Button variant="ghost" size="icon" onClick={clearTable} className="text-muted-foreground hover:text-red-500 dark:hover:text-red-400">
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <TableSelectorModal
+                      selectedTableId={selectedTableId}
+                      onTableSelect={handleTableSelect}
+                      tables={tablesFromAPI}
+                      isLoading={isLoadingTables}
+                      error={tablesError}
+                    >
+                      <Button variant="outline" className="justify-start text-left font-normal hover:bg-muted/50">
+                        {isLoadingTables ? 'Cargando...' : tablesError ? 'Error' : selectedTableName}
+                      </Button>
+                    </TableSelectorModal>
+                  )}
                 </div>
                 <Button
                   variant="outline"
@@ -350,38 +357,36 @@ const CreateOrder = () => {
                             </Button>
                           </ClientSelectorModal>
                         )}
-                      </div>
-
-                      {/* Table Selection for small screens */}
-                      <FormField
-                        control={form.control}
-                        name="tableNumber"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="flex items-center gap-2 text-sm font-medium text-foreground">
-                              <MapPin className="h-4 w-4 text-primary" />
-                              Mesa
-                            </FormLabel>
-                            <FormControl>
-                              <select
-                                className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2 text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-ring hover:border-muted-foreground"
-                                onChange={field.onChange}
-                                value={field.value}
-                              >
-                                <option value="">Para llevar</option>
-                                {isLoadingTables && <option value="" disabled>Cargando mesas...</option>}
-                                {tablesError && <option value="" disabled>Error al cargar mesas</option>}
-                                {tablesFromAPI && tablesFromAPI.map(table => (
-                                  <option key={table.id_mesa} value={table.id_mesa.toString()}>
-                                    {table.nombre_mesa}
-                                  </option>
-                                ))}
-                              </select>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
+                      </div>                      {/* Table Selection for small screens */}
+                      <div className="space-y-3">
+                        <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-primary" />
+                          Mesa
+                        </label>
+                        {selectedTableName !== 'Para llevar' ? (
+                          <div className="flex items-center gap-3">
+                            <div className="flex-1 p-3 border rounded-lg bg-blue-100 dark:bg-blue-800 border-blue-300 dark:border-blue-700 flex items-center gap-2">
+                              <MapPin className="h-4 w-4 text-blue-700 dark:text-blue-300" />
+                              <span className="text-sm font-medium text-blue-800 dark:text-blue-200">{selectedTableName}</span>
+                            </div>
+                            <Button variant="ghost" size="icon" onClick={clearTable} className="text-muted-foreground hover:text-red-500 dark:hover:text-red-400">
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <TableSelectorModal
+                            selectedTableId={selectedTableId}
+                            onTableSelect={handleTableSelect}
+                            tables={tablesFromAPI}
+                            isLoading={isLoadingTables}
+                            error={tablesError}
+                          >
+                            <Button variant="outline" className="w-full justify-start text-left font-normal hover:bg-muted/50">
+                              {isLoadingTables ? 'Cargando mesas...' : tablesError ? 'Error al cargar mesas' : selectedTableName}
+                            </Button>
+                          </TableSelectorModal>
                         )}
-                      />
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
