@@ -2,7 +2,6 @@
 import React from 'react';
 import { PiggyBank, CreditCard, AlertCircle, ShoppingCart, BarChart4, Package, Users, Receipt } from 'lucide-react';
 import StatCard from './stats/StatCard';
-import RevenueChart from './charts/RevenueChart';
 import InvoiceList from './InvoiceList';
 import ClientList from './ClientList';
 import { dashboardStats } from '@/lib/sample-data';
@@ -54,15 +53,15 @@ const Dashboard = () => {
           />
         </div>
       </div>
-      
+
       <div className="space-y-4">
         <h2 className="text-xl font-semibold tracking-tight">Resumen Financiero</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">          <StatCard
-            title="Ingresos Totales"
-            value={formatCurrency(dashboardStats.totalRevenue)}
-            icon={<PiggyBank />}
-            trend={{ value: 12, isPositive: true }}
-          />
+          title="Ingresos Totales"
+          value={formatCurrency(dashboardStats.totalRevenue)}
+          icon={<PiggyBank />}
+          trend={{ value: 12, isPositive: true }}
+        />
           <StatCard
             title="Facturas Pagadas"
             value={formatCurrency(dashboardStats.paidInvoices)}
@@ -85,12 +84,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <RevenueChart />
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <InvoiceList limit={5} showCreateButton={false} />
-        <ClientList limit={5} showCreateButton={false} />
-      </div>
     </div>
   );
 };

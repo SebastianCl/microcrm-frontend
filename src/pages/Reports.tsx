@@ -2,6 +2,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { dashboardStats, monthlyRevenue } from '@/lib/sample-data';
 import { formatCurrency } from '@/lib/utils';
+import RevenueChart from '@/components/charts/RevenueChart';
 
 const Reports = () => {
   const invoiceStatusData = [
@@ -12,9 +13,9 @@ const Reports = () => {
 
   const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
     "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-  
+
   const currentMonth = new Date().getMonth();
-  
+
   return (
     <div className="space-y-6">
       <div>
@@ -62,9 +63,9 @@ const Reports = () => {
           <CardContent>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">                <div className="space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground">Ingresos Totales</p>
-                  <p className="text-2xl font-bold">{formatCurrency(dashboardStats.totalRevenue)}</p>
-                </div>
+                <p className="text-sm font-medium text-muted-foreground">Ingresos Totales</p>
+                <p className="text-2xl font-bold">{formatCurrency(dashboardStats.totalRevenue)}</p>
+              </div>
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-muted-foreground">Total Facturas</p>
                   <p className="text-2xl font-bold">{dashboardStats.invoiceCount.total}</p>
@@ -79,7 +80,7 @@ const Reports = () => {
                   </p>
                 </div>
               </div>
-              
+
               <div className="pt-4 border-t">
                 <h3 className="font-medium mb-2">Resumen Mensual</h3>
                 <p className="text-sm text-muted-foreground mb-1">
@@ -87,7 +88,7 @@ const Reports = () => {
                 </p>                <p className="text-xl font-bold">
                   {formatCurrency(monthlyRevenue[currentMonth % monthlyRevenue.length].revenue)}
                 </p>
-                
+
                 <div className="mt-4">
                   <h4 className="text-sm font-medium mb-2">Desglose por Estado</h4>
                   <div className="space-y-2">
@@ -119,7 +120,10 @@ const Reports = () => {
           </CardContent>
         </Card>
       </div>
+
+      <RevenueChart />
     </div>
+
   );
 };
 
