@@ -24,7 +24,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
   const navigate = useNavigate();
 
   const allLinks = [
-    { path: '/', label: 'Panel', icon: <LayoutDashboard size={20} />, roles: ['Administrator'] },
+    { path: '/', label: 'Panel', icon: <LayoutDashboard size={20} />, roles: ['Administrator', 'Collaborator'] },
     { path: '/orders', label: 'Pedidos', icon: <ShoppingCart size={20} />, roles: ['Administrator', 'Collaborator'] },
     //{ path: '/invoices', label: 'Facturas', icon: <Receipt size={20} />, roles: ['Administrator', 'Collaborator'] },
     { path: '/clients', label: 'Clientes', icon: <Users size={20} />, roles: ['Administrator', 'Collaborator'] },
@@ -61,10 +61,9 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
             key={link.path}
             to={link.path}
             className={({ isActive }) =>
-              `flex items-center px-3 py-2 rounded-md text-sm transition-colors ${collapsed ? 'justify-center' : ''} ${
-                isActive
-                  ? 'bg-primary/10 text-primary font-medium dark:bg-primary/20 dark:text-sky-400'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:bg-slate-700 dark:hover:text-slate-200'
+              `flex items-center px-3 py-2 rounded-md text-sm transition-colors ${collapsed ? 'justify-center' : ''} ${isActive
+                ? 'bg-primary/10 text-primary font-medium dark:bg-primary/20 dark:text-sky-400'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:bg-slate-700 dark:hover:text-slate-200'
               }`
             }
             end={link.path === '/'}
