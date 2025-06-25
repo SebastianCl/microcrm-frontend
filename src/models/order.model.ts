@@ -10,6 +10,7 @@ export interface Order {
   total_pedido?: string;
   id_venta?: number;
   observacion_pedido?: string;
+  medio_pago?: string;
 }
 
 export interface OrderItem {
@@ -28,5 +29,5 @@ export interface Addition {
   id: string;
   name: string;
   price: number;
-  quantity: number; // Añadido para la cantidad de la adición
+  quantity: number;
 }

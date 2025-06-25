@@ -34,6 +34,7 @@ interface OrderDetailItem {
   total_pedido: string;
   id_venta: number;
   observacion_pedido?: string;
+  medio_pago?: string;
 }
 
 interface ApiOrderDetailResponse {
@@ -97,6 +98,7 @@ export const orderService = {
       nombre_mesa: firstItem.mesa,
       nombre_cliente: firstItem.nombre_cliente,
       observacion_pedido: firstItem.observacion_pedido,
+      medio_pago: firstItem.medio_pago,
     };
 
     // Transformar los items al formato esperado

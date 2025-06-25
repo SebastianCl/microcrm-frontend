@@ -234,6 +234,15 @@ const OrderDetail = () => {
             )}
 
             <div>
+              <h3 className="font-medium">Medio de Pago</h3>
+              <p className="capitalize">
+                {order.medio_pago === 'efectivo' ? 'Efectivo' : 
+                 order.medio_pago === 'transferencia' ? 'Transferencia' : 
+                 order.medio_pago || 'No especificado'}
+              </p>
+            </div>
+
+            <div>
               <h3 className="font-medium mb-2">Artículos</h3>
               <div className="border rounded-md">
                 <div className="overflow-x-auto">

@@ -11,9 +11,15 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import CancelOrderConfirmation from '@/components/CancelOrderConfirmation';
 import QuickProductSelector from '@/components/QuickProductSelector';
 import OrderItemRow from '@/components/OrderItemRow';
@@ -21,7 +27,7 @@ import ClientSelectorModal from '@/components/ClientSelectorModal';
 import OrderSummaryCard from '@/components/OrderSummaryCard';
 import TableSelectorModal from '@/components/TableSelectorModal';
 import { Addition } from '@/models/order.model';
-import { User, MapPin, ShoppingCart, X, Plus } from 'lucide-react';
+import { User, MapPin, ShoppingCart, X, CreditCard } from 'lucide-react';
 import { useTables } from '@/hooks/useTables';
 import { useClients } from '@/hooks/useClients';
 import { ORDER_QUERY_KEYS } from '@/hooks/useOrders';
@@ -30,6 +36,7 @@ import { useQueryClient } from '@tanstack/react-query';
 type FormValues = {
   tableNumber: string;
   observations: string;
+  paymentMethod: string;
 };
 
 type ExtendedOrderItem = OrderItem & {
@@ -60,6 +67,7 @@ const CreateOrder = () => {
     defaultValues: {
       tableNumber: '',
       observations: '',
+      paymentMethod: 'efectivo',
     },
   }); const handleCancelClick = () => {
     if (orderItems.length > 0 || form.formState.isDirty || selectedClientId || selectedTableId) {
@@ -194,13 +202,14 @@ const CreateOrder = () => {
       id_mesa: selectedTableId ? parseInt(selectedTableId) : null,
       tipo_pedido: selectedTableId ? "en_mesa" : "para_llevar",
       Observacion: selectedTableId ? "" : values.observations || "",
+      medio_pago: values.paymentMethod,
       productos: orderItems.map(item => ({
         id_producto: Number(item.productId),
         cantidad: item.quantity,
         precio_unitario: item.price,
         adiciones: item.additions ? item.additions.map(addition => ({
           id_adicion: Number(addition.id),
-          cantidad: addition.quantity, // Usar la cantidad real de la adición
+          cantidad: addition.quantity,
         })) : []
       })),
       id_estado: 1
@@ -323,6 +332,33 @@ const CreateOrder = () => {
                   </div>
                 )}
 
+                {/* Payment Method Selection - large screens */}
+                <div className="hidden sm:block w-48">
+                  <FormField
+                    control={form.control}
+                    name="paymentMethod"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Select value={field.value} onValueChange={field.onChange}>
+                            <SelectTrigger className="w-full">
+                              <div className="flex items-center gap-2">
+                                <CreditCard className="h-4 w-4 text-muted-foreground" />
+                                <SelectValue placeholder="Método de pago" />
+                              </div>
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="efectivo">Efectivo</SelectItem>
+                              <SelectItem value="transferencia">Transferencia</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
                 <Button
                   variant="outline"
                   onClick={handleCancelClick}
@@ -433,6 +469,34 @@ const CreateOrder = () => {
                           />
                         </div>
                       )}
+
+                      {/* Payment Method Selection - small screens */}
+                      <div className="space-y-3">
+                        <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                          <CreditCard className="h-4 w-4 text-primary" />
+                          Método de Pago
+                        </label>
+                        <FormField
+                          control={form.control}
+                          name="paymentMethod"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Select value={field.value} onValueChange={field.onChange}>
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Seleccionar método de pago" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="efectivo">Efectivo</SelectItem>
+                                    <SelectItem value="transferencia">Transferencia</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
