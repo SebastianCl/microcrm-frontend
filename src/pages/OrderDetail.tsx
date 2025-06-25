@@ -168,16 +168,6 @@ const OrderDetail = () => {
     }
   };
 
-  // Format date
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('default', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    }).format(date);
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex items-center">
