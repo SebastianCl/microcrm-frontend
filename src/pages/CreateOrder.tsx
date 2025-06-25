@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 import { OrderItem } from '@/lib/sample-data';
 import { useForm } from 'react-hook-form';
 import { toast } from "sonner";
@@ -28,6 +29,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 type FormValues = {
   tableNumber: string;
+  observations: string;
 };
 
 type ExtendedOrderItem = OrderItem & {
@@ -54,13 +56,12 @@ const CreateOrder = () => {
   const [selectedTableName, setSelectedTableName] = useState<string>('Para llevar');
   const { data: tablesFromAPI, isLoading: isLoadingTables, error: tablesError } = useTables();
   const { data: clientsFromAPI, isLoading: isLoadingClients, error: clientsError } = useClients();
-
   const form = useForm<FormValues>({
     defaultValues: {
       tableNumber: '',
+      observations: '',
     },
-  });
-  const handleCancelClick = () => {
+  });  const handleCancelClick = () => {
     if (orderItems.length > 0 || form.formState.isDirty || selectedClientId || selectedTableId) {
       setIsCancelConfirmationOpen(true);
     } else {
@@ -184,12 +185,15 @@ const CreateOrder = () => {
     let clientName = 'Cliente no especificado';
     if (selectedClientId) {
       clientName = selectedClientName;
-    }    // Transformar el objeto al formato requerido por el backend (POST /api/pedido/)
+    }
+    
+    // Transformar el objeto al formato requerido por el backend (POST /api/pedido/)
     const backendOrderPayload = {
       id_cliente: Number(selectedClientId.replace('client-', '')) || null,
       id_usuario: 1, // Default value for current user
       id_mesa: selectedTableId ? parseInt(selectedTableId) : null,
       tipo_pedido: selectedTableId ? "en_mesa" : "para_llevar",
+      observacion_pedido: selectedTableId ? "" : values.observations || "",
       productos: orderItems.map(item => ({
         id_producto: Number(item.productId),
         cantidad: item.quantity,
@@ -297,9 +301,31 @@ const CreateOrder = () => {
                       <Button variant="outline" className="justify-start text-left font-normal hover:bg-muted/50">
                         {isLoadingTables ? 'Cargando...' : tablesError ? 'Error' : selectedTableName}
                       </Button>
-                    </TableSelectorModal>
-                  )}
+                    </TableSelectorModal>                  )}
                 </div>
+
+                {/* Observations field for takeaway orders - large screens */}
+                {selectedTableName === 'Para llevar' && (
+                  <div className="hidden sm:block w-64">
+                    <FormField
+                      control={form.control}
+                      name="observations"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Observaciones (opcional)"
+                              className="min-h-[60px] resize-none text-sm"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
+
                 <Button
                   variant="outline"
                   onClick={handleCancelClick}
@@ -383,9 +409,33 @@ const CreateOrder = () => {
                             <Button variant="outline" className="w-full justify-start text-left font-normal hover:bg-muted/50">
                               {isLoadingTables ? 'Cargando mesas...' : tablesError ? 'Error al cargar mesas' : selectedTableName}
                             </Button>
-                          </TableSelectorModal>
-                        )}
+                          </TableSelectorModal>                        )}
                       </div>
+
+                      {/* Observations field for takeaway orders - small screens */}
+                      {selectedTableName === 'Para llevar' && (
+                        <div className="space-y-3">
+                          <label className="text-sm font-medium text-foreground">
+                            Observaciones
+                          </label>
+                          <FormField
+                            control={form.control}
+                            name="observations"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Textarea
+                                    placeholder="Observaciones para el pedido (opcional)"
+                                    className="min-h-[80px] resize-none"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

@@ -9,6 +9,7 @@ export interface Order {
   nombre_usuario?: string;
   total_pedido?: string;
   id_venta?: number;
+  observacion_pedido?: string;
 }
 
 export interface OrderItem {

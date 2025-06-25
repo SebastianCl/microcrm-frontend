@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useOrderDetail, useUpdateOrderStatus } from '@/hooks/useOrders';
@@ -224,6 +223,13 @@ const OrderDetail = () => {
               <div>
                 <h3 className="font-medium">Tipo</h3>
                 <p>Para llevar</p>
+              </div>
+            )}
+
+            {order.nombre_mesa === 'Para llevar' && order.observacion_pedido && (
+              <div>
+                <h3 className="font-medium">Observaciones</h3>
+                <p className="text-muted-foreground">{order.observacion_pedido}</p>
               </div>
             )}
 
