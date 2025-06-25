@@ -118,7 +118,6 @@ const CreateOrder = () => {
 
     toast.success(`${product.name} agregado a la orden`);
   };
-
   const handleUpdateOrderItem = (index: number, updatedItem: ExtendedOrderItem) => {
     const updatedItems = [...orderItems];
     updatedItems[index] = updatedItem;

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,13 +17,15 @@ interface OrderItemRowProps {
 
 const OrderItemRow: React.FC<OrderItemRowProps> = ({ item, onUpdate, onRemove }) => {  const [isEditing, setIsEditing] = useState(false);
   const [editQuantity, setEditQuantity] = useState(item.quantity);
+  const [editPrice, setEditPrice] = useState(item.price);
   const [editAdditions, setEditAdditions] = useState<Addition[]>(item.additions || []);
 
   // Sincronizar el estado cuando cambie el item
   useEffect(() => {
     setEditQuantity(item.quantity);
+    setEditPrice(item.price);
     setEditAdditions(item.additions || []);
-  }, [item.quantity, item.additions]);
+  }, [item.quantity, item.price, item.additions]);
 
   // Obtener productos de la API
   const { data: products = [], isLoading, isError } = useProducts();
@@ -61,9 +62,8 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({ item, onUpdate, onRemove })
         a.id === additionId ? { ...a, quantity: newQuantity } : a
       ));
     }
-  };
-  const calculateNewTotal = () => {
-    const productTotal = item.price * editQuantity;
+  };  const calculateNewTotal = () => {
+    const productTotal = editPrice * editQuantity;
     const additionsTotal = editAdditions.reduce((sum, addition) => sum + (addition.price * addition.quantity), 0) * editQuantity;
     return productTotal + additionsTotal;
   };
@@ -72,6 +72,7 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({ item, onUpdate, onRemove })
     const updatedItem = {
       ...item,
       quantity: editQuantity,
+      price: editPrice,
       additions: editAdditions,
       total: calculateNewTotal()
     };
@@ -81,6 +82,7 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({ item, onUpdate, onRemove })
 
   const handleCancel = () => {
     setEditQuantity(item.quantity);
+    setEditPrice(item.price);
     setEditAdditions(item.additions || []);
     setIsEditing(false);
   };
@@ -129,7 +131,24 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({ item, onUpdate, onRemove })
               >
                 +
               </Button>
-            </div></div>
+            </div>
+          </div>
+
+          {/* Price Editor - Solo cuando el precio original es 0 */}
+          {item.price === 0 && (
+            <div className="flex items-center space-x-2">
+              <label className="text-sm">Precio:</label>
+              <Input
+                type="number"
+                value={editPrice}
+                onChange={(e) => setEditPrice(parseFloat(e.target.value) || 0)}
+                className="w-24 h-7"
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+              />
+            </div>
+          )}
 
           {/* Additions Editor */}
           {isLoading && (
