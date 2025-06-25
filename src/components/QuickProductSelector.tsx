@@ -45,7 +45,7 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
     return productsData.filter(product => {
       const matchesSearch = product.isActive &&
         product.name.toLowerCase().includes(searchQuery.toLowerCase());
-      
+
       const matchesCategory = activeCategory === 'all' || product.categoryName === activeCategory;
       return matchesSearch && matchesCategory;
     });
@@ -73,11 +73,11 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
       setSelectedAdditions(selectedAdditions.filter(item => item.id !== productAddition.id));
     } else {
       // Si no existe, la agregamos con cantidad 1 por defecto
-      setSelectedAdditions([...selectedAdditions, { 
-        id: productAddition.id, 
-        name: productAddition.name, 
-        price: productAddition.price, 
-        quantity: 1 
+      setSelectedAdditions([...selectedAdditions, {
+        id: productAddition.id,
+        name: productAddition.name,
+        price: productAddition.price,
+        quantity: 1
       }]);
     }
   };
@@ -123,7 +123,7 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
     };
 
     onAddProduct(orderItem);
-    
+
     // Reset selection
     setSelectedProductId('');
     setSelectedAdditions([]);
@@ -141,11 +141,10 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
   const ProductGrid = ({ products }: { products: AppProduct[] }) => (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-80 overflow-y-auto">
       {products.map((product) => (
-        <Card 
-          key={product.id} 
-          className={`p-3 cursor-pointer transition-all hover:shadow-md ${
-            selectedProductId === product.id ? 'ring-2 ring-primary' : ''
-          }`}
+        <Card
+          key={product.id}
+          className={`p-3 cursor-pointer transition-all hover:shadow-md ${selectedProductId === product.id ? 'ring-2 ring-primary' : ''
+            }`}
           onClick={() => setSelectedProductId(product.id)}
         >
           <div className="flex justify-between items-start mb-2">
@@ -165,7 +164,7 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
               <Plus className="h-3 w-3" />
             </Button>
           </div>
-          
+
           {/* Adaptar llamada a productHasAdditions */}
           {productsData && productHasAdditions(product.id, productsData) && (
             <Badge variant="secondary" className="text-xs">
@@ -199,7 +198,7 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
       </div>
     );
   }
-  
+
   if (!productsData) {
     return <div className="text-center p-4">No hay productos disponibles en este momento.</div>;
   }
@@ -229,7 +228,7 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
           </TabsList>
         </div>
 
-        {/* All Products Tab */} 
+        {/* All Products Tab */}
         <TabsContent value="all" className="mt-0">
           <ProductGrid products={getProductsByCategory('all')} />
         </TabsContent>
@@ -266,10 +265,10 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
               />
             </div>
 
-            {/* Additions Selector (if any) */}
+            {/* Selector adiciones */}
             {hasAdditions && availableAdditions.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium mb-2">Adiciones Disponibles:</h4>
+                <h4 className="text-sm font-medium mb-2">Adiciones disponibles:</h4>
                 <div className="space-y-2 max-h-40 overflow-y-auto pr-2">
                   {availableAdditions.map((productAddition) => {
                     const currentSelectedAddition = selectedAdditions.find(sa => sa.id === productAddition.id);
@@ -288,9 +287,9 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
                               className="w-16 h-8 text-sm"
                               min="1"
                             />
-                          )}                          <Button 
+                          )}                          <Button
                             type="button"
-                            size="sm" 
+                            size="sm"
                             variant={currentSelectedAddition ? "default" : "outline"}
                             onClick={() => toggleAddition(productAddition)}
                             className="h-8"

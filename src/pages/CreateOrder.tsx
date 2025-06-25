@@ -49,7 +49,7 @@ const CreateOrder = () => {
   const queryClient = useQueryClient();
   const [orderItems, setOrderItems] = useState<ExtendedOrderItem[]>([]);
   const [isCancelConfirmationOpen, setIsCancelConfirmationOpen] = useState(false);
-  const [orderDiscount, setOrderDiscount] = useState<number>(0);  const [orderDiscountType, setOrderDiscountType] = useState<string>(DiscountTypes.NONE);
+  const [orderDiscount, setOrderDiscount] = useState<number>(0); const [orderDiscountType, setOrderDiscountType] = useState<string>(DiscountTypes.NONE);
   const [selectedClientId, setSelectedClientId] = useState<string>('');
   const [selectedClientName, setSelectedClientName] = useState<string>('');
   const [selectedTableId, setSelectedTableId] = useState<string>('');
@@ -61,7 +61,7 @@ const CreateOrder = () => {
       tableNumber: '',
       observations: '',
     },
-  });  const handleCancelClick = () => {
+  }); const handleCancelClick = () => {
     if (orderItems.length > 0 || form.formState.isDirty || selectedClientId || selectedTableId) {
       setIsCancelConfirmationOpen(true);
     } else {
@@ -186,14 +186,14 @@ const CreateOrder = () => {
     if (selectedClientId) {
       clientName = selectedClientName;
     }
-    
+
     // Transformar el objeto al formato requerido por el backend (POST /api/pedido/)
     const backendOrderPayload = {
       id_cliente: Number(selectedClientId.replace('client-', '')) || null,
-      id_usuario: 1, // Default value for current user
+      id_usuario: 1,
       id_mesa: selectedTableId ? parseInt(selectedTableId) : null,
       tipo_pedido: selectedTableId ? "en_mesa" : "para_llevar",
-      observacion_pedido: selectedTableId ? "" : values.observations || "",
+      Observacion: selectedTableId ? "" : values.observations || "",
       productos: orderItems.map(item => ({
         id_producto: Number(item.productId),
         cantidad: item.quantity,
@@ -209,14 +209,11 @@ const CreateOrder = () => {
     const token = localStorage.getItem('authToken');
 
     try {
-      // Configure headers with authentication token
       const headers = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       };
 
-      // Call the API to create the order in the backend
-      console.log("Sending payload to backend:", backendOrderPayload);
       await fetch('http://localhost:3000/api/pedido/', {
         method: 'POST',
         headers: headers,
@@ -240,7 +237,7 @@ const CreateOrder = () => {
   };
 
   return (
-    <Form {...form}> {/* Form provider wraps the entire page content that needs form context */}
+    <Form {...form}>
       <div className="min-h-screen bg-background">
         {/* Header */}
         <div className="bg-card shadow-sm border-b sticky top-0 z-20">
@@ -250,7 +247,7 @@ const CreateOrder = () => {
                 <div className="p-2 bg-primary/10 rounded-lg">
                   <ShoppingCart className="h-5 w-5 text-primary" />
                 </div>
-                <h1 className="text-xl md:text-2xl font-bold text-foreground">Nueva Orden</h1>
+                <h1 className="text-xl md:text-2xl font-bold text-foreground">Nueva orden</h1>
               </div>
               <div className="flex items-center gap-4"> {/* Contenedor para alinear elementos a la derecha */}
                 {/* Client Selection */}
@@ -274,7 +271,7 @@ const CreateOrder = () => {
                       error={clientsError}
                     >
                       <Button variant="outline" className="justify-start text-left font-normal hover:bg-muted/50">
-                        {isLoadingClients ? 'Cargando...' : clientsError ? 'Error' : 'Seleccionar Cliente'}
+                        {isLoadingClients ? 'Cargando...' : clientsError ? 'Error' : 'Seleccionar cliente'}
                       </Button>
                     </ClientSelectorModal>
                   )}
@@ -301,7 +298,7 @@ const CreateOrder = () => {
                       <Button variant="outline" className="justify-start text-left font-normal hover:bg-muted/50">
                         {isLoadingTables ? 'Cargando...' : tablesError ? 'Error' : selectedTableName}
                       </Button>
-                    </TableSelectorModal>                  )}
+                    </TableSelectorModal>)}
                 </div>
 
                 {/* Observations field for takeaway orders - large screens */}
@@ -378,7 +375,7 @@ const CreateOrder = () => {
                           >
                             {/* Trigger button for the modal */}
                             <Button variant="outline" className="w-full justify-start text-left font-normal hover:bg-muted/50">
-                              {isLoadingClients ? 'Cargando clientes...' : clientsError ? 'Error al cargar clientes' : 'Seleccionar Cliente'}
+                              {isLoadingClients ? 'Cargando clientes...' : clientsError ? 'Error al cargar clientes' : 'Seleccionar cliente'}
                             </Button>
                           </ClientSelectorModal>
                         )}
@@ -409,7 +406,7 @@ const CreateOrder = () => {
                             <Button variant="outline" className="w-full justify-start text-left font-normal hover:bg-muted/50">
                               {isLoadingTables ? 'Cargando mesas...' : tablesError ? 'Error al cargar mesas' : selectedTableName}
                             </Button>
-                          </TableSelectorModal>                        )}
+                          </TableSelectorModal>)}
                       </div>
 
                       {/* Observations field for takeaway orders - small screens */}
@@ -445,7 +442,7 @@ const CreateOrder = () => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-lg">
                       <ShoppingCart className="h-5 w-5 text-primary" />
-                      Seleccionar Productos
+                      Seleccionar productos
                     </CardTitle>
                   </CardHeader>
                   <CardContent>

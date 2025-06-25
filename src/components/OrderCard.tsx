@@ -85,8 +85,8 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
 
   const getNextStatusLabel = (currentStatus: string) => {
     switch (currentStatus) {
-      case 'Pendiente': return 'Iniciar Preparación';
-      case 'Preparando': return 'Marcar como Entregado';
+      case 'Pendiente': return 'Iniciar preparación';
+      case 'Preparando': return 'Marcar como entregado';
       case 'Entregado': return 'Finalizar';
       default: return null;
     }
@@ -115,8 +115,8 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
       toast.error('Error al actualizar el estado');
       console.error('Error updating status:', error);
     }
-  }; 
-  
+  };
+
   const handleDownloadInvoice = async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
