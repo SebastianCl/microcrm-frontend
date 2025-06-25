@@ -42,8 +42,8 @@ const OrderDetail = () => {
 
   const getNextStatusLabel = (currentStatus: string) => {
     switch (currentStatus) {
-      case 'Pendiente': return 'Iniciar Preparación';
-      case 'Preparando': return 'Marcar como Entregado';
+      case 'Pendiente': return 'Iniciar preparación';
+      case 'Preparando': return 'Marcar como entregado';
       case 'Entregado': return 'Finalizar';
       default: return null;
     }
@@ -323,7 +323,7 @@ const OrderDetail = () => {
                 className="w-full flex items-center justify-center gap-2 text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
               >
                 <Ban className="h-4 w-4" />
-                Cancelar Orden
+                Cancelar orden
               </Button>)}
 
             {/* Botón de editar orden - solo para órdenes no finalizadas o cancelados*/}
