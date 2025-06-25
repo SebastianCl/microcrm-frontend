@@ -236,9 +236,9 @@ const OrderDetail = () => {
             <div>
               <h3 className="font-medium">Medio de Pago</h3>
               <p className="capitalize">
-                {order.medio_pago === 'efectivo' ? 'Efectivo' : 
-                 order.medio_pago === 'transferencia' ? 'Transferencia' : 
-                 order.medio_pago || 'No especificado'}
+                {order.medio_pago === 'efectivo' ? 'Efectivo' :
+                  order.medio_pago === 'transferencia' ? 'Transferencia' :
+                    order.medio_pago || 'No especificado'}
               </p>
             </div>
 
@@ -256,9 +256,12 @@ const OrderDetail = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {orderItems.map((item, index) => (
-                        <React.Fragment key={`${item.productId}-${index}`}>
-                          <tr className="border-t">
+                      {orderItems.map((item, index) => {
+                        const rows = [];
+
+                        // Fila principal del producto
+                        rows.push(
+                          <tr key={`item-${item.productId}-${index}`} className="border-t">
                             <td className="p-2 px-4">
                               <div>
                                 <div>{item.name}</div>
@@ -269,26 +272,33 @@ const OrderDetail = () => {
                                 )}
                               </div>
                             </td>
-                            <td className="text-center p-2">{item.quantity}</td>                            <td className="text-right p-2 px-4">{formatCurrency(item.price)}</td>
+                            <td className="text-center p-2">{item.quantity}</td>
+                            <td className="text-right p-2 px-4">{formatCurrency(item.price)}</td>
                             <td className="text-right p-2 px-4">{formatCurrency(item.total)}</td>
                           </tr>
-                          {item.additions && item.additions.length > 0 && (
-                            <tr className="bg-muted/30">
+                        );
+
+                        // Fila de adiciones si existen
+                        if (item.additions && item.additions.length > 0) {
+                          rows.push(
+                            <tr key={`additions-${item.productId}-${index}`} className="bg-muted/30">
                               <td colSpan={4} className="p-2 px-6">
                                 <div className="text-sm text-muted-foreground">
                                   <span className="font-medium">Adiciones:</span>{' '}
                                   {item.additions.map((addition: Addition, i: number) => (
-                                    <React.Fragment key={`addition-${addition.id}`}>
+                                    <span key={`addition-${addition.id}-${i}`}>
                                       {addition.name} (x{addition.quantity}) (+{formatCurrency(addition.price)})
-                                      {i < item.additions!.length - 1 ? ', ' : ''}
-                                    </React.Fragment>
+                                      {i < item.additions.length - 1 ? ', ' : ''}
+                                    </span>
                                   ))}
                                 </div>
                               </td>
                             </tr>
-                          )}
-                        </React.Fragment>
-                      ))}
+                          );
+                        }
+
+                        return rows;
+                      })}
                     </tbody>
                   </table>
                 </div>
