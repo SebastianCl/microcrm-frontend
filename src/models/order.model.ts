@@ -23,6 +23,7 @@ export interface OrderItem {
   discount?: number;
   discountType?: string;
   additions?: Addition[];
+  observacion?: string;
 }
 
 export interface Addition {

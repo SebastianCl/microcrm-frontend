@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 // Checkbox no se usa, se puede eliminar si no se va a usar más adelante
 // import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
@@ -23,6 +24,7 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
   const [selectedProductId, setSelectedProductId] = useState<string>('');
   const [selectedAdditions, setSelectedAdditions] = useState<Addition[]>([]); // Addition de order.model ahora incluye cantidad
   const [quantity, setQuantity] = useState(1);
+  const [observaciones, setObservaciones] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
 
   const { data: productsData, isLoading: isLoadingProducts, error: productsError } = useProducts();
@@ -119,7 +121,8 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
       quantity: quantity,
       price: selectedProduct.price, // Precio unitario del producto base
       total: baseProductTotal + additionsTotalForOrderItem, // Total para esta cantidad de producto, incluyendo sus adiciones
-      additions: selectedAdditions.length > 0 ? selectedAdditions : undefined
+      additions: selectedAdditions.length > 0 ? selectedAdditions : undefined,
+      observacion: observaciones.trim() || undefined
     };
 
     onAddProduct(orderItem);
@@ -128,6 +131,7 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
     setSelectedProductId('');
     setSelectedAdditions([]);
     setQuantity(1);
+    setObservaciones('');
   };
 
   const getProductsByCategory = (categoryName: string) => {
@@ -247,7 +251,7 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold">{selectedProduct.name}</h3> {/* Mostrar nombre */}
-              <Button variant="ghost" size="sm" onClick={() => { setSelectedProductId(''); setSelectedAdditions([]); setQuantity(1); }}>
+              <Button variant="ghost" size="sm" onClick={() => { setSelectedProductId(''); setSelectedAdditions([]); setQuantity(1); setObservaciones(''); }}>
                 Limpiar
               </Button>
             </div>
@@ -303,6 +307,18 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
                 </div>
               </div>
             )}
+
+            {/* Observaciones */}
+            <div className="space-y-2">
+              <label htmlFor="observaciones" className="text-sm font-medium">Observaciones (opcional):</label>
+              <Textarea
+                id="observaciones"
+                value={observaciones}
+                onChange={(e) => setObservaciones(e.target.value)}
+                placeholder="Escribe observaciones específicas para este producto..."
+                className="min-h-[80px] resize-none"
+              />
+            </div>
 
             {/* Total Price & Add Button */}            <div className="flex justify-between items-center pt-2 border-t">
               <div>

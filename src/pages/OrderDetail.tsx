@@ -259,7 +259,16 @@ const OrderDetail = () => {
                       {orderItems.map((item, index) => (
                         <React.Fragment key={`${item.productId}-${index}`}>
                           <tr className="border-t">
-                            <td className="p-2 px-4">{item.name}</td>
+                            <td className="p-2 px-4">
+                              <div>
+                                <div>{item.name}</div>
+                                {item.observaciones && (
+                                  <div className="text-xs text-muted-foreground mt-1">
+                                    <strong>Obs:</strong> {item.observaciones}
+                                  </div>
+                                )}
+                              </div>
+                            </td>
                             <td className="text-center p-2">{item.quantity}</td>                            <td className="text-right p-2 px-4">{formatCurrency(item.price)}</td>
                             <td className="text-right p-2 px-4">{formatCurrency(item.total)}</td>
                           </tr>

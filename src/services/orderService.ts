@@ -20,6 +20,7 @@ interface OrderDetailItem {
   cantidad: number;
   precio_unitario: string;
   descuento: string;
+  observaciones_producto?: string;
   adiciones: {
     nombre: string;
     cantidad: number;
@@ -73,6 +74,7 @@ export const orderService = {
       price: number;
       discount: number;
       total: number;
+      observaciones?: string;
       additions: Array<{
         id: string;
         name: string;
@@ -110,6 +112,7 @@ export const orderService = {
       price: parseFloat(item.precio_unitario),
       discount: parseFloat(item.descuento),
       total: parseFloat(item.precio_unitario) * item.cantidad - parseFloat(item.descuento),
+      observaciones: item.observaciones_producto,
       additions: item.adiciones.map(adicion => ({
         id: adicion.id_adicion.toString(),
         name: adicion.nombre,

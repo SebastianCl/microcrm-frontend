@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { OrderItem } from '@/lib/sample-data';
 import { useForm } from 'react-hook-form';
 import { toast } from "sonner";
 import {
@@ -26,7 +25,7 @@ import OrderItemRow from '@/components/OrderItemRow';
 import ClientSelectorModal from '@/components/ClientSelectorModal';
 import OrderSummaryCard from '@/components/OrderSummaryCard';
 import TableSelectorModal from '@/components/TableSelectorModal';
-import { Addition } from '@/models/order.model';
+import { Addition, OrderItem } from '@/models/order.model';
 import { User, MapPin, ShoppingCart, X, CreditCard } from 'lucide-react';
 import { useTables } from '@/hooks/useTables';
 import { useClients } from '@/hooks/useClients';
@@ -207,6 +206,7 @@ const CreateOrder = () => {
         id_producto: Number(item.productId),
         cantidad: item.quantity,
         precio_unitario: item.price,
+        observacion: item.observacion || '',
         adiciones: item.additions ? item.additions.map(addition => ({
           id_adicion: Number(addition.id),
           cantidad: addition.quantity,
