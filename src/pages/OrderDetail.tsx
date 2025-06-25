@@ -273,10 +273,16 @@ const OrderDetail = () => {
                       ))}
                     </tbody>
                   </table>
-                </div>              </div>
-
-              <div className="mt-4 text-right">                <p className="text-xl font-bold">
-                  Total: {formatCurrency(orderItems.reduce((sum, item) => sum + item.total, 0))}
+                </div>
+              </div>
+              <div className="mt-4 text-right">
+                <p className="text-xl font-bold">
+                  Total: {formatCurrency(orderItems.reduce((sum, item) => {
+                    const itemTotal = item.total;
+                    const additionsTotal = item.additions?.reduce((addSum, addition) =>
+                      addSum + (addition.price * addition.quantity), 0) || 0;
+                    return sum + itemTotal + additionsTotal;
+                  }, 0))}
                 </p>
               </div>
             </div>
