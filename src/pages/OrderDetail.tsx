@@ -197,40 +197,42 @@ const OrderDetail = () => {
 
           <Separator className="my-4" />
           <div className="space-y-4">
-            <div>
-              <h3 className="font-medium">Cliente</h3>
-              <p>{order.nombre_cliente}</p>
+            {/* Información principal en tarjeta con estilo de EditOrder */}
+            <div className="grid md:grid-cols-3 gap-4 p-4 bg-muted/30 rounded-lg">
+              <div>
+                <h4 className="font-medium">Cliente</h4>
+                <p className="text-muted-foreground">{order.nombre_cliente}</p>
+              </div>
+
+              <div>
+                <h4 className="font-medium">
+                  {order.nombre_mesa && order.nombre_mesa !== 'Para llevar' ? 'Mesa' : 'Tipo'}
+                </h4>
+                <p className="text-muted-foreground">
+                  {order.nombre_mesa && order.nombre_mesa !== 'Para llevar'
+                    ? order.nombre_mesa
+                    : 'Para llevar'
+                  }
+                </p>
+              </div>
+
+              <div>
+                <h4 className="font-medium">Medio de Pago</h4>
+                <p className="text-muted-foreground capitalize">
+                  {order.medio_pago === 'efectivo' ? 'Efectivo' :
+                    order.medio_pago === 'transferencia' ? 'Transferencia' :
+                      order.medio_pago || 'No especificado'}
+                </p>
+              </div>
             </div>
 
-            {order.nombre_mesa && order.nombre_mesa !== 'Para llevar' && (
-              <div>
-                <h3 className="font-medium">Mesa</h3>
-                <p>{order.nombre_mesa}</p>
-              </div>
-            )}
-
-            {order.nombre_mesa === 'Para llevar' && (
-              <div>
-                <h3 className="font-medium">Tipo</h3>
-                <p>Para llevar</p>
-              </div>
-            )}
-
+            {/* Observaciones en línea separada solo si existen */}
             {order.nombre_mesa === 'Para llevar' && order.observacion_pedido && (
               <div>
                 <h3 className="font-medium">Observaciones</h3>
                 <p className="text-muted-foreground">{order.observacion_pedido}</p>
               </div>
             )}
-
-            <div>
-              <h3 className="font-medium">Medio de Pago</h3>
-              <p className="capitalize">
-                {order.medio_pago === 'efectivo' ? 'Efectivo' :
-                  order.medio_pago === 'transferencia' ? 'Transferencia' :
-                    order.medio_pago || 'No especificado'}
-              </p>
-            </div>
 
             <div>
               <h3 className="font-medium mb-2">Artículos</h3>
