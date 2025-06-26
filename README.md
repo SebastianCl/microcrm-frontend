@@ -1,4 +1,4 @@
-# Micro POS
+# Micro CRM
 
 ![Versión](https://img.shields.io/badge/versión-1.0.0-blue)
 ![React](https://img.shields.io/badge/React-18.3.1-61DAFB)
@@ -7,7 +7,7 @@
 
 ## 📋 Descripción
 
-Micro POS es una aplicación web moderna para gestión de ventas, inventario, clientes y pedidos. Diseñada para pequeñas y medianas empresas que necesitan una solución integral para administrar sus operaciones comerciales diarias de manera eficiente.
+Micro CRM es una aplicación web moderna para gestión de ventas, inventario, clientes y pedidos. Diseñada para pequeñas y medianas empresas que necesitan una solución integral para administrar sus operaciones comerciales diarias de manera eficiente.
 
 ### ✨ Características Principales
 

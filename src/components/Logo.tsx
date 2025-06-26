@@ -22,7 +22,7 @@ const Logo: React.FC<LogoProps> = ({ className = '', size = 'medium' }) => {
           <span className="text-primary-foreground font-bold text-lg">MP</span>
         </AspectRatio>
       </div>
-      <span className="ml-2 font-bold text-foreground">Micro POS</span>
+      <span className="ml-2 font-bold text-foreground">Micro CRM</span>
     </div>
   );
 };
