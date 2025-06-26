@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
+import * as z from 'zod';
 import { toast } from "sonner";
 import {
   Form,
@@ -32,11 +33,13 @@ import { useClients } from '@/hooks/useClients';
 import { ORDER_QUERY_KEYS } from '@/hooks/useOrders';
 import { useQueryClient } from '@tanstack/react-query';
 
-type FormValues = {
-  tableNumber: string;
-  observations: string;
-  paymentMethod: string;
-};
+const createOrderFormSchema = z.object({
+  tableNumber: z.string(),
+  observations: z.string(),
+  paymentMethod: z.string().min(1, "El método de pago es requerido"),
+});
+
+type FormValues = z.infer<typeof createOrderFormSchema>;
 
 type ExtendedOrderItem = OrderItem & {
   discount?: number;
@@ -62,6 +65,7 @@ const CreateOrder = () => {
   const [selectedTableName, setSelectedTableName] = useState<string>('Para llevar');
   const { data: tablesFromAPI, isLoading: isLoadingTables, error: tablesError } = useTables();
   const { data: clientsFromAPI, isLoading: isLoadingClients, error: clientsError } = useClients();
+
   const form = useForm<FormValues>({
     defaultValues: {
       tableNumber: '',
@@ -94,12 +98,20 @@ const CreateOrder = () => {
     setSelectedTableName(tableName);
     // También actualizar el formulario
     form.setValue('tableNumber', tableId);
+
+    if (tableName !== 'Para llevar') {
+      form.setValue('observations', '');
+    }
+
+    form.clearErrors('observations');
   };
 
   const clearTable = () => {
     setSelectedTableId('');
     setSelectedTableName('Para llevar');
     form.setValue('tableNumber', '');
+
+    form.clearErrors('observations');
   };
 
   const handleAddProduct = (product: OrderItem) => {
@@ -186,6 +198,12 @@ const CreateOrder = () => {
   const onSubmit = async (values: FormValues) => {
     if (orderItems.length === 0) {
       toast.error('Error: No hay productos');
+      return;
+    }
+
+    // Validación adicional para pedidos para llevar
+    if (selectedTableName === 'Para llevar' && (!values.observations || values.observations.trim() === '')) {
+      toast.error('Las observaciones son obligatorias para pedidos para llevar');
       return;
     }
 
@@ -320,7 +338,7 @@ const CreateOrder = () => {
                         <FormItem>
                           <FormControl>
                             <Textarea
-                              placeholder="Observaciones (opcional)"
+                              placeholder="Observaciones"
                               className="min-h-[60px] resize-none text-sm"
                               {...field}
                             />
@@ -449,7 +467,7 @@ const CreateOrder = () => {
                       {selectedTableName === 'Para llevar' && (
                         <div className="space-y-3">
                           <label className="text-sm font-medium text-foreground">
-                            Observaciones
+                            Observaciones *
                           </label>
                           <FormField
                             control={form.control}
@@ -458,7 +476,7 @@ const CreateOrder = () => {
                               <FormItem>
                                 <FormControl>
                                   <Textarea
-                                    placeholder="Observaciones para el pedido (opcional)"
+                                    placeholder="Observaciones"
                                     className="min-h-[80px] resize-none"
                                     {...field}
                                   />
