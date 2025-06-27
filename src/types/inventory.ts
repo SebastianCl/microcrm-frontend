@@ -1,4 +1,3 @@
-
 export interface InventoryItem {
   id: string;
   name: string;
@@ -10,4 +9,12 @@ export interface InventoryItem {
   imageUrl?: string;
   location?: string;
   lastUpdated?: string;
+}
+
+export interface InventoryMovement {
+  id_producto: number;
+  cantidad: number;
+  fecha: string;
+  tipo_movimiento: 'entrada' | 'salida';
+  comentario: string;
 }

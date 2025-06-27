@@ -1,4 +1,5 @@
 import { apiClient } from './apiClient';
+import { InventoryMovement } from '@/types/inventory';
 
 export interface CreateProductRequest {
     nombre: string;
@@ -26,5 +27,12 @@ export const productService = {
      */
     async createProduct(productData: CreateProductRequest): Promise<CreateProductResponse> {
         return await apiClient.post<CreateProductResponse>('/products', productData);
+    },
+
+    /**
+     * Obtener historial de movimientos de inventario de un producto
+     */
+    async getInventoryMovements(productId: string): Promise<InventoryMovement[]> {
+        return await apiClient.get<InventoryMovement[]>(`/inventarios/${productId}`);
     },
 };
