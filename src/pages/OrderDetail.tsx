@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useOrderDetail, useUpdateOrderStatus, useUpdateOrderPaymentMethod } from '@/hooks/useOrders';
+import { useOrderDetail, useUpdateOrderStatus, useFinalizeOrderWithPayment } from '@/hooks/useOrders';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -30,7 +30,7 @@ const OrderDetail = () => {
   });
 
   const updateOrderStatus = useUpdateOrderStatus(id!);
-  const updatePaymentMethod = useUpdateOrderPaymentMethod(id!);
+  const finalizeOrderWithPayment = useFinalizeOrderWithPayment(id!);
   const [showCancelDialog, setShowCancelDialog] = React.useState(false);
   const [showPaymentDialog, setShowPaymentDialog] = React.useState(false);
 
@@ -85,11 +85,8 @@ const OrderDetail = () => {
 
   const handlePaymentMethodConfirm = async (paymentMethod: string) => {
     try {
-      // Primero actualizar el método de pago
-      await updatePaymentMethod.mutateAsync(paymentMethod);
-      
-      // Luego finalizar la orden
-      await updateOrderStatus.mutateAsync(5); // 5 = Finalizado
+      // Usar el nuevo endpoint que combina actualizar método de pago y finalizar la orden
+      await finalizeOrderWithPayment.mutateAsync(paymentMethod);
       
       toast.success(`Orden ${order.id_pedido} finalizada exitosamente`);
       setShowPaymentDialog(false);
@@ -415,7 +412,8 @@ const OrderDetail = () => {
         open={showPaymentDialog}
         onOpenChange={setShowPaymentDialog}
         onConfirm={handlePaymentMethodConfirm}
-        isLoading={updatePaymentMethod.isPending || updateOrderStatus.isPending}
+        isLoading={finalizeOrderWithPayment.isPending || updateOrderStatus.isPending}
+        orderId={order.id_pedido}
       />
     </div>
   );

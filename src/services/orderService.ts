@@ -211,6 +211,17 @@ export const orderService = {
   },
 
   /**
+   * Finaliza una orden con método de pago
+   */
+  async finalizeOrderWithPayment(id: string, paymentMethod: string): Promise<Order> {
+    const response = await apiClient.patch<ApiOrderSingleResponse>(`${API_CONFIG.ENDPOINTS.ORDERS}/${id}/estado`, { 
+      id_estado: 5, // ID para estado "Finalizado"
+      medio_pago: paymentMethod
+    });
+    return response.data;
+  },
+
+  /**
    * Asigna una mesa a una orden
    */
   async assignTable(id: string, tableNumber: number): Promise<Order> {

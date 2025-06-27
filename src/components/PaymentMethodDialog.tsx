@@ -22,6 +22,7 @@ interface PaymentMethodDialogProps {
   onOpenChange: (open: boolean) => void;
   onConfirm: (paymentMethod: string) => void;
   isLoading?: boolean;
+  orderId?: string;
 }
 
 const PaymentMethodDialog: React.FC<PaymentMethodDialogProps> = ({
@@ -29,6 +30,7 @@ const PaymentMethodDialog: React.FC<PaymentMethodDialogProps> = ({
   onOpenChange,
   onConfirm,
   isLoading = false,
+  orderId,
 }) => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
 
