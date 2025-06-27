@@ -10,6 +10,16 @@ export interface CreateProductRequest {
     id_categoria: string;
 }
 
+export interface UpdateProductRequest {
+    nombre: string;
+    descripcion: string;
+    precio: string;
+    stock: number;
+    estado: boolean;
+    maneja_inventario: boolean;
+    id_categoria: number;
+}
+
 export interface CreateProductResponse {
     id_producto: number;
     nombre: string;
@@ -27,6 +37,13 @@ export const productService = {
      */
     async createProduct(productData: CreateProductRequest): Promise<CreateProductResponse> {
         return await apiClient.post<CreateProductResponse>('/products', productData);
+    },
+
+    /**
+     * Actualizar un producto existente
+     */
+    async updateProduct(productId: string, productData: UpdateProductRequest): Promise<CreateProductResponse> {
+        return await apiClient.put<CreateProductResponse>(`/products/${productId}`, productData);
     },
 
     /**

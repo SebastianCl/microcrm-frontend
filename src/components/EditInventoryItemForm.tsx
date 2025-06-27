@@ -23,7 +23,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { InventoryItem } from '@/types/inventory';
+import { useProducts, useUpdateProduct } from '@/hooks/useProducts';
 
 const formSchema = z.object({
   name: z.string().min(3, { message: "El nombre debe tener al menos 3 caracteres" }),
@@ -36,6 +38,8 @@ const formSchema = z.object({
   }),
   description: z.string().optional(),
   imageUrl: z.string().optional(),
+  managesInventory: z.boolean().default(true),
+  isActive: z.boolean().default(true),
 });
 
 interface EditInventoryItemFormProps {
@@ -44,26 +48,63 @@ interface EditInventoryItemFormProps {
 }
 
 const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onClose }) => {
+  const { data: productsData } = useProducts();
+  const updateProductMutation = useUpdateProduct();
+
+  // Get unique categories from products
+  const categories = React.useMemo(() => {
+    if (!productsData) return [];
+    const uniqueCategories = new Map<number, string>();
+    productsData.forEach(product => {
+      if (product.categoryId && product.categoryName) {
+        uniqueCategories.set(product.categoryId, product.categoryName);
+      }
+    });
+    return Array.from(uniqueCategories.entries()).map(([id, name]) => ({ id, name }));
+  }, [productsData]);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: item.name,
       category: item.category,
       price: item.price.toString(),
-      stockQuantity: item.stockQuantity.toString(),
+      stockQuantity: item.stockQuantity === Infinity ? "0" : item.stockQuantity.toString(),
       description: item.description || "",
       imageUrl: item.imageUrl || "",
+      managesInventory: item.stockQuantity !== Infinity,
+      isActive: item.status === "Activo",
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    // In a real app, you'd send this data to an API
-    console.log("Updated form values:", values);
-    
-    toast.success("Producto actualizado correctamente");
-    
-    // Close the dialog
-    onClose();
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    try {
+      // Encontrar el ID de categoría basado en el nombre seleccionado
+      const selectedCategory = categories.find(cat => cat.name === values.category);
+      if (!selectedCategory) {
+        toast.error("Categoría no válida");
+        return;
+      }
+
+      await updateProductMutation.mutateAsync({
+        productId: item.id,
+        productData: {
+          nombre: values.name,
+          descripcion: values.description,
+          precio: values.price,
+          stock: parseInt(values.stockQuantity),
+          estado: values.isActive,
+          maneja_inventario: values.managesInventory,
+          id_categoria: selectedCategory.id,
+        },
+      });
+
+      toast.success("Producto actualizado correctamente");
+      onClose();
+    } catch (error) {
+      toast.error("Error al actualizar el producto. Intenta nuevamente.");
+      console.error("Error updating product:", error);
+    }
   };
 
   return (
@@ -99,12 +140,11 @@ const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onC
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="Electrónica">Electrónica</SelectItem>
-                    <SelectItem value="Periféricos">Periféricos</SelectItem>
-                    <SelectItem value="Audio">Audio</SelectItem>
-                    <SelectItem value="Tablets">Tablets</SelectItem>
-                    <SelectItem value="Accesorios">Accesorios</SelectItem>
-                    <SelectItem value="Otros">Otros</SelectItem>
+                    {categories.map(category => (
+                      <SelectItem key={category.id} value={category.name}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -171,6 +211,54 @@ const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onC
             </FormItem>
           )}
         />
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="managesInventory"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>
+                    Manejar Inventario
+                  </FormLabel>
+                  <p className="text-sm text-muted-foreground">
+                    Activar para controlar el stock del producto
+                  </p>
+                </div>
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="isActive"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>
+                    Producto Activo
+                  </FormLabel>
+                  <p className="text-sm text-muted-foreground">
+                    El producto estará disponible para venta
+                  </p>
+                </div>
+              </FormItem>
+            )}
+          />
+        </div>
         
         <div className="flex justify-end gap-2">
           <Button type="button" variant="outline" onClick={onClose}>

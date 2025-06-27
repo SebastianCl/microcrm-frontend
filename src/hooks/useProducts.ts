@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/services/apiClient';
 import { AppProduct, AppAddition, ApiProduct } from '@/models/product.model';
-import { productService, CreateProductRequest } from '@/services/productService';
+import { productService, CreateProductRequest, UpdateProductRequest } from '@/services/productService';
 
 // Función para transformar la respuesta de la API al formato de la aplicación
 const transformProductData = (apiProducts: ApiProduct[]): AppProduct[] => {
@@ -40,6 +40,19 @@ export const useCreateProduct = () => {
     return useMutation({
         mutationFn: (productData: CreateProductRequest) =>
             productService.createProduct(productData),
+        onSuccess: () => {
+            // Invalidar y refrescar la lista de productos
+            queryClient.invalidateQueries({ queryKey: ['products'] });
+        },
+    });
+};
+
+export const useUpdateProduct = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ productId, productData }: { productId: string; productData: UpdateProductRequest }) =>
+            productService.updateProduct(productId, productData),
         onSuccess: () => {
             // Invalidar y refrescar la lista de productos
             queryClient.invalidateQueries({ queryKey: ['products'] });
