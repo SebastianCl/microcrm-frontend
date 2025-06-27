@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/services/apiClient';
-import { AppProduct, AppAddition, ApiProduct } from '@/models/product.model';
+import { AppProduct, AppAddition, ApiProduct, ApiProductDetail } from '@/models/product.model';
 import { productService, CreateProductRequest, UpdateProductRequest } from '@/services/productService';
 
 // Función para transformar la respuesta de la API al formato de la aplicación
@@ -24,6 +24,22 @@ const transformProductData = (apiProducts: ApiProduct[]): AppProduct[] => {
     }));
 };
 
+// Función para transformar el detalle de un producto
+const transformProductDetail = (apiProduct: ApiProductDetail): AppProduct => {
+    return {
+        id: apiProduct.id_producto.toString(),
+        name: apiProduct.nombre,
+        description: apiProduct.descripcion,
+        price: parseFloat(apiProduct.precio),
+        stockQuantity: apiProduct.stock,
+        managesInventory: true, // Asumimos que si tiene stock definido, maneja inventario
+        isActive: apiProduct.estado,
+        additions: [], // El endpoint de detalle no incluye adiciones
+        categoryId: 0, // No incluido en la respuesta del detalle
+        categoryName: '', // No incluido en la respuesta del detalle
+    };
+};
+
 export const useProducts = () => {
     return useQuery<AppProduct[], Error>({
         queryKey: ['products'],
@@ -31,6 +47,18 @@ export const useProducts = () => {
             const data = await apiClient.get<ApiProduct[]>('/products');
             return transformProductData(data);
         },
+    });
+};
+
+export const useProduct = (productId: string | undefined) => {
+    return useQuery<AppProduct, Error>({
+        queryKey: ['products', productId],
+        queryFn: async () => {
+            if (!productId) throw new Error('Product ID is required');
+            const data = await apiClient.get<ApiProductDetail>(`/products/${productId}`);
+            return transformProductDetail(data);
+        },
+        enabled: !!productId, // Solo ejecutar la query si productId existe
     });
 };
 

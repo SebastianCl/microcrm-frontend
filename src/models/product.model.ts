@@ -6,6 +6,16 @@ export interface ApiAddition {
   estado: boolean;
 }
 
+// Para la respuesta de detalle del producto (GET /products/{id})
+export interface ApiProductDetail {
+  id_producto: number;
+  nombre: string;
+  descripcion: string;
+  precio: string; // Viene como string de la API
+  stock: number;
+  estado: boolean;
+}
+
 export interface ApiProduct {
   id_producto: number;
   nombre: string;

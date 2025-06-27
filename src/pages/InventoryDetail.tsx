@@ -21,26 +21,41 @@ import EditInventoryItemDialog from '@/components/EditInventoryItemDialog';
 import { InventoryItem } from '@/types/inventory';
 import { formatCurrency } from '@/lib/utils';
 import { useInventoryMovements } from '@/hooks/useInventoryMovements';
+import { useProduct } from '@/hooks/useProducts';
+import { AppProduct } from '@/models/product.model';
 
 const InventoryDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
+  // Obtener los datos del producto desde la API
+  const { data: productData, isLoading: productLoading, error: productError } = useProduct(id);
+
   // Obtener historial de movimientos del producto
   const { data: movements, isLoading: movementsLoading, error: movementsError } = useInventoryMovements(id || '');
 
-  // Sample inventory item (in a real app, this would come from an API)
-  const item: InventoryItem = {
-    id: '1',
-    name: 'Laptop Dell XPS 13',
-    category: 'Electrónica',
-    price: 1299.99,
-    stockQuantity: 24,
-    status: 'En stock',
-    description: 'Laptop Dell XPS 13 con procesador Intel Core i7, 16GB de RAM y 512GB SSD. Pantalla InfinityEdge de 13.4 pulgadas.',
-    location: 'Almacén Principal',
-    lastUpdated: '2023-06-15'
+  // Función para convertir AppProduct a InventoryItem (para compatibilidad con EditInventoryItemDialog)
+  const convertToInventoryItem = (product: AppProduct): InventoryItem => {
+    // Determinar el estado basado en el stock
+    let status = 'En stock';
+    if (!product.isActive) {
+      status = 'Sin stock';
+    } else if (product.stockQuantity <= 5) {
+      status = 'Bajo stock';
+    }
+
+    return {
+      id: product.id,
+      name: product.name,
+      category: product.categoryName || 'Sin categoría',
+      price: product.price,
+      stockQuantity: product.stockQuantity,
+      status,
+      description: product.description,
+      location: 'Almacén Principal', // Valor por defecto ya que no viene de la API
+      lastUpdated: new Date().toISOString().split('T')[0] // Fecha actual como fallback
+    };
   };
 
   const getStatusBadge = (status: string) => {
@@ -107,6 +122,7 @@ const InventoryDetail = () => {
             variant="outline"
             className="flex items-center gap-2"
             onClick={() => setIsEditDialogOpen(true)}
+            disabled={productLoading || !!productError}
           >
             <Edit className="h-4 w-4" />
             <span className="hidden md:inline">Editar</span>
@@ -118,121 +134,151 @@ const InventoryDetail = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Package className="h-5 w-5 text-primary" />
-                <h2 className="text-xl font-semibold">Información del Producto</h2>
-              </div>
-              {getStatusBadge(item.status)}
-            </div>
-
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Nombre</p>
-                  <p className="font-medium">{item.name}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Categoría</p>
-                  <p className="font-medium">{item.category}</p>
-                </div>                <div>
-                  <p className="text-sm text-muted-foreground">Precio</p>
-                  <p className="font-medium">{formatCurrency(item.price)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Cantidad</p>
-                  <p className="font-medium">{item.stockQuantity} unidades</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Ubicación</p>
-                  <p className="font-medium">{item.location}</p>
-                </div>
-              </div>
-
-              <div>
-                <p className="text-sm text-muted-foreground">Descripción</p>
-                <p>{item.description}</p>
-              </div>
-
-              <div>
-                <p className="text-sm text-muted-foreground">Última Actualización</p>
-                <p className="font-medium">{item.lastUpdated}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="space-y-6">
+      {productError ? (
+        <Alert className="border-red-200">
+          <AlertDescription className="text-red-600">
+            Error al cargar el producto: {productError.message}
+          </AlertDescription>
+        </Alert>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card>
             <CardContent className="p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Activity className="h-5 w-5 text-primary" />
-                <h3 className="text-lg font-semibold">Historial de Movimientos</h3>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Package className="h-5 w-5 text-primary" />
+                  <h2 className="text-xl font-semibold">Información del Producto</h2>
+                </div>
+                {productLoading ? (
+                  <Skeleton className="h-6 w-20" />
+                ) : productData ? (
+                  getStatusBadge(convertToInventoryItem(productData).status)
+                ) : null}
               </div>
 
-              {movementsLoading ? (
+              {productLoading ? (
                 <div className="space-y-4">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="flex justify-between items-center border-b pb-3">
-                      <div className="space-y-2">
-                        <Skeleton className="h-4 w-32" />
-                        <Skeleton className="h-3 w-24" />
-                      </div>
-                      <Skeleton className="h-3 w-20" />
-                    </div>
-                  ))}
-                </div>
-              ) : movementsError ? (
-                <Alert className="border-red-200">
-                  <AlertDescription className="text-red-600">
-                    Error al cargar el historial de movimientos
-                  </AlertDescription>
-                </Alert>
-              ) : movements && movements.length > 0 ? (
-                <div className="space-y-4 max-h-96 overflow-y-auto">
-                  {movements
-                    .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
-                    .map((movement, index) => (
-                      <div key={index} className="flex justify-between items-start border-b pb-3 last:border-b-0">
-                        <div className="flex items-start gap-3">
-                          {getMovementIcon(movement.tipo_movimiento)}
-                          <div>
-                            <div className="flex items-center gap-2 mb-1">
-                              {getMovementBadge(movement.tipo_movimiento)}
-                              <p className="font-medium text-sm">
-                                {movement.tipo_movimiento === 'entrada' ? '+' : '-'}{movement.cantidad} unidades
-                              </p>
-                            </div>
-                            <p className="text-sm text-muted-foreground">{movement.comentario}</p>
-                            <div className="flex items-center gap-1 mt-1">
-                              <Calendar className="h-3 w-3 text-muted-foreground" />
-                              <p className="text-xs text-muted-foreground">{formatDate(movement.fecha)}</p>
-                            </div>
-                          </div>
-                        </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    {[...Array(5)].map((_, i) => (
+                      <div key={i}>
+                        <Skeleton className="h-4 w-16 mb-1" />
+                        <Skeleton className="h-5 w-24" />
                       </div>
                     ))}
+                  </div>
+                  <div>
+                    <Skeleton className="h-4 w-20 mb-1" />
+                    <Skeleton className="h-16 w-full" />
+                  </div>
                 </div>
-              ) : (
-                <div className="text-center py-8">
-                  <Box className="h-12 w-12 mx-auto text-gray-400 mb-3" />
-                  <p className="text-muted-foreground">No hay movimientos registrados</p>
+              ) : productData ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Nombre</p>
+                      <p className="font-medium">{productData.name}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Categoría</p>
+                      <p className="font-medium">{productData.categoryName || 'Sin categoría'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Precio</p>
+                      <p className="font-medium">{formatCurrency(productData.price)}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Cantidad</p>
+                      <p className="font-medium">{productData.stockQuantity} unidades</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Ubicación</p>
+                      <p className="font-medium">Almacén Principal</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Estado</p>
+                      <p className="font-medium">{productData.isActive ? 'Activo' : 'Inactivo'}</p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-muted-foreground">Descripción</p>
+                    <p>{productData.description || 'Sin descripción'}</p>
+                  </div>
                 </div>
-              )}
+              ) : null}
             </CardContent>
           </Card>
 
-        </div>
-      </div>
+          <div className="space-y-6">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Activity className="h-5 w-5 text-primary" />
+                  <h3 className="text-lg font-semibold">Historial de Movimientos</h3>
+                </div>
 
-      <EditInventoryItemDialog
-        open={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-        item={item}
-      />
+                {movementsLoading ? (
+                  <div className="space-y-4">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="flex justify-between items-center border-b pb-3">
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="h-3 w-24" />
+                        </div>
+                        <Skeleton className="h-3 w-20" />
+                      </div>
+                    ))}
+                  </div>
+                ) : movementsError ? (
+                  <Alert className="border-red-200">
+                    <AlertDescription className="text-red-600">
+                      Error al cargar el historial de movimientos
+                    </AlertDescription>
+                  </Alert>
+                ) : movements && movements.length > 0 ? (
+                  <div className="space-y-4 max-h-96 overflow-y-auto">
+                    {movements
+                      .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
+                      .map((movement, index) => (
+                        <div key={index} className="flex justify-between items-start border-b pb-3 last:border-b-0">
+                          <div className="flex items-start gap-3">
+                            {getMovementIcon(movement.tipo_movimiento)}
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                {getMovementBadge(movement.tipo_movimiento)}
+                                <p className="font-medium text-sm">
+                                  {movement.tipo_movimiento === 'entrada' ? '+' : '-'}{movement.cantidad} unidades
+                                </p>
+                              </div>
+                              <p className="text-sm text-muted-foreground">{movement.comentario}</p>
+                              <div className="flex items-center gap-1 mt-1">
+                                <Calendar className="h-3 w-3 text-muted-foreground" />
+                                <p className="text-xs text-muted-foreground">{formatDate(movement.fecha)}</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Box className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+                    <p className="text-muted-foreground">No hay movimientos registrados</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+
+      {productData && (
+        <EditInventoryItemDialog
+          open={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
+          item={convertToInventoryItem(productData)}
+        />
+      )}
     </div>
   );
 };

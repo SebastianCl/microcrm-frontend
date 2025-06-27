@@ -1,5 +1,6 @@
 import { apiClient } from './apiClient';
 import { InventoryMovement } from '@/types/inventory';
+import { ApiProductDetail } from '@/models/product.model';
 
 export interface CreateProductRequest {
     nombre: string;
@@ -44,6 +45,13 @@ export const productService = {
      */
     async updateProduct(productId: string, productData: UpdateProductRequest): Promise<CreateProductResponse> {
         return await apiClient.put<CreateProductResponse>(`/products/${productId}`, productData);
+    },
+
+    /**
+     * Obtener un producto por su ID
+     */
+    async getProductById(productId: string): Promise<ApiProductDetail> {
+        return await apiClient.get<ApiProductDetail>(`/products/${productId}`);
     },
 
     /**
