@@ -67,8 +67,9 @@ const OrderList: React.FC<OrderListProps> = ({
 
         const idMatch = order.id_pedido?.toString()?.toLowerCase()?.includes(query) || false;
         const clientMatch = order.nombre_cliente?.toLowerCase()?.includes(query) || false;
+        const tableMatch = order.nombre_mesa?.toLowerCase()?.includes(query) || false;
 
-        return idMatch || clientMatch;
+        return idMatch || clientMatch || tableMatch;
       });
       console.log('After search filter:', result.length, 'orders');
     }
@@ -244,7 +245,7 @@ const OrderList: React.FC<OrderListProps> = ({
             onSearchChange={handleSearch}
             filters={filterOptions}
             onFilter={handleFilter}
-            placeholder="Buscar por ID o cliente..."
+            placeholder="Buscar por ID, cliente o mesa..."
           />
         </div>
       )}
