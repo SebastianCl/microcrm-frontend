@@ -193,26 +193,28 @@ const InventoryDetail = () => {
                 </Alert>
               ) : movements && movements.length > 0 ? (
                 <div className="space-y-4 max-h-96 overflow-y-auto">
-                  {movements.map((movement, index) => (
-                    <div key={index} className="flex justify-between items-start border-b pb-3 last:border-b-0">
-                      <div className="flex items-start gap-3">
-                        {getMovementIcon(movement.tipo_movimiento)}
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            {getMovementBadge(movement.tipo_movimiento)}
-                            <p className="font-medium text-sm">
-                              {movement.tipo_movimiento === 'entrada' ? '+' : '-'}{movement.cantidad} unidades
-                            </p>
-                          </div>
-                          <p className="text-sm text-muted-foreground">{movement.comentario}</p>
-                          <div className="flex items-center gap-1 mt-1">
-                            <Calendar className="h-3 w-3 text-muted-foreground" />
-                            <p className="text-xs text-muted-foreground">{formatDate(movement.fecha)}</p>
+                  {movements
+                    .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
+                    .map((movement, index) => (
+                      <div key={index} className="flex justify-between items-start border-b pb-3 last:border-b-0">
+                        <div className="flex items-start gap-3">
+                          {getMovementIcon(movement.tipo_movimiento)}
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              {getMovementBadge(movement.tipo_movimiento)}
+                              <p className="font-medium text-sm">
+                                {movement.tipo_movimiento === 'entrada' ? '+' : '-'}{movement.cantidad} unidades
+                              </p>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{movement.comentario}</p>
+                            <div className="flex items-center gap-1 mt-1">
+                              <Calendar className="h-3 w-3 text-muted-foreground" />
+                              <p className="text-xs text-muted-foreground">{formatDate(movement.fecha)}</p>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               ) : (
                 <div className="text-center py-8">
