@@ -50,33 +50,45 @@ const OrderList: React.FC<OrderListProps> = ({
   } = useOrders();
   // Estado para pedidos filtradas usando useMemo para evitar re-renders innecesarios
   const filteredOrders = useMemo(() => {
-    if (!orders) return [];
+    console.log('Filtering orders. Raw orders:', orders, 'Search query:', searchQuery, 'Active filters:', activeFilters);
+
+    if (!orders || !Array.isArray(orders)) {
+      console.log('No orders available or not array');
+      return [];
+    }
 
     let result = [...orders];
 
     // Aplicar filtro de busqueda
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(order =>
-        order.id_pedido.toLowerCase().includes(query) ||
-        (order.nombre_cliente && order.nombre_cliente.toLowerCase().includes(query))
-      );
+    if (searchQuery && searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      result = result.filter(order => {
+        if (!order) return false;
+
+        const idMatch = order.id_pedido?.toString()?.toLowerCase()?.includes(query) || false;
+        const clientMatch = order.nombre_cliente?.toLowerCase()?.includes(query) || false;
+
+        return idMatch || clientMatch;
+      });
+      console.log('After search filter:', result.length, 'orders');
     }
 
     // Aplicar filtro de estado
-    if (activeFilters.status) {
-      result = result.filter(order => order.estado === activeFilters.status);
-    }    // Aplicar filtro de tipo de pedido
-    if (activeFilters.orderType) {
+    if (activeFilters.status && activeFilters.status.trim()) {
+      result = result.filter(order => order?.estado === activeFilters.status);
+    }
+
+    // Aplicar filtro de tipo de pedido
+    if (activeFilters.orderType && activeFilters.orderType.trim()) {
       if (activeFilters.orderType === 'En Mesa') {
         result = result.filter(order =>
-          order.tipo_pedido === 'en_mesa' ||
-          (order.nombre_mesa && order.nombre_mesa !== 'Para llevar')
+          order?.tipo_pedido === 'en_mesa' ||
+          (order?.nombre_mesa && order.nombre_mesa !== 'Para llevar')
         );
       } else if (activeFilters.orderType === 'Para Llevar') {
         result = result.filter(order =>
-          order.tipo_pedido === 'para_llevar' ||
-          order.nombre_mesa === 'Para llevar'
+          order?.tipo_pedido === 'para_llevar' ||
+          order?.nombre_mesa === 'Para llevar'
         );
       }
     }    // Definir el orden de prioridad de estados
@@ -89,45 +101,55 @@ const OrderList: React.FC<OrderListProps> = ({
 
     // Aplicar ordenamiento por defecto por estado, luego por filtro personalizado si existe
     result.sort((a, b) => {
+      // Verificar que ambos objetos existan
+      if (!a || !b) return 0;
+
       // Si hay filtro de ordenamiento personalizado, aplicarlo
       if (activeFilters._sort) {
+        const aId = a.id_pedido?.toString() || '';
+        const bId = b.id_pedido?.toString() || '';
+
         if (activeFilters._sort === 'asc') {
-          return a.id_pedido.toString().localeCompare(b.id_pedido.toString());
+          return aId.localeCompare(bId);
         } else {
-          return b.id_pedido.toString().localeCompare(a.id_pedido.toString());
+          return bId.localeCompare(aId);
         }
       }
-      
+
       // Ordenamiento por defecto: por estado
-      const statusA = statusOrder[a.estado as keyof typeof statusOrder] || 999;
-      const statusB = statusOrder[b.estado as keyof typeof statusOrder] || 999;
-      
+      const aState = a.estado || '';
+      const bState = b.estado || '';
+      const statusA = statusOrder[aState as keyof typeof statusOrder] || 999;
+      const statusB = statusOrder[bState as keyof typeof statusOrder] || 999;
+
       if (statusA !== statusB) {
         return statusA - statusB;
       }
-      
+
       // Si tienen el mismo estado, ordenar por ID de pedido (convertir a string para comparación segura)
       const idA = a.id_pedido?.toString() || '';
       const idB = b.id_pedido?.toString() || '';
-      
+
       // Ordenar alfabéticamente por ID (más reciente primero si son numéricos)
       return idB.localeCompare(idA);
     });
 
+    console.log('Final filtered orders:', result.length);
     return result;
   }, [searchQuery, activeFilters.status, activeFilters.orderType, activeFilters._sort, orders]);
 
   // Calcular paginación
-  const totalPages = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil((filteredOrders?.length || 0) / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
 
   // Aplicar límite si se especifica, sino usar paginación
   const displayOrders = limit
-    ? filteredOrders.slice(0, limit)
-    : filteredOrders.slice(startIndex, endIndex);
+    ? (filteredOrders || []).slice(0, limit)
+    : (filteredOrders || []).slice(startIndex, endIndex);
 
   const handleSearch = useCallback((query: string) => {
+    console.log('Searching for:', query);
     setSearchQuery(query);
     setCurrentPage(1); // Reset to first page when searching
   }, []);
@@ -247,13 +269,18 @@ const OrderList: React.FC<OrderListProps> = ({
       {/* Mostrar cards cuando no hay error y no está cargando */}
       {!isLoading && !isError && (
         <div className="space-y-4">
-          {displayOrders.length === 0 ? (
+          {!displayOrders || displayOrders.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              No se encontraron pedidos
+              {searchQuery && searchQuery.trim()
+                ? `No se encontraron pedidos que coincidan con "${searchQuery}"`
+                : "No se encontraron pedidos"
+              }
             </div>
           ) : (
             displayOrders.map((order) => (
-              <OrderCard key={order.id_pedido} order={order} />
+              order && order.id_pedido ? (
+                <OrderCard key={order.id_pedido} order={order} />
+              ) : null
             ))
           )}
         </div>
@@ -263,7 +290,7 @@ const OrderList: React.FC<OrderListProps> = ({
       {!limit && totalPages > 1 && (
         <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-2">
           <div className="text-xs sm:text-sm text-muted-foreground order-2 sm:order-1">
-            Mostrando {startIndex + 1} a {Math.min(endIndex, filteredOrders.length)} de {filteredOrders.length} pedidos
+            Mostrando {startIndex + 1} a {Math.min(endIndex, filteredOrders?.length || 0)} de {filteredOrders?.length || 0} pedidos
           </div>
           <Pagination className="order-1 sm:order-2">
             <PaginationContent>
