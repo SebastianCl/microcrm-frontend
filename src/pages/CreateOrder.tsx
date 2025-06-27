@@ -326,27 +326,7 @@ const CreateOrder = () => {
                     </TableSelectorModal>)}
                 </div>
 
-                {/* Observations field for takeaway orders - large screens */}
-                {selectedTableName === 'Para llevar' && (
-                  <div className="hidden sm:block w-64">
-                    <FormField
-                      control={form.control}
-                      name="observations"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <Textarea
-                              placeholder="Observaciones"
-                              className="min-h-[60px] resize-none text-sm"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                )}
+
 
 
                 <Button
@@ -517,6 +497,33 @@ const CreateOrder = () => {
               {/* Sidebar - Order Summary */}
               <div className="lg:col-span-1">
                 <div className="sticky top-24 space-y-6">
+                  {/* Observations field for takeaway orders */}
+                  {selectedTableName === 'Para llevar' && (
+                    <Card className="shadow-sm hover:shadow-md transition-shadow">
+                      <CardHeader>
+                        <CardTitle className="text-lg">Observaciones</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <FormField
+                          control={form.control}
+                          name="observations"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Textarea
+                                  placeholder="Ingrese observaciones para este pedido para llevar..."
+                                  className="min-h-[100px] resize-none"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </CardContent>
+                    </Card>
+                  )}
+
                   <OrderSummaryCard
                     itemCount={orderItems.length}
                     subtotal={getProductsSubtotal()}
