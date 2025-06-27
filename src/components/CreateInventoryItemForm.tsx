@@ -23,6 +23,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { useCreateProduct, useProducts } from "@/hooks/useProducts";
 
 const formSchema = z.object({
   name: z.string().min(3, { message: "El nombre debe tener al menos 3 caracteres" }),
@@ -33,8 +35,8 @@ const formSchema = z.object({
   stockQuantity: z.string().refine((val) => !isNaN(parseInt(val)) && parseInt(val) >= 0, {
     message: "La cantidad debe ser un número entero positivo",
   }),
-  description: z.string().optional(),
-  imageUrl: z.string().optional(),
+  description: z.string().min(1, { message: "La descripción es obligatoria" }),
+  managesInventory: z.boolean().default(true),
 });
 
 interface CreateInventoryItemFormProps {
@@ -42,6 +44,21 @@ interface CreateInventoryItemFormProps {
 }
 
 const CreateInventoryItemForm: React.FC<CreateInventoryItemFormProps> = ({ onClose }) => {
+  const { data: productsData } = useProducts();
+  const createProductMutation = useCreateProduct();
+
+  // Get unique categories from products
+  const categories = React.useMemo(() => {
+    if (!productsData) return [];
+    const uniqueCategories = new Map<number, string>();
+    productsData.forEach(product => {
+      if (product.categoryId && product.categoryName) {
+        uniqueCategories.set(product.categoryId, product.categoryName);
+      }
+    });
+    return Array.from(uniqueCategories.entries()).map(([id, name]) => ({ id, name }));
+  }, [productsData]);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -50,19 +67,27 @@ const CreateInventoryItemForm: React.FC<CreateInventoryItemFormProps> = ({ onClo
       price: "",
       stockQuantity: "",
       description: "",
-      imageUrl: "",
+      managesInventory: true,
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    // In a real app, you'd send this data to an API
-    console.log("Form values:", values);
-    
-    // Show success toast
-    toast.success("Producto agregado correctamente");
-    
-    // Close the dialog
-    onClose();
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    try {
+      await createProductMutation.mutateAsync({
+        nombre: values.name,
+        descripcion: values.description,
+        precio: values.price,
+        stock: values.stockQuantity,
+        maneja_inventario: values.managesInventory,
+        id_categoria: values.category,
+      });
+
+      toast.success("Producto agregado correctamente");
+      onClose();
+    } catch (error) {
+      toast.error("Error al agregar el producto. Intenta nuevamente.");
+      console.error("Error creating product:", error);
+    }
   };
 
   return (
@@ -83,7 +108,7 @@ const CreateInventoryItemForm: React.FC<CreateInventoryItemFormProps> = ({ onClo
             )}
           />
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <FormField
             control={form.control}
@@ -98,22 +123,21 @@ const CreateInventoryItemForm: React.FC<CreateInventoryItemFormProps> = ({ onClo
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="Electrónica">Electrónica</SelectItem>
-                    <SelectItem value="Periféricos">Periféricos</SelectItem>
-                    <SelectItem value="Audio">Audio</SelectItem>
-                    <SelectItem value="Tablets">Tablets</SelectItem>
-                    <SelectItem value="Accesorios">Accesorios</SelectItem>
-                    <SelectItem value="Otros">Otros</SelectItem>
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.id.toString()}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
-            name="price"            render={({ field }) => (
+            name="price" render={({ field }) => (
               <FormItem>
                 <FormLabel>Precio (COP)</FormLabel>
                 <FormControl>
@@ -123,7 +147,7 @@ const CreateInventoryItemForm: React.FC<CreateInventoryItemFormProps> = ({ onClo
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="stockQuantity"
@@ -138,7 +162,7 @@ const CreateInventoryItemForm: React.FC<CreateInventoryItemFormProps> = ({ onClo
             )}
           />
         </div>
-        
+
         <FormField
           control={form.control}
           name="description"
@@ -156,27 +180,36 @@ const CreateInventoryItemForm: React.FC<CreateInventoryItemFormProps> = ({ onClo
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={form.control}
-          name="imageUrl"
+          name="managesInventory"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>URL de Imagen (opcional)</FormLabel>
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">
+                  Maneja Inventario
+                </FormLabel>
+                <div className="text-sm text-muted-foreground">
+                  Activa esta opción si el producto tiene stock limitado
+                </div>
+              </div>
               <FormControl>
-                <Input placeholder="https://ejemplo.com/imagen.jpg" {...field} />
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
               </FormControl>
-              <FormMessage />
             </FormItem>
           )}
         />
-        
+
         <div className="flex justify-end gap-2">
-          <Button type="button" variant="outline" onClick={onClose}>
+          <Button type="button" variant="outline" onClick={onClose} disabled={createProductMutation.isPending}>
             Cancelar
           </Button>
-          <Button type="submit">
-            Guardar Producto
+          <Button type="submit" disabled={createProductMutation.isPending}>
+            {createProductMutation.isPending ? "Guardando..." : "Guardar Producto"}
           </Button>
         </div>
       </form>
