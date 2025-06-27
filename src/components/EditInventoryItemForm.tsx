@@ -37,7 +37,6 @@ const formSchema = z.object({
     message: "La cantidad debe ser un número entero positivo",
   }),
   description: z.string().optional(),
-  imageUrl: z.string().optional(),
   managesInventory: z.boolean().default(true),
   isActive: z.boolean().default(true),
 });
@@ -71,7 +70,6 @@ const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onC
       price: item.price.toString(),
       stockQuantity: item.stockQuantity === Infinity ? "0" : item.stockQuantity.toString(),
       description: item.description || "",
-      imageUrl: item.imageUrl || "",
       managesInventory: item.stockQuantity !== Infinity,
       isActive: item.status === "Activo",
     },
@@ -125,7 +123,7 @@ const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onC
             )}
           />
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <FormField
             control={form.control}
@@ -151,10 +149,10 @@ const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onC
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
-            name="price"            render={({ field }) => (
+            name="price" render={({ field }) => (
               <FormItem>
                 <FormLabel>Precio (COP)</FormLabel>
                 <FormControl>
@@ -164,7 +162,7 @@ const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onC
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="stockQuantity"
@@ -179,7 +177,7 @@ const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onC
             )}
           />
         </div>
-        
+
         <FormField
           control={form.control}
           name="description"
@@ -197,21 +195,7 @@ const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onC
             </FormItem>
           )}
         />
-        
-        <FormField
-          control={form.control}
-          name="imageUrl"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>URL de Imagen (opcional)</FormLabel>
-              <FormControl>
-                <Input placeholder="https://ejemplo.com/imagen.jpg" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -235,7 +219,7 @@ const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onC
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="isActive"
@@ -259,7 +243,7 @@ const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onC
             )}
           />
         </div>
-        
+
         <div className="flex justify-end gap-2">
           <Button type="button" variant="outline" onClick={onClose}>
             Cancelar

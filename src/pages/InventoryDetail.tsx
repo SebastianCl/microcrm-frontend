@@ -39,7 +39,6 @@ const InventoryDetail = () => {
     stockQuantity: 24,
     status: 'En stock',
     description: 'Laptop Dell XPS 13 con procesador Intel Core i7, 16GB de RAM y 512GB SSD. Pantalla InfinityEdge de 13.4 pulgadas.',
-    imageUrl: 'https://images.unsplash.com/photo-1593642632823-8f785ba67e45?auto=format&fit=crop&w=500&q=60',
     location: 'Almacén Principal',
     lastUpdated: '2023-06-15'
   };
@@ -131,20 +130,6 @@ const InventoryDetail = () => {
             </div>
 
             <div className="space-y-4">
-              <div className="relative rounded-lg overflow-hidden h-48">
-                {item.imageUrl ? (
-                  <img
-                    src={item.imageUrl}
-                    alt={item.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                    <Box className="h-12 w-12 text-gray-400" />
-                  </div>
-                )}
-              </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Nombre</p>
