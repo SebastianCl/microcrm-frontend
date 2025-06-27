@@ -18,7 +18,6 @@ export const productToInventoryItem = (product: AppProduct): InventoryItem => {
     return {
         id: product.id,
         name: product.name,
-        sku: `PROD-${product.id.padStart(6, '0')}`, // Generar SKU basado en ID
         category: product.categoryName,
         price: product.price,
         stockQuantity: product.managesInventory ? product.stockQuantity : Infinity,

@@ -44,7 +44,6 @@ const InventoryList = () => {
       const query = searchQuery.toLowerCase();
       result = result.filter(item =>
         item.name.toLowerCase().includes(query) ||
-        item.sku.toLowerCase().includes(query) ||
         item.category.toLowerCase().includes(query)
       );
     }
@@ -143,11 +142,6 @@ const InventoryList = () => {
       )
     },
     {
-      header: 'SKU',
-      accessorKey: 'sku',
-      hideOnMobile: true
-    },
-    {
       header: 'Categoría',
       accessorKey: 'category',
       hideOnMobile: true
@@ -234,7 +228,7 @@ const InventoryList = () => {
               onSearchChange={handleSearch}
               filters={filterOptions}
               onFilter={handleFilter}
-              placeholder="Buscar por nombre, SKU o categoría..."
+              placeholder="Buscar por nombre o categoría..."
             />
           </div>
           <DataTable

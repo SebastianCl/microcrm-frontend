@@ -24,7 +24,6 @@ const InventoryDetail = () => {
   const item: InventoryItem = {
     id: '1',
     name: 'Laptop Dell XPS 13',
-    sku: 'DELL-XPS13-001',
     category: 'Electrónica',
     price: 1299.99,
     stockQuantity: 24,
@@ -107,10 +106,6 @@ const InventoryDetail = () => {
                 <div>
                   <p className="text-sm text-muted-foreground">Nombre</p>
                   <p className="font-medium">{item.name}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">SKU</p>
-                  <p className="font-medium">{item.sku}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Categoría</p>

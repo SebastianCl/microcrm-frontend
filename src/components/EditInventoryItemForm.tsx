@@ -27,7 +27,6 @@ import { InventoryItem } from '@/types/inventory';
 
 const formSchema = z.object({
   name: z.string().min(3, { message: "El nombre debe tener al menos 3 caracteres" }),
-  sku: z.string().min(2, { message: "El SKU es obligatorio" }),
   category: z.string().min(1, { message: "La categoría es obligatoria" }),
   price: z.string().refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) >= 0, {
     message: "El precio debe ser un número positivo",
@@ -49,7 +48,6 @@ const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onC
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: item.name,
-      sku: item.sku,
       category: item.category,
       price: item.price.toString(),
       stockQuantity: item.stockQuantity.toString(),
@@ -80,20 +78,6 @@ const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onC
                 <FormLabel>Nombre del Producto</FormLabel>
                 <FormControl>
                   <Input placeholder="Laptop Dell XPS 13" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="sku"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>SKU</FormLabel>
-                <FormControl>
-                  <Input placeholder="PROD-001" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
