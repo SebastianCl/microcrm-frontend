@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useOrderDetail, useUpdateOrderStatus } from '@/hooks/useOrders';
+import { useOrderDetail, useUpdateOrderStatus, useUpdateOrderPaymentMethod } from '@/hooks/useOrders';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -18,6 +18,7 @@ import {
 import { toast } from 'sonner';
 import { Addition } from '@/models/order.model';
 import CancelOrderConfirmation from '@/components/CancelOrderConfirmation';
+import PaymentMethodDialog from '@/components/PaymentMethodDialog';
 import { invoiceService } from '@/services/invoiceService';
 
 const OrderDetail = () => {
@@ -29,7 +30,9 @@ const OrderDetail = () => {
   });
 
   const updateOrderStatus = useUpdateOrderStatus(id!);
+  const updatePaymentMethod = useUpdateOrderPaymentMethod(id!);
   const [showCancelDialog, setShowCancelDialog] = React.useState(false);
+  const [showPaymentDialog, setShowPaymentDialog] = React.useState(false);
 
   const getNextStatus = (currentStatus: string) => {
     switch (currentStatus) {
@@ -44,7 +47,7 @@ const OrderDetail = () => {
     switch (currentStatus) {
       case 'Pendiente': return 'Iniciar preparación';
       case 'Preparando': return 'Marcar como entregado';
-      case 'Entregado': return 'Finalizar';
+      case 'Entregado': return 'Finalizar y seleccionar pago';
       default: return null;
     }
   };
@@ -52,6 +55,12 @@ const OrderDetail = () => {
   const handleNextStatus = async () => {
     const nextStatus = getNextStatus(order.estado);
     if (!nextStatus) return;
+
+    // Si está tratando de finalizar, verificar método de pago
+    if (nextStatus === 'Finalizado' && !order.medio_pago) {
+      setShowPaymentDialog(true);
+      return;
+    }
 
     // Mapear estados en español a IDs de estado que espera el backend
     const statusIdMap: Record<string, number> = {
@@ -71,6 +80,22 @@ const OrderDetail = () => {
     } catch (error) {
       toast.error('Error al actualizar el estado');
       console.error('Error updating status:', error);
+    }
+  };
+
+  const handlePaymentMethodConfirm = async (paymentMethod: string) => {
+    try {
+      // Primero actualizar el método de pago
+      await updatePaymentMethod.mutateAsync(paymentMethod);
+      
+      // Luego finalizar la orden
+      await updateOrderStatus.mutateAsync(5); // 5 = Finalizado
+      
+      toast.success(`Orden ${order.id_pedido} finalizada exitosamente`);
+      setShowPaymentDialog(false);
+    } catch (error) {
+      toast.error('Error al finalizar la orden');
+      console.error('Error finalizing order:', error);
     }
   };
   const handleDownloadInvoice = async () => {
@@ -310,6 +335,24 @@ const OrderDetail = () => {
         </Card>
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Gestionar pedidos</h2>
+          
+          {/* Mensaje informativo para finalización */}
+          {order.estado === 'Entregado' && !order.medio_pago && (
+            <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-start gap-3">
+                <ArrowRight className="h-5 w-5 text-blue-600 mt-0.5" />
+                <div>
+                  <h3 className="text-sm font-medium text-blue-900">
+                    Orden lista para finalizar
+                  </h3>
+                  <p className="text-sm text-blue-700 mt-1">
+                    Para finalizar esta orden, selecciona el método de pago utilizado por el cliente.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <div className="space-y-4">
 
             {/* Botón de siguiente estado */}
@@ -365,6 +408,14 @@ const OrderDetail = () => {
         open={showCancelDialog}
         onOpenChange={setShowCancelDialog}
         onConfirm={handleCancel}
+      />
+
+      {/* Modal para seleccionar método de pago al finalizar */}
+      <PaymentMethodDialog
+        open={showPaymentDialog}
+        onOpenChange={setShowPaymentDialog}
+        onConfirm={handlePaymentMethodConfirm}
+        isLoading={updatePaymentMethod.isPending || updateOrderStatus.isPending}
       />
     </div>
   );

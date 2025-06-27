@@ -96,6 +96,13 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
     const nextStatus = getNextStatus(order.estado);
     if (!nextStatus) return;
 
+    // Si está tratando de finalizar, redireccionar al detalle del pedido
+    if (nextStatus === 'Finalizado') {
+      navigate(`/orders/${order.id_pedido}`);
+      toast.info('Redirigiendo a detalle para finalizar orden y seleccionar método de pago');
+      return;
+    }
+
     // Mapear estados en español a IDs de estado que espera el backend
     const statusIdMap: Record<string, number> = {
       'Pendiente': 1,     // Pendiente
@@ -116,6 +123,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
       console.error('Error updating status:', error);
     }
   };
+
 
   const handleDownloadInvoice = async (e: React.MouseEvent) => {
     e.stopPropagation();

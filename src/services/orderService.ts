@@ -201,6 +201,16 @@ export const orderService = {
   },
 
   /**
+   * Actualiza el método de pago de una orden
+   */
+  async updatePaymentMethod(id: string, paymentMethod: string): Promise<Order> {
+    const response = await apiClient.patch<ApiOrderSingleResponse>(`${API_CONFIG.ENDPOINTS.ORDERS}/${id}/payment`, { 
+      medio_pago: paymentMethod 
+    });
+    return response.data;
+  },
+
+  /**
    * Asigna una mesa a una orden
    */
   async assignTable(id: string, tableNumber: number): Promise<Order> {

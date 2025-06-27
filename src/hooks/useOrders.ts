@@ -129,6 +129,25 @@ export const useUpdateOrderStatus = (id: string) => {
 };
 
 /**
+ * Hook para actualizar el método de pago de una orden
+ */
+export const useUpdateOrderPaymentMethod = (id: string) => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (paymentMethod: string) => 
+      orderService.updatePaymentMethod(id, paymentMethod),
+    onSuccess: (updatedOrder) => {
+      // Actualizar la orden en la caché
+      queryClient.setQueryData(ORDER_QUERY_KEYS.ORDER(id), updatedOrder);
+      // Invalidar las consultas relacionadas
+      queryClient.invalidateQueries({ queryKey: [ORDER_QUERY_KEYS.ORDERS] });
+      queryClient.invalidateQueries({ queryKey: [...ORDER_QUERY_KEYS.ORDER(id), 'detail'] });
+    },
+  });
+};
+
+/**
  * Hook para ajustar una orden (agregar, modificar, eliminar items)
  */
 export const useAdjustOrder = (id: string) => {

@@ -27,7 +27,7 @@ import ClientSelectorModal from '@/components/ClientSelectorModal';
 import OrderSummaryCard from '@/components/OrderSummaryCard';
 import TableSelectorModal from '@/components/TableSelectorModal';
 import { Addition, OrderItem } from '@/models/order.model';
-import { User, MapPin, ShoppingCart, X, CreditCard } from 'lucide-react';
+import { User, MapPin, ShoppingCart, X } from 'lucide-react';
 import { useTables } from '@/hooks/useTables';
 import { useClients } from '@/hooks/useClients';
 import { ORDER_QUERY_KEYS } from '@/hooks/useOrders';
@@ -36,7 +36,6 @@ import { useQueryClient } from '@tanstack/react-query';
 const createOrderFormSchema = z.object({
   tableNumber: z.string(),
   observations: z.string(),
-  paymentMethod: z.string().min(1, "El método de pago es requerido"),
 });
 
 type FormValues = z.infer<typeof createOrderFormSchema>;
@@ -70,7 +69,6 @@ const CreateOrder = () => {
     defaultValues: {
       tableNumber: '',
       observations: '',
-      paymentMethod: 'efectivo',
     },
   }); const handleCancelClick = () => {
     if (orderItems.length > 0 || form.formState.isDirty || selectedClientId || selectedTableId) {
@@ -219,7 +217,7 @@ const CreateOrder = () => {
       id_mesa: selectedTableId ? parseInt(selectedTableId) : null,
       tipo_pedido: selectedTableId ? "en_mesa" : "para_llevar",
       Observacion: selectedTableId ? "" : values.observations || "",
-      medio_pago: values.paymentMethod,
+      medio_pago: null,
       productos: orderItems.map(item => ({
         id_producto: Number(item.productId),
         cantidad: item.quantity,
@@ -350,32 +348,6 @@ const CreateOrder = () => {
                   </div>
                 )}
 
-                {/* Payment Method Selection - large screens */}
-                <div className="hidden sm:block w-48">
-                  <FormField
-                    control={form.control}
-                    name="paymentMethod"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Select value={field.value} onValueChange={field.onChange}>
-                            <SelectTrigger className="w-full">
-                              <div className="flex items-center gap-2">
-                                <CreditCard className="h-4 w-4 text-muted-foreground" />
-                                <SelectValue placeholder="Método de pago" />
-                              </div>
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="efectivo">Efectivo</SelectItem>
-                              <SelectItem value="transferencia">Transferencia</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
 
                 <Button
                   variant="outline"
@@ -488,33 +460,6 @@ const CreateOrder = () => {
                         </div>
                       )}
 
-                      {/* Payment Method Selection - small screens */}
-                      <div className="space-y-3">
-                        <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                          <CreditCard className="h-4 w-4 text-primary" />
-                          Método de Pago
-                        </label>
-                        <FormField
-                          control={form.control}
-                          name="paymentMethod"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Select value={field.value} onValueChange={field.onChange}>
-                                  <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Seleccionar método de pago" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="efectivo">Efectivo</SelectItem>
-                                    <SelectItem value="transferencia">Transferencia</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
                     </div>
                   </CardContent>
                 </Card>
