@@ -7,7 +7,7 @@ import CreateInventoryItemDialog from '@/components/CreateInventoryItemDialog';
 
 const Inventory = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -17,7 +17,7 @@ const Inventory = () => {
             Gestiona el inventario de tus productos y servicios.
           </p>
         </div>
-        <Button 
+        <Button
           onClick={() => setIsCreateDialogOpen(true)}
           className="flex items-center gap-1"
         >
@@ -26,7 +26,7 @@ const Inventory = () => {
         </Button>
       </div>
       <InventoryList />
-      
+
       <CreateInventoryItemDialog
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}

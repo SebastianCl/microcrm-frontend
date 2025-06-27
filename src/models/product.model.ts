@@ -14,6 +14,8 @@ export interface ApiProduct {
   stock: number | null;
   maneja_inventario: boolean;
   estado: boolean;
+  id_categoria: number;
+  nombre_categoria: string;
   adiciones: ApiAddition[];
 }
 
