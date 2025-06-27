@@ -238,11 +238,6 @@ const InventoryDetail = () => {
             </CardContent>
           </Card>
 
-          <Alert>
-            <AlertDescription>
-              Este producto tiene una alta rotación de inventario. Considere revisar su nivel de stock mínimo.
-            </AlertDescription>
-          </Alert>
         </div>
       </div>
 
