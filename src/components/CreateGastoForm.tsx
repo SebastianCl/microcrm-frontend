@@ -14,12 +14,10 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { CreateGastoDto } from '@/models/gastos.model';
-import { useClients } from '@/hooks/useClients';
 import { useTiposGasto } from '@/hooks/useGastos';
 import { Loader2 } from 'lucide-react';
 
 const gastoSchema = z.object({
-    id_cliente: z.string().min(1, 'Debe seleccionar un cliente'),
     descripcion: z.string().min(1, 'La descripción es requerida').max(500, 'La descripción no puede exceder 500 caracteres'),
     monto: z.string().min(1, 'El monto es requerido').refine((val) => {
         const num = parseFloat(val);
@@ -56,12 +54,11 @@ const CreateGastoForm: React.FC<CreateGastoFormProps> = ({
     });
 
     // Cargar datos para los selects
-    const { data: clientes = [], isLoading: loadingClientes } = useClients();
     const { data: tiposGasto = [], isLoading: loadingTipos } = useTiposGasto();
 
     const handleFormSubmit = (data: FormData) => {
         const gastoData: CreateGastoDto = {
-            id_cliente: parseInt(data.id_cliente),
+            id_cliente: 1, // Cliente fijo con ID 1
             descripcion: data.descripcion,
             monto: parseFloat(data.monto),
             fecha: data.fecha,
@@ -73,26 +70,6 @@ const CreateGastoForm: React.FC<CreateGastoFormProps> = ({
     return (
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Cliente */}
-                <div className="space-y-2">
-                    <Label htmlFor="id_cliente">Cliente *</Label>
-                    <Select onValueChange={(value) => setValue('id_cliente', value)}>
-                        <SelectTrigger>
-                            <SelectValue placeholder={loadingClientes ? "Cargando..." : "Seleccionar cliente"} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {clientes.map((cliente) => (
-                                <SelectItem key={cliente.id_cliente} value={cliente.id_cliente.toString()}>
-                                    {cliente.nombre}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    {errors.id_cliente && (
-                        <p className="text-sm text-red-600">{errors.id_cliente.message}</p>
-                    )}
-                </div>
-
                 {/* Tipo de gasto */}
                 <div className="space-y-2">
                     <Label htmlFor="id_tipo_gasto">Tipo de gasto *</Label>
@@ -168,7 +145,7 @@ const CreateGastoForm: React.FC<CreateGastoFormProps> = ({
                 </Button>
                 <Button
                     type="submit"
-                    disabled={isLoading || loadingClientes || loadingTipos}
+                    disabled={isLoading || loadingTipos}
                 >
                     {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                     Crear gasto
