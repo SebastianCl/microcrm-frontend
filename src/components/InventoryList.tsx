@@ -163,17 +163,7 @@ const InventoryList = () => {
     {
       header: 'Acciones',
       accessorKey: (item: any) => (
-        <div className="flex items-center justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/inventory/${item.id}`);
-            }}
-          >
-            <Eye size={16} />
-          </Button>
+        <div className="flex items-center justify-center gap-1">
           <Button
             variant="ghost"
             size="sm"
@@ -181,17 +171,6 @@ const InventoryList = () => {
             onClick={(e) => handleEditClick(e, item)}
           >
             <Edit size={16} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="hidden md:inline-flex"
-            onClick={(e) => {
-              e.stopPropagation();
-              // Delete functionality
-            }}
-          >
-            <Trash size={16} />
           </Button>
         </div>
       ),
