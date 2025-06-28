@@ -93,9 +93,9 @@ const CreateGastoForm: React.FC<CreateGastoFormProps> = ({
                     )}
                 </div>
 
-                {/* Tipo de Gasto */}
+                {/* Tipo de gasto */}
                 <div className="space-y-2">
-                    <Label htmlFor="id_tipo_gasto">Tipo de Gasto *</Label>
+                    <Label htmlFor="id_tipo_gasto">Tipo de gasto *</Label>
                     <Select onValueChange={(value) => setValue('id_tipo_gasto', value)}>
                         <SelectTrigger>
                             <SelectValue placeholder={loadingTipos ? "Cargando..." : "Seleccionar tipo"} />
@@ -171,7 +171,7 @@ const CreateGastoForm: React.FC<CreateGastoFormProps> = ({
                     disabled={isLoading || loadingClientes || loadingTipos}
                 >
                     {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                    Crear Gasto
+                    Crear gasto
                 </Button>
             </div>
         </form>

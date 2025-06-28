@@ -43,12 +43,12 @@ const CreateGastoDialog: React.FC = () => {
             <DialogTrigger asChild>
                 <Button>
                     <Plus className="w-4 h-4 mr-2" />
-                    Nuevo Gasto
+                    Nuevo gasto
                 </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle>Registrar Nuevo Gasto</DialogTitle>
+                    <DialogTitle>Registrar nuevo gasto</DialogTitle>
                 </DialogHeader>
                 <CreateGastoForm
                     onSubmit={handleSubmit}

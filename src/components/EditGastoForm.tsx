@@ -113,9 +113,9 @@ const EditGastoForm: React.FC<EditGastoFormProps> = ({
                     )}
                 </div>
 
-                {/* Tipo de Gasto */}
+                {/* Tipo de gasto */}
                 <div className="space-y-2">
-                    <Label htmlFor="id_tipo_gasto">Tipo de Gasto *</Label>
+                    <Label htmlFor="id_tipo_gasto">Tipo de gasto *</Label>
                     <Select
                         value={watch('id_tipo_gasto')}
                         onValueChange={(value) => setValue('id_tipo_gasto', value)}
