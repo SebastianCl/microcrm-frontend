@@ -141,7 +141,7 @@ const CreateInventoryMovementDialog = ({
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <TrendingUp className="h-5 w-5 text-primary" />
-                        Registrar Movimiento
+                        Registrar movimiento
                     </DialogTitle>
                     <DialogDescription>
                         Registra un movimiento de inventario para <strong>{productName}</strong>
@@ -159,7 +159,7 @@ const CreateInventoryMovementDialog = ({
                             name="tipo_movimiento"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Tipo de Movimiento</FormLabel>
+                                    <FormLabel>Tipo de movimiento</FormLabel>
                                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                                         <FormControl>
                                             <SelectTrigger>
@@ -235,7 +235,7 @@ const CreateInventoryMovementDialog = ({
                                     <FormLabel>Comentario</FormLabel>
                                     <FormControl>
                                         <Textarea
-                                            placeholder="Describe el motivo del movimiento..."
+                                            placeholder="Describe el motivo del movimiento."
                                             className="resize-none"
                                             rows={3}
                                             {...field}
@@ -270,7 +270,7 @@ const CreateInventoryMovementDialog = ({
                                 {createMovementMutation.isPending && (
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                 )}
-                                Registrar Movimiento
+                                Registrar movimiento
                             </Button>
                         </DialogFooter>
                     </form>

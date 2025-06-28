@@ -118,7 +118,7 @@ const InventoryDetail = () => {
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h1 className="text-2xl font-bold">Detalles del Producto</h1>
+          <h1 className="text-2xl font-bold">Detalles del producto</h1>
         </div>
         <div className="flex gap-2">
           <Button
@@ -139,10 +139,10 @@ const InventoryDetail = () => {
             <Edit className="h-4 w-4" />
             <span className="hidden md:inline">Editar</span>
           </Button>
-          <Button variant="destructive" className="flex items-center gap-2">
+          {/* <Button variant="destructive" className="flex items-center gap-2">
             <Trash className="h-4 w-4" />
             <span className="hidden md:inline">Eliminar</span>
-          </Button>
+          </Button> */}
         </div>
       </div>
 
@@ -159,7 +159,7 @@ const InventoryDetail = () => {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <Package className="h-5 w-5 text-primary" />
-                  <h2 className="text-xl font-semibold">Información del Producto</h2>
+                  <h2 className="text-xl font-semibold">Información del producto</h2>
                 </div>
                 {productLoading ? (
                   <Skeleton className="h-6 w-20" />
@@ -203,10 +203,6 @@ const InventoryDetail = () => {
                       <p className="font-medium">{productData.stockQuantity} unidades</p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Ubicación</p>
-                      <p className="font-medium">Almacén Principal</p>
-                    </div>
-                    <div>
                       <p className="text-sm text-muted-foreground">Estado</p>
                       <p className="font-medium">{productData.isActive ? 'Activo' : 'Inactivo'}</p>
                     </div>
@@ -226,7 +222,7 @@ const InventoryDetail = () => {
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <Activity className="h-5 w-5 text-primary" />
-                  <h3 className="text-lg font-semibold">Historial de Movimientos</h3>
+                  <h3 className="text-lg font-semibold">Historial de movimientos</h3>
                 </div>
 
                 {movementsLoading ? (
