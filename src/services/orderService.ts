@@ -13,29 +13,34 @@ interface ApiOrderSingleResponse {
   data: Order;
 }
 
-// Interface para el detalle de la orden según el endpoint detalle
-interface OrderDetailItem {
-  id_detalle_pedido: number;
-  producto: string;
+// Interface para el detalle individual de un producto en la orden
+interface OrderDetailItemProduct {
   cantidad: number;
-  precio_unitario: string;
-  descuento: string;
-  observaciones_producto?: string;
+  producto: string;
   adiciones: {
     nombre: string;
     cantidad: number;
     id_adicion: number;
     precio_extra: number;
   }[];
+  descuento: number;
+  observacion: string | null;
+  precio_unitario: number;
+  id_detalle_pedido: number;
+}
+
+// Interface para la respuesta completa del detalle de la orden
+interface OrderDetailItem {
+  detalles: OrderDetailItemProduct[];
   mesa: string;
   estado_pedido: string;
   nombre_cliente: string;
   nombre_usuario: string;
   correo_cliente: string;
+  observacion_pedido: string | null;
+  medio_pago: string | null;
   total_pedido: string;
-  id_venta: number;
-  observacion_pedido?: string;
-  medio_pago?: string;
+  id_venta: number | null;
 }
 
 interface ApiOrderDetailResponse {
@@ -89,31 +94,32 @@ export const orderService = {
       throw new Error('No se encontraron detalles de la orden');
     }
 
-    const firstItem = response.data[0];
-    // Crear el objeto Order a partir del primer item
+    const orderData = response.data[0];
+    
+    // Crear el objeto Order a partir de los datos de la orden
     const order: Order = {
       id_pedido: id,
-      id_venta: firstItem.id_venta,
+      id_venta: orderData.id_venta,
       fecha: '', // No viene en la respuesta, se puede obtener de otro endpoint si es necesario
-      tipo_pedido: firstItem.mesa === 'Para llevar' ? 'para_llevar' : 'en_mesa',
-      estado: firstItem.estado_pedido as Order['estado'],
-      nombre_mesa: firstItem.mesa,
-      nombre_cliente: firstItem.nombre_cliente,
-      observacion_pedido: firstItem.observacion_pedido,
-      medio_pago: firstItem.medio_pago,
+      tipo_pedido: orderData.mesa === 'Para llevar' ? 'para_llevar' : 'en_mesa',
+      estado: orderData.estado_pedido as Order['estado'],
+      nombre_mesa: orderData.mesa,
+      nombre_cliente: orderData.nombre_cliente,
+      observacion_pedido: orderData.observacion_pedido,
+      medio_pago: orderData.medio_pago,
     };
 
-    // Transformar los items al formato esperado
-    const items = response.data.map(item => ({
-      id_detalle_pedido: item.id_detalle_pedido,
-      productId: item.id_detalle_pedido.toString(), // Usar el ID del detalle como productId
-      name: item.producto,
-      quantity: item.cantidad,
-      price: parseFloat(item.precio_unitario),
-      discount: parseFloat(item.descuento),
-      total: parseFloat(item.precio_unitario) * item.cantidad - parseFloat(item.descuento),
-      observaciones: item.observaciones_producto,
-      additions: item.adiciones.map(adicion => ({
+    // Transformar los detalles de productos al formato esperado
+    const items = orderData.detalles.map(detalle => ({
+      id_detalle_pedido: detalle.id_detalle_pedido,
+      productId: detalle.id_detalle_pedido.toString(), // Usar el ID del detalle como productId
+      name: detalle.producto,
+      quantity: detalle.cantidad,
+      price: detalle.precio_unitario,
+      discount: detalle.descuento,
+      total: detalle.precio_unitario * detalle.cantidad - detalle.descuento,
+      observaciones: detalle.observacion,
+      additions: detalle.adiciones.map(adicion => ({
         id: adicion.id_adicion.toString(),
         name: adicion.nombre,
         price: adicion.precio_extra,
@@ -285,8 +291,19 @@ export const orderService = {
   /**
    * Obtiene el detalle de una orden
    */
-  async getDetail(orderId: string): Promise<OrderDetailItem[]> {
+  async getDetail(orderId: string): Promise<OrderDetailItemProduct[]> {
     const response = await apiClient.get<ApiOrderDetailResponse>(`${API_CONFIG.ENDPOINTS.ORDERS}/${orderId}/detalle`);
-    return response.data;
+    
+    if (!response.data || response.data.length === 0) {
+      return [];
+    }
+    
+    // Extraer todos los detalles de todos los elementos en la respuesta
+    const allDetails: OrderDetailItemProduct[] = [];
+    response.data.forEach(orderItem => {
+      allDetails.push(...orderItem.detalles);
+    });
+    
+    return allDetails;
   }
 };
