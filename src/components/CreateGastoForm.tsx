@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { FormCurrencyInput } from '@/components/ui/form-currency-input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -20,9 +21,9 @@ import { Loader2 } from 'lucide-react';
 const gastoSchema = z.object({
     descripcion: z.string().min(1, 'La descripción es requerida').max(500, 'La descripción no puede exceder 500 caracteres'),
     monto: z.string().min(1, 'El monto es requerido').refine((val) => {
-        const num = parseFloat(val);
+        const num = parseInt(val);
         return !isNaN(num) && num > 0;
-    }, 'El monto debe ser un número positivo'),
+    }, 'El monto debe ser un número entero positivo'),
     fecha: z.string().min(1, 'La fecha es requerida'),
     id_tipo_gasto: z.string().min(1, 'Debe seleccionar un tipo de gasto'),
 });
@@ -60,7 +61,7 @@ const CreateGastoForm: React.FC<CreateGastoFormProps> = ({
         const gastoData: CreateGastoDto = {
             id_cliente: 1, // Cliente fijo con ID 1
             descripcion: data.descripcion,
-            monto: parseFloat(data.monto),
+            monto: parseInt(data.monto),
             fecha: data.fecha,
             id_tipo_gasto: parseInt(data.id_tipo_gasto),
         };
@@ -93,11 +94,9 @@ const CreateGastoForm: React.FC<CreateGastoFormProps> = ({
                 {/* Monto */}
                 <div className="space-y-2">
                     <Label htmlFor="monto">Monto *</Label>
-                    <Input
+                    <FormCurrencyInput
                         id="monto"
-                        type="number"
-                        step="0.01"
-                        placeholder="0.00"
+                        placeholder="$0"
                         {...register('monto')}
                     />
                     {errors.monto && (

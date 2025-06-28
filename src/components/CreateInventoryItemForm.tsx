@@ -15,6 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -138,7 +139,10 @@ const CreateInventoryItemForm: React.FC<CreateInventoryItemFormProps> = ({ onClo
               <FormItem>
                 <FormLabel>Precio (COP)</FormLabel>
                 <FormControl>
-                  <Input type="number" min="0" step="0.01" {...field} />
+                  <CurrencyInput 
+                    value={field.value}
+                    onValueChange={(value) => field.onChange(value.toString())}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

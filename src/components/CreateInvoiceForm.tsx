@@ -7,6 +7,7 @@ import { clients } from '@/lib/sample-data';
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { X, Plus } from "lucide-react";
@@ -200,7 +201,10 @@ const CreateInvoiceForm: React.FC<CreateInvoiceFormProps> = ({ onClose }) => {
                     <FormItem>
                       <FormLabel>Rate</FormLabel>
                       <FormControl>
-                        <Input type="number" min="0" step="0.01" {...field} />
+                        <CurrencyInput 
+                          value={field.value}
+                          onValueChange={(value) => field.onChange(value)}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

@@ -54,9 +54,13 @@ export const useCreateGasto = () => {
 
     return useMutation({
         mutationFn: (gasto: CreateGastoDto) => gastosService.create(gasto),
-        onSuccess: () => {
+        onSuccess: (data) => {
             // Invalidar la caché para recargar los datos
             queryClient.invalidateQueries({ queryKey: [GASTOS_QUERY_KEYS.GASTOS] });
+            console.log('Gasto creado exitosamente:', data);
+        },
+        onError: (error) => {
+            console.error('Error al crear gasto:', error);
         },
     });
 };

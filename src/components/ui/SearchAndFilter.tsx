@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
+import { FormCurrencyInput } from '@/components/ui/form-currency-input';
 import { Button } from '@/components/ui/button';
 import { Search, Filter, FilterX, ArrowDown, ArrowUp } from 'lucide-react';
 import {
@@ -210,7 +211,15 @@ const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
                           onChange={(e) => handleFilterChange(filter.id, e.target.value)}
                         />
                       )}
-                      {filter.type === 'number' && (
+                      {filter.type === 'number' && filter.id.includes('monto') && (
+                        <FormCurrencyInput
+                          id={filter.id}
+                          value={activeFilters[filter.id] || ''}
+                          onChange={(e) => handleFilterChange(filter.id, e.target.value)}
+                          placeholder="$0"
+                        />
+                      )}
+                      {filter.type === 'number' && !filter.id.includes('monto') && (
                         <Input
                           id={filter.id}
                           type="number"

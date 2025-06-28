@@ -69,7 +69,7 @@ const GastosList: React.FC<GastosListProps> = ({
 
         // Aplicar filtro de monto mínimo
         if (activeFilters.monto_minimo) {
-            result = result.filter(gasto => parseFloat(gasto.monto) >= parseFloat(activeFilters.monto_minimo));
+            result = result.filter(gasto => parseInt(gasto.monto) >= parseInt(activeFilters.monto_minimo));
         }
 
         return result;
@@ -103,8 +103,8 @@ const GastosList: React.FC<GastosListProps> = ({
             id: 'monto_minimo',
             label: 'Monto Mínimo',
             type: 'number' as const,
-            placeholder: '0.00',
-            step: '0.01',
+            placeholder: '0',
+            step: '1',
         },
     ];
 
@@ -140,7 +140,7 @@ const GastosList: React.FC<GastosListProps> = ({
             accessorKey: 'monto' as keyof Gasto,
             cell: (gasto: Gasto) => (
                 <span className="font-medium">
-                    ${parseFloat(gasto.monto).toLocaleString('es-ES', { minimumFractionDigits: 2 })}
+                    ${parseInt(gasto.monto).toLocaleString('es-ES')}
                 </span>
             ),
         }

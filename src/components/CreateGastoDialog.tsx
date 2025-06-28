@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -17,6 +17,13 @@ const CreateGastoDialog: React.FC = () => {
     const [open, setOpen] = useState(false);
     const createGastoMutation = useCreateGasto();
 
+    // Resetear el estado de la mutación cuando se cierre el modal
+    useEffect(() => {
+        if (!open) {
+            createGastoMutation.reset();
+        }
+    }, [open]);
+
     const handleSubmit = async (data: CreateGastoDto) => {
         try {
             await createGastoMutation.mutateAsync(data);
@@ -24,8 +31,9 @@ const CreateGastoDialog: React.FC = () => {
                 title: "Gasto creado",
                 description: "El gasto ha sido registrado exitosamente",
             });
-            setOpen(false);
+            setOpen(false); // Cerrar el modal después del éxito
         } catch (error: any) {
+            console.error('Error al crear gasto:', error);
             toast({
                 title: "Error al crear gasto",
                 description: error.message || "Ha ocurrido un error al registrar el gasto",
@@ -51,6 +59,7 @@ const CreateGastoDialog: React.FC = () => {
                     <DialogTitle>Registrar nuevo gasto</DialogTitle>
                 </DialogHeader>
                 <CreateGastoForm
+                    key={open ? 'open' : 'closed'} // Resetea el formulario cuando se abre/cierra
                     onSubmit={handleSubmit}
                     onCancel={handleCancel}
                     isLoading={createGastoMutation.isPending}

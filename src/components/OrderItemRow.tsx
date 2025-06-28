@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -144,14 +145,11 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({ item, onUpdate, onRemove })
           {item.price === 0 && (
             <div className="flex items-center space-x-2">
               <label className="text-sm">Precio:</label>
-              <Input
-                type="number"
+              <CurrencyInput
                 value={editPrice}
-                onChange={(e) => setEditPrice(parseFloat(e.target.value) || 0)}
+                onValueChange={setEditPrice}
                 className="w-24 h-7"
-                min="0"
-                step="0.01"
-                placeholder="0.00"
+                placeholder="$0"
               />
             </div>
           )}

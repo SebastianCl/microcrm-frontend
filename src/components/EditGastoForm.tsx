@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { FormCurrencyInput } from '@/components/ui/form-currency-input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -139,11 +140,9 @@ const EditGastoForm: React.FC<EditGastoFormProps> = ({
                 {/* Monto */}
                 <div className="space-y-2">
                     <Label htmlFor="monto">Monto *</Label>
-                    <Input
+                    <FormCurrencyInput
                         id="monto"
-                        type="number"
-                        step="0.01"
-                        placeholder="0.00"
+                        placeholder="$0"
                         {...register('monto')}
                     />
                     {errors.monto && (
