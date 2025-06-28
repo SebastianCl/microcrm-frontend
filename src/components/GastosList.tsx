@@ -41,18 +41,24 @@ const GastosList: React.FC<GastosListProps> = ({
 
     // Filtrar gastos
     const filteredGastos = React.useMemo(() => {
-        if (!gastos) return [];
+        if (!gastos || !Array.isArray(gastos)) return [];
 
         let result = [...gastos];
 
         // Aplicar búsqueda
-        if (searchQuery) {
-            const query = searchQuery.toLowerCase();
-            result = result.filter(gasto =>
-                gasto.descripcion.toLowerCase().includes(query) ||
-                gasto.nombre_tipo.toLowerCase().includes(query) ||
-                gasto.nombre_usuario.toLowerCase().includes(query)
-            );
+        if (searchQuery && searchQuery.trim()) {
+            const query = searchQuery.toLowerCase().trim();
+            result = result.filter(gasto => {
+                try {
+                    return (
+                        (gasto.descripcion && gasto.descripcion.toLowerCase().includes(query)) ||
+                        (gasto.nombre_tipo && gasto.nombre_tipo.toLowerCase().includes(query))
+                    );
+                } catch (error) {
+                    console.error('Error filtrando gasto:', error, gasto);
+                    return false;
+                }
+            });
         }
 
         // Aplicar filtro de tipo de gasto
@@ -60,18 +66,15 @@ const GastosList: React.FC<GastosListProps> = ({
             result = result.filter(gasto => gasto.nombre_tipo === activeFilters.tipo_gasto);
         }
 
-        // Aplicar filtro de rango de fechas
-        if (activeFilters.fecha_inicio) {
-            result = result.filter(gasto => gasto.fecha >= activeFilters.fecha_inicio);
-        }
-
-        if (activeFilters.fecha_fin) {
-            result = result.filter(gasto => gasto.fecha <= activeFilters.fecha_fin);
-        }
-
         // Aplicar filtro de monto mínimo
         if (activeFilters.monto_minimo) {
-            result = result.filter(gasto => parseInt(gasto.monto) >= parseInt(activeFilters.monto_minimo));
+            const montoMinimo = parseInt(activeFilters.monto_minimo);
+            if (!isNaN(montoMinimo)) {
+                result = result.filter(gasto => {
+                    const montoGasto = parseInt(gasto.monto);
+                    return !isNaN(montoGasto) && montoGasto >= montoMinimo;
+                });
+            }
         }
 
         return result;
@@ -92,18 +95,8 @@ const GastosList: React.FC<GastosListProps> = ({
 
     const filterOptions = [
         {
-            id: 'fecha_inicio',
-            label: 'Fecha Inicio',
-            type: 'date' as const,
-        },
-        {
-            id: 'fecha_fin',
-            label: 'Fecha Fin',
-            type: 'date' as const,
-        },
-        {
             id: 'monto_minimo',
-            label: 'Monto Mínimo',
+            label: 'Monto mínimo',
             type: 'number' as const,
             placeholder: '0',
             step: '1',
@@ -114,16 +107,24 @@ const GastosList: React.FC<GastosListProps> = ({
         {
             header: 'Fecha',
             accessorKey: 'fecha' as keyof Gasto,
-            cell: (gasto: Gasto) => (
-                <span>{new Date(gasto.fecha).toLocaleDateString('es-ES')}</span>
-            ),
+            cell: (gasto: Gasto) => {
+                try {
+                    return gasto.fecha ? (
+                        <span>{new Date(gasto.fecha).toLocaleDateString('es-ES')}</span>
+                    ) : (
+                        <span className="text-muted-foreground">-</span>
+                    );
+                } catch (error) {
+                    return <span className="text-muted-foreground">Fecha inválida</span>;
+                }
+            },
         },
         {
             header: 'Descripción',
             accessorKey: 'descripcion' as keyof Gasto,
             cell: (gasto: Gasto) => (
-                <span className="max-w-48 truncate block" title={gasto.descripcion}>
-                    {gasto.descripcion}
+                <span className="max-w-48 truncate block" title={gasto.descripcion || ''}>
+                    {gasto.descripcion || '-'}
                 </span>
             ),
         },
@@ -132,7 +133,7 @@ const GastosList: React.FC<GastosListProps> = ({
             accessorKey: 'nombre_tipo' as keyof Gasto,
             cell: (gasto: Gasto) => (
                 <Badge variant="outline">
-                    {gasto.nombre_tipo}
+                    {gasto.nombre_tipo || 'Sin tipo'}
                 </Badge>
             ),
             hideOnMobile: true,
@@ -140,11 +141,18 @@ const GastosList: React.FC<GastosListProps> = ({
         {
             header: 'Monto',
             accessorKey: 'monto' as keyof Gasto,
-            cell: (gasto: Gasto) => (
-                <span className="font-medium">
-                    ${parseInt(gasto.monto).toLocaleString('es-ES')}
-                </span>
-            ),
+            cell: (gasto: Gasto) => {
+                try {
+                    const monto = parseInt(gasto.monto);
+                    return (
+                        <span className="font-medium">
+                            {!isNaN(monto) ? `$${monto.toLocaleString('es-ES')}` : '$0'}
+                        </span>
+                    );
+                } catch (error) {
+                    return <span className="font-medium text-muted-foreground">$0</span>;
+                }
+            },
         }
     ];
 
@@ -210,7 +218,7 @@ const GastosList: React.FC<GastosListProps> = ({
                             onSearchChange={handleSearch}
                             filters={filterOptions}
                             onFilter={handleFilter}
-                            placeholder="Buscar por descripción, cliente, tipo o usuario..."
+                            placeholder="Buscar por descripción o tipo"
                         />
                     </div>
                 )}

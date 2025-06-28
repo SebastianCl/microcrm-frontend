@@ -38,11 +38,11 @@ const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
   const [searchQuery, setSearchQuery] = useState(search);
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  
+
   useEffect(() => {
     setSearchQuery(search);
   }, [search]);
-  
+
   const handleSearch = useCallback(() => {
     onSearchChange(searchQuery);
   }, [searchQuery, onSearchChange]);
@@ -63,13 +63,13 @@ const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
   const handleFilterChange = useCallback((filterId: string, value: any) => {
     setActiveFilters(prevFilters => {
       const newFilters = { ...prevFilters };
-      
+
       if (value === '' || value === null || value === undefined) {
         delete newFilters[filterId];
       } else {
         newFilters[filterId] = value;
       }
-      
+
       // Llamar onFilter solo si realmente cambió algo
       if (JSON.stringify(newFilters) !== JSON.stringify(prevFilters)) {
         setTimeout(() => {
@@ -78,7 +78,7 @@ const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
           }
         }, 0);
       }
-      
+
       return newFilters;
     });
   }, [onFilter]);
@@ -100,13 +100,13 @@ const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
   const toggleSortDirection = useCallback(() => {
     setSortDirection(prevDirection => {
       const newDirection = prevDirection === 'asc' ? 'desc' : 'asc';
-      
+
       setTimeout(() => {
         if (onFilter) {
           onFilter({ ...activeFilters, _sort: newDirection });
         }
       }, 0);
-      
+
       return newDirection;
     });
   }, [onFilter, activeFilters]);
@@ -115,10 +115,10 @@ const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
 
   const renderSelectOptions = (filter: FilterOption) => {
     if (!filter.options) return null;
-    
+
     // Check if options is an array of strings or objects
     const isStringArray = typeof filter.options[0] === 'string';
-    
+
     if (isStringArray) {
       return (filter.options as string[]).map((option) => (
         <option key={option} value={option}>
@@ -154,7 +154,7 @@ const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
           <Search className="h-4 w-4" />
         </Button>
       </div>
-      
+
       <div className="flex space-x-2">
         {filters.length > 0 && (
           <Popover>
@@ -174,9 +174,9 @@ const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
                 <div className="flex items-center justify-between">
                   <h4 className="font-medium leading-none">Filtros</h4>
                   {activeFilterCount > 0 && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={clearFilters}
                       className="h-auto p-1 text-xs"
                     >
@@ -247,10 +247,10 @@ const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
             </PopoverContent>
           </Popover>
         )}
-        
-        <Button 
-          variant="outline" 
-          onClick={toggleSortDirection} 
+
+        <Button
+          variant="outline"
+          onClick={toggleSortDirection}
           className="flex items-center gap-1"
           title={sortDirection === 'asc' ? 'Ordenar ascendente' : 'Ordenar descendente'}
         >
