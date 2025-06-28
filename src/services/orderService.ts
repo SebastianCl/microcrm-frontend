@@ -84,11 +84,11 @@ export const orderService = {
     }>;
   }> {
     const response = await apiClient.get<ApiOrderDetailResponse>(`${API_CONFIG.ENDPOINTS.ORDERS}/${id}/detalle`);
-    
+
     if (!response.data || response.data.length === 0) {
       throw new Error('No se encontraron detalles de la orden');
     }
-    
+
     const firstItem = response.data[0];
     // Crear el objeto Order a partir del primer item
     const order: Order = {
@@ -133,13 +133,39 @@ export const orderService = {
   },
 
   /**
+   * Crea una nueva orden con el formato específico requerido por el backend
+   */
+  async createOrderWithProducts(orderData: {
+    id_cliente: number | null;
+    id_usuario: number;
+    id_mesa: number | null;
+    tipo_pedido: string;
+    Observacion: string;
+    medio_pago: string | null;
+    productos: Array<{
+      id_producto: number;
+      cantidad: number;
+      precio_unitario: number;
+      observacion: string;
+      adiciones: Array<{
+        id_adicion: number;
+        cantidad: number;
+      }>;
+    }>;
+    id_estado: number;
+  }): Promise<Order> {
+    const response = await apiClient.post<ApiOrderSingleResponse>(API_CONFIG.ENDPOINTS.ORDERS, orderData);
+    return response.data;
+  },
+
+  /**
    * Actualiza una orden existente
    */
   async update(id: string, order: Partial<Order>): Promise<Order> {
     const response = await apiClient.put<ApiOrderSingleResponse>(`${API_CONFIG.ENDPOINTS.ORDERS}/${id}`, order);
     return response.data;
   },
-  
+
   /**
    * Actualiza una orden con sus items
    */
@@ -182,7 +208,7 @@ export const orderService = {
     const response = await apiClient.put<ApiOrderSingleResponse>(`${API_CONFIG.ENDPOINTS.ORDERS}/${id}`, updateData);
     return response.data;
   },
-  
+
   /**
    * Elimina una orden por su ID
    */
@@ -194,8 +220,8 @@ export const orderService = {
    * Cambia el estado de una orden
    */
   async updateStatus(id: string, estadoId: number): Promise<Order> {
-    const response = await apiClient.patch<ApiOrderSingleResponse>(`${API_CONFIG.ENDPOINTS.ORDERS}/${id}/estado`, { 
-      id_estado: estadoId 
+    const response = await apiClient.patch<ApiOrderSingleResponse>(`${API_CONFIG.ENDPOINTS.ORDERS}/${id}/estado`, {
+      id_estado: estadoId
     });
     return response.data;
   },
@@ -204,8 +230,8 @@ export const orderService = {
    * Actualiza el método de pago de una orden
    */
   async updatePaymentMethod(id: string, paymentMethod: string): Promise<Order> {
-    const response = await apiClient.patch<ApiOrderSingleResponse>(`${API_CONFIG.ENDPOINTS.ORDERS}/${id}/payment`, { 
-      medio_pago: paymentMethod 
+    const response = await apiClient.patch<ApiOrderSingleResponse>(`${API_CONFIG.ENDPOINTS.ORDERS}/${id}/payment`, {
+      medio_pago: paymentMethod
     });
     return response.data;
   },
@@ -214,7 +240,7 @@ export const orderService = {
    * Finaliza una orden con método de pago
    */
   async finalizeOrderWithPayment(id: string, paymentMethod: string): Promise<Order> {
-    const response = await apiClient.patch<ApiOrderSingleResponse>(`${API_CONFIG.ENDPOINTS.ORDERS}/${id}/estado`, { 
+    const response = await apiClient.patch<ApiOrderSingleResponse>(`${API_CONFIG.ENDPOINTS.ORDERS}/${id}/estado`, {
       id_estado: 5, // ID para estado "Finalizado"
       medio_pago: paymentMethod
     });
@@ -225,7 +251,7 @@ export const orderService = {
    * Asigna una mesa a una orden
    */
   async assignTable(id: string, tableNumber: number): Promise<Order> {
-    const response = await apiClient.patch<ApiOrderSingleResponse>(`${API_CONFIG.ENDPOINTS.ORDERS}/${id}/table`, { 
+    const response = await apiClient.patch<ApiOrderSingleResponse>(`${API_CONFIG.ENDPOINTS.ORDERS}/${id}/table`, {
       nombre_mesa: `Mesa ${tableNumber}`,
       tipo_pedido: 'en_mesa'
     });

@@ -53,13 +53,13 @@ const PaymentMethodDialog: React.FC<PaymentMethodDialogProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CreditCard className="h-5 w-5" />
-            Método de Pago
+            Método de pago
           </DialogTitle>
           <DialogDescription>
             Selecciona el método de pago para finalizar la orden.
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Método de pago *</label>
@@ -74,7 +74,7 @@ const PaymentMethodDialog: React.FC<PaymentMethodDialogProps> = ({
             </Select>
           </div>
         </div>
-        
+
         <DialogFooter>
           <Button
             variant="outline"
@@ -87,7 +87,7 @@ const PaymentMethodDialog: React.FC<PaymentMethodDialogProps> = ({
             onClick={handleConfirm}
             disabled={!selectedPaymentMethod || isLoading}
           >
-            {isLoading ? 'Finalizando...' : 'Finalizar Orden'}
+            {isLoading ? 'Finalizando...' : 'Finalizar orden'}
           </Button>
         </DialogFooter>
       </DialogContent>

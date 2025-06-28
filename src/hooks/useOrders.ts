@@ -48,9 +48,42 @@ export const useOrderDetail = (id: string, options = {}) => {
  */
 export const useCreateOrder = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (order: Omit<Order, 'id_pedido'>) => orderService.create(order),
+    onSuccess: () => {
+      // Invalidar la caché para recargar los datos
+      queryClient.invalidateQueries({ queryKey: [ORDER_QUERY_KEYS.ORDERS] });
+    },
+  });
+};
+
+/**
+ * Hook para crear una nueva orden con productos
+ */
+export const useCreateOrderWithProducts = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (orderData: {
+      id_cliente: number | null;
+      id_usuario: number;
+      id_mesa: number | null;
+      tipo_pedido: string;
+      Observacion: string;
+      medio_pago: string | null;
+      productos: Array<{
+        id_producto: number;
+        cantidad: number;
+        precio_unitario: number;
+        observacion: string;
+        adiciones: Array<{
+          id_adicion: number;
+          cantidad: number;
+        }>;
+      }>;
+      id_estado: number;
+    }) => orderService.createOrderWithProducts(orderData),
     onSuccess: () => {
       // Invalidar la caché para recargar los datos
       queryClient.invalidateQueries({ queryKey: [ORDER_QUERY_KEYS.ORDERS] });
@@ -63,7 +96,7 @@ export const useCreateOrder = () => {
  */
 export const useUpdateOrder = (id: string) => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (order: Partial<Order>) => orderService.update(id, order),
     onSuccess: (updatedOrder) => {
@@ -80,7 +113,7 @@ export const useUpdateOrder = (id: string) => {
  */
 export const useUpdateOrderWithItems = (id: string) => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (data: {
       items: Array<{
@@ -115,9 +148,9 @@ export const useUpdateOrderWithItems = (id: string) => {
  */
 export const useUpdateOrderStatus = (id: string) => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: (estadoId: number) => 
+    mutationFn: (estadoId: number) =>
       orderService.updateStatus(id, estadoId),
     onSuccess: (updatedOrder) => {
       // Actualizar la orden en la caché
@@ -133,9 +166,9 @@ export const useUpdateOrderStatus = (id: string) => {
  */
 export const useUpdateOrderPaymentMethod = (id: string) => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: (paymentMethod: string) => 
+    mutationFn: (paymentMethod: string) =>
       orderService.updatePaymentMethod(id, paymentMethod),
     onSuccess: (updatedOrder) => {
       // Actualizar la orden en la caché
@@ -152,9 +185,9 @@ export const useUpdateOrderPaymentMethod = (id: string) => {
  */
 export const useFinalizeOrderWithPayment = (id: string) => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: (paymentMethod: string) => 
+    mutationFn: (paymentMethod: string) =>
       orderService.finalizeOrderWithPayment(id, paymentMethod),
     onSuccess: (updatedOrder) => {
       // Actualizar la orden en la caché
@@ -171,7 +204,7 @@ export const useFinalizeOrderWithPayment = (id: string) => {
  */
 export const useAdjustOrder = (id: string) => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (data: {
       agregados: Array<{
@@ -205,7 +238,7 @@ export const useAdjustOrder = (id: string) => {
  */
 export const useDeleteOrder = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (id: string) => orderService.delete(id),
     onSuccess: (_, id) => {

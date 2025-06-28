@@ -87,7 +87,7 @@ const OrderDetail = () => {
     try {
       // Usar el nuevo endpoint que combina actualizar método de pago y finalizar la orden
       await finalizeOrderWithPayment.mutateAsync(paymentMethod);
-      
+
       toast.success(`Orden ${order.id_pedido} finalizada exitosamente`);
       setShowPaymentDialog(false);
     } catch (error) {
@@ -239,7 +239,7 @@ const OrderDetail = () => {
               </div>
 
               <div>
-                <h4 className="font-medium">Medio de Pago</h4>
+                <h4 className="font-medium">Medio de pago</h4>
                 <p className="text-muted-foreground capitalize">
                   {order.medio_pago === 'efectivo' ? 'Efectivo' :
                     order.medio_pago === 'transferencia' ? 'Transferencia' :
@@ -332,7 +332,7 @@ const OrderDetail = () => {
         </Card>
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Gestionar pedidos</h2>
-          
+
           {/* Mensaje informativo para finalización */}
           {order.estado === 'Entregado' && !order.medio_pago && (
             <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -349,7 +349,7 @@ const OrderDetail = () => {
               </div>
             </div>
           )}
-          
+
           <div className="space-y-4">
 
             {/* Botón de siguiente estado */}

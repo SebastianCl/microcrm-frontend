@@ -13,13 +13,6 @@ import {
   FormItem,
   FormMessage,
 } from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import CancelOrderConfirmation from '@/components/CancelOrderConfirmation';
 import QuickProductSelector from '@/components/QuickProductSelector';
 import OrderItemRow from '@/components/OrderItemRow';
@@ -30,8 +23,7 @@ import { Addition, OrderItem } from '@/models/order.model';
 import { User, MapPin, ShoppingCart, X } from 'lucide-react';
 import { useTables } from '@/hooks/useTables';
 import { useClients } from '@/hooks/useClients';
-import { ORDER_QUERY_KEYS } from '@/hooks/useOrders';
-import { useQueryClient } from '@tanstack/react-query';
+import { useCreateOrderWithProducts } from '@/hooks/useOrders';
 
 const createOrderFormSchema = z.object({
   tableNumber: z.string(),
@@ -54,7 +46,7 @@ const DiscountTypes = {
 
 const CreateOrder = () => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const createOrderMutation = useCreateOrderWithProducts();
   const [orderItems, setOrderItems] = useState<ExtendedOrderItem[]>([]);
   const [isCancelConfirmationOpen, setIsCancelConfirmationOpen] = useState(false);
   const [orderDiscount, setOrderDiscount] = useState<number>(0); const [orderDiscountType, setOrderDiscountType] = useState<string>(DiscountTypes.NONE);
@@ -231,28 +223,8 @@ const CreateOrder = () => {
       id_estado: 1
     };
 
-    const token = localStorage.getItem('authToken');
-
     try {
-      const headers = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      };
-
-      await fetch('http://localhost:3000/api/pedido/', {
-        method: 'POST',
-        headers: headers,
-        body: JSON.stringify(backendOrderPayload)
-      }).then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP Error: ${response.status}`);
-        }
-        return response.json();
-      });
-
-      // Invalidar la caché manualmente para que se actualice la lista de órdenes
-      queryClient.invalidateQueries({ queryKey: [ORDER_QUERY_KEYS.ORDERS] });
-
+      await createOrderMutation.mutateAsync(backendOrderPayload);
       toast.success('Orden creada');
       setTimeout(() => navigate('/orders'), 1000);
     } catch (error) {
@@ -534,11 +506,11 @@ const CreateOrder = () => {
                   <div className="space-y-3">
                     <Button
                       type="submit"
-                      disabled={orderItems.length === 0}
+                      disabled={orderItems.length === 0 || createOrderMutation.isPending}
                       className="w-full h-12 text-base font-medium shadow-sm hover:shadow-md transition-shadow"
                       size="lg"
                     >
-                      Crear orden
+                      {createOrderMutation.isPending ? 'Creando orden...' : 'Crear orden'}
                     </Button>
 
                     <Button
