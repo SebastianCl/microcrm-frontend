@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { useCreateProduct, useProducts } from "@/hooks/useProducts";
+import { useCreateProduct, useCategories } from "@/hooks/useProducts";
 
 const formSchema = z.object({
   name: z.string().min(3, { message: "El nombre debe tener al menos 3 caracteres" }),
@@ -44,20 +44,17 @@ interface CreateInventoryItemFormProps {
 }
 
 const CreateInventoryItemForm: React.FC<CreateInventoryItemFormProps> = ({ onClose }) => {
-  const { data: productsData } = useProducts();
+  const { data: categoriesData } = useCategories();
   const createProductMutation = useCreateProduct();
 
-  // Get unique categories from products
+  // Transform categories data to the format expected by the component
   const categories = React.useMemo(() => {
-    if (!productsData) return [];
-    const uniqueCategories = new Map<number, string>();
-    productsData.forEach(product => {
-      if (product.categoryId && product.categoryName) {
-        uniqueCategories.set(product.categoryId, product.categoryName);
-      }
-    });
-    return Array.from(uniqueCategories.entries()).map(([id, name]) => ({ id, name }));
-  }, [productsData]);
+    if (!categoriesData) return [];
+    return categoriesData.map(category => ({
+      id: category.id_categoria,
+      name: category.nombre_categoria
+    }));
+  }, [categoriesData]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

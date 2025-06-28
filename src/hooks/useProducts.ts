@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/services/apiClient';
 import { AppProduct, AppAddition, ApiProduct, ApiProductDetail } from '@/models/product.model';
-import { productService, CreateProductRequest, UpdateProductRequest } from '@/services/productService';
+import { productService, CreateProductRequest, UpdateProductRequest, Category } from '@/services/productService';
 
 // Función para transformar la respuesta de la API al formato de la aplicación
 const transformProductData = (apiProducts: ApiProduct[]): AppProduct[] => {
@@ -98,4 +98,13 @@ export const getProductAdditions = (productId: string, products: AppProduct[]): 
     const product = products.find(p => p.id === productId);
     // Asegurarse de que las adiciones devueltas incluyan la cantidad si se define en AppAddition
     return product ? product.additions.filter(a => a.isActive).map(a => ({ ...a /*, quantity: a.quantity || 1 */ })) : [];
+};
+
+export const useCategories = () => {
+    return useQuery<Category[], Error>({
+        queryKey: ['categories'],
+        queryFn: async () => {
+            return await productService.getCategories();
+        },
+    });
 };

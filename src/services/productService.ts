@@ -2,6 +2,11 @@ import { apiClient } from './apiClient';
 import { InventoryMovement } from '@/types/inventory';
 import { ApiProductDetail } from '@/models/product.model';
 
+export interface Category {
+    id_categoria: number;
+    nombre_categoria: string;
+}
+
 export interface CreateProductRequest {
     nombre: string;
     descripcion: string;
@@ -59,5 +64,12 @@ export const productService = {
      */
     async getInventoryMovements(productId: string): Promise<InventoryMovement[]> {
         return await apiClient.get<InventoryMovement[]>(`/inventarios/${productId}`);
+    },
+
+    /**
+     * Obtener todas las categorías
+     */
+    async getCategories(): Promise<Category[]> {
+        return await apiClient.get<Category[]>('/products/categorias');
     },
 };

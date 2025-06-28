@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { InventoryItem } from '@/types/inventory';
-import { useProducts, useUpdateProduct } from '@/hooks/useProducts';
+import { useCategories, useUpdateProduct } from '@/hooks/useProducts';
 
 const formSchema = z.object({
   name: z.string().min(3, { message: "El nombre debe tener al menos 3 caracteres" }),
@@ -47,26 +47,23 @@ interface EditInventoryItemFormProps {
 }
 
 const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onClose }) => {
-  const { data: productsData } = useProducts();
+  const { data: categoriesData } = useCategories();
   const updateProductMutation = useUpdateProduct();
 
-  // Get unique categories from products
+  // Transform categories data to the format expected by the component
   const categories = React.useMemo(() => {
-    if (!productsData) return [];
-    const uniqueCategories = new Map<number, string>();
-    productsData.forEach(product => {
-      if (product.categoryId && product.categoryName) {
-        uniqueCategories.set(product.categoryId, product.categoryName);
-      }
-    });
-    return Array.from(uniqueCategories.entries()).map(([id, name]) => ({ id, name }));
-  }, [productsData]);
+    if (!categoriesData) return [];
+    return categoriesData.map(category => ({
+      id: category.id_categoria,
+      name: category.nombre_categoria
+    }));
+  }, [categoriesData]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: item.name,
-      category: item.category,
+      category: "", // Will be set when categories are loaded
       price: item.price.toString(),
       stockQuantity: item.stockQuantity === Infinity ? "0" : item.stockQuantity.toString(),
       description: item.description || "",
@@ -75,15 +72,18 @@ const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onC
     },
   });
 
+  // Set the category value once categories are loaded
+  React.useEffect(() => {
+    if (categoriesData && item.category) {
+      const matchingCategory = categoriesData.find(cat => cat.nombre_categoria === item.category);
+      if (matchingCategory) {
+        form.setValue('category', matchingCategory.id_categoria.toString());
+      }
+    }
+  }, [categoriesData, item.category, form]);
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      // Encontrar el ID de categoría basado en el nombre seleccionado
-      const selectedCategory = categories.find(cat => cat.name === values.category);
-      if (!selectedCategory) {
-        toast.error("Categoría no válida");
-        return;
-      }
-
       await updateProductMutation.mutateAsync({
         productId: item.id,
         productData: {
@@ -93,7 +93,7 @@ const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onC
           stock: parseInt(values.stockQuantity),
           estado: values.isActive,
           maneja_inventario: values.managesInventory,
-          id_categoria: selectedCategory.id,
+          id_categoria: parseInt(values.category),
         },
       });
 
@@ -139,7 +139,7 @@ const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onC
                   </FormControl>
                   <SelectContent>
                     {categories.map(category => (
-                      <SelectItem key={category.id} value={category.name}>
+                      <SelectItem key={category.id} value={category.id.toString()}>
                         {category.name}
                       </SelectItem>
                     ))}
