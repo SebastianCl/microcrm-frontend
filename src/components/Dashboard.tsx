@@ -4,6 +4,7 @@ import { PiggyBank, CreditCard, AlertCircle, ShoppingCart, BarChart4, Package, U
 import StatCard from './stats/StatCard';
 import InvoiceList from './InvoiceList';
 import ClientList from './ClientList';
+import GastosList from './GastosList';
 import { dashboardStats } from '@/lib/sample-data';
 import QuickActionCard from './dashboard/QuickActionCard';
 import { formatCurrency } from '@/lib/utils';
@@ -26,6 +27,12 @@ const Dashboard = () => {
             description="Inicia un nuevo pedido para un cliente."
             icon={<ShoppingCart className="h-6 w-6 text-muted-foreground" />}
             href="/orders/new"
+          />
+          <QuickActionCard
+            title="Registrar gasto"
+            description="Registra un nuevo gasto del negocio."
+            icon={<CreditCard className="h-6 w-6 text-muted-foreground" />}
+            href="/gastos"
           />
           {/*<QuickActionCard
             title="Ver Facturas"
@@ -82,6 +89,17 @@ const Dashboard = () => {
             description={`${dashboardStats.invoiceCount.overdue} facturas`}
             trend={{ value: 5, isPositive: false }}
           />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold tracking-tight">Gastos Recientes</h2>
+          <GastosList limit={5} showCreateButton={false} />
+        </div>
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold tracking-tight">Clientes Activos</h2>
+          <ClientList limit={5} showCreateButton={false} />
         </div>
       </div>
 

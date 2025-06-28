@@ -10,7 +10,8 @@ import {
   ShoppingCart,
   User,
   ChevronUp,
-  ChevronDown
+  ChevronDown,
+  CreditCard
 } from 'lucide-react';
 import { LogOut } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -33,6 +34,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
     { path: '/orders', label: 'Pedidos', icon: <ShoppingCart size={20} />, roles: ['Administrator', 'Collaborator'] },
     //{ path: '/invoices', label: 'Facturas', icon: <Receipt size={20} />, roles: ['Administrator', 'Collaborator'] },
     { path: '/clients', label: 'Clientes', icon: <Users size={20} />, roles: ['Administrator', 'Collaborator'] },
+    { path: '/gastos', label: 'Gastos', icon: <CreditCard size={20} />, roles: ['Administrator', 'Collaborator'] },
     { path: '/inventory', label: 'Inventario', icon: <Package size={20} />, roles: ['Administrator'] },
     //{ path: '/users', label: 'Usuarios', icon: <Users size={20} />, roles: ['Administrator'] },
     { path: '/reports', label: 'Informes', icon: <BarChart4 size={20} />, roles: ['Administrator'] },

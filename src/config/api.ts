@@ -8,6 +8,8 @@ export const API_CONFIG = {
     ORDERS: '/pedido',
     INVENTORY: '/inventory',
     USERS: '/users',
+    GASTOS: '/expenses',
+    TIPOS_GASTO: '/expenses/type-of-expense',
   },
   DEFAULT_HEADERS: {
     'Content-Type': 'application/json',
