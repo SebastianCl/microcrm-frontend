@@ -1,9 +1,7 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   Package,
-  Eye,
   Edit,
-  Trash,
   Loader2,
   AlertCircle,
 } from 'lucide-react';
@@ -48,7 +46,7 @@ const InventoryList = () => {
       );
     }
 
-    // Apply category filter
+    // Aplicar filtro categoria
     if (activeFilters.category) {
       result = result.filter(item => item.category === activeFilters.category);
     }
@@ -58,7 +56,7 @@ const InventoryList = () => {
       result = result.filter(item => item.status === activeFilters.status);
     }
 
-    // Apply price range filter
+    // Aplicar filtro de rango de precios
     if (activeFilters.minPrice) {
       result = result.filter(item => item.price >= parseFloat(activeFilters.minPrice));
     }
@@ -152,7 +150,7 @@ const InventoryList = () => {
     },
     {
       header: 'Cantidad',
-      accessorKey: (item: any) => item.stockQuantity === Infinity ? '∞' : item.stockQuantity,
+      accessorKey: (item: any) => item.stockQuantity === Infinity ? '-' : item.stockQuantity,
       hideOnMobile: true
     },
     {
@@ -215,7 +213,7 @@ const InventoryList = () => {
             data={filteredInventory}
             onRowClick={(item) => navigate(`/inventory/${item.id}`)}
             pagination={{
-              pageSize: 5,
+              pageSize: 10,
               currentPage: currentPage,
               totalItems: filteredInventory.length,
               onPageChange: setCurrentPage

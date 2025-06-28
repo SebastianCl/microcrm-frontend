@@ -22,7 +22,7 @@ const Inventory = () => {
           className="flex items-center gap-1"
         >
           <Plus className="h-4 w-4" />
-          <span>Agregar Producto</span>
+          <span>Agregar producto</span>
         </Button>
       </div>
       <InventoryList />
