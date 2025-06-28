@@ -9,6 +9,8 @@ export interface InventoryItem {
   imageUrl?: string;
   location?: string;
   lastUpdated?: string;
+  managesInventory: boolean;
+  isActive: boolean;
 }
 
 export interface InventoryMovement {

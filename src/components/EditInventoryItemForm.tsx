@@ -67,8 +67,8 @@ const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onC
       price: item.price.toString(),
       stockQuantity: item.stockQuantity === Infinity ? "0" : item.stockQuantity.toString(),
       description: item.description || "",
-      managesInventory: item.stockQuantity !== Infinity,
-      isActive: item.status === "Activo",
+      managesInventory: item.managesInventory,
+      isActive: item.isActive,
     },
   });
 
@@ -114,7 +114,7 @@ const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onC
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nombre del Producto</FormLabel>
+                <FormLabel>Nombre del producto</FormLabel>
                 <FormControl>
                   <Input placeholder="Laptop Dell XPS 13" {...field} />
                 </FormControl>
@@ -131,7 +131,7 @@ const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onC
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Categoría</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccionar categoría" />
@@ -210,7 +210,7 @@ const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onC
                 </FormControl>
                 <div className="space-y-1 leading-none">
                   <FormLabel>
-                    Manejar Inventario
+                    Manejar inventario
                   </FormLabel>
                   <p className="text-sm text-muted-foreground">
                     Activar para controlar el stock del producto
@@ -233,7 +233,7 @@ const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onC
                 </FormControl>
                 <div className="space-y-1 leading-none">
                   <FormLabel>
-                    Producto Activo
+                    Producto activo
                   </FormLabel>
                   <p className="text-sm text-muted-foreground">
                     El producto estará disponible para venta
@@ -249,7 +249,7 @@ const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onC
             Cancelar
           </Button>
           <Button type="submit">
-            Actualizar Producto
+            Actualizar producto
           </Button>
         </div>
       </form>

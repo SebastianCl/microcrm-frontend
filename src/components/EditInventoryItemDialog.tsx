@@ -21,12 +21,12 @@ const EditInventoryItemDialog: React.FC<EditInventoryItemDialogProps> = ({
   item,
 }) => {
   if (!item) return null;
-  
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Editar Producto</DialogTitle>
+          <DialogTitle>Editar producto</DialogTitle>
         </DialogHeader>
         <EditInventoryItemForm item={item} onClose={() => onOpenChange(false)} />
       </DialogContent>

@@ -96,9 +96,9 @@ const CreateInventoryItemForm: React.FC<CreateInventoryItemFormProps> = ({ onClo
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nombre del Producto</FormLabel>
+                <FormLabel>Nombre del producto</FormLabel>
                 <FormControl>
-                  <Input placeholder="Laptop Dell XPS 13" {...field} />
+                  <Input {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -206,7 +206,7 @@ const CreateInventoryItemForm: React.FC<CreateInventoryItemFormProps> = ({ onClo
             Cancelar
           </Button>
           <Button type="submit" disabled={createProductMutation.isPending}>
-            {createProductMutation.isPending ? "Guardando..." : "Guardar Producto"}
+            {createProductMutation.isPending ? "Guardando..." : "Guardar producto"}
           </Button>
         </div>
       </form>

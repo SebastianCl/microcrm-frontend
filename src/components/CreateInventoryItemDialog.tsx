@@ -21,7 +21,7 @@ const CreateInventoryItemDialog: React.FC<CreateInventoryItemDialogProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Agregar Nuevo Producto</DialogTitle>
+          <DialogTitle>Agregar nuevo producto</DialogTitle>
         </DialogHeader>
         <CreateInventoryItemForm onClose={() => onOpenChange(false)} />
       </DialogContent>

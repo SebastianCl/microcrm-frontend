@@ -23,6 +23,9 @@ export const productToInventoryItem = (product: AppProduct): InventoryItem => {
         stockQuantity: product.managesInventory ? product.stockQuantity : Infinity,
         status: product.isActive ? status : 'Inactivo',
         description: product.description,
+        // Incluimos los valores booleanos originales
+        managesInventory: product.managesInventory,
+        isActive: product.isActive,
     };
 };
 
