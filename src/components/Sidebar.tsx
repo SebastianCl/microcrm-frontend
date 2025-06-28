@@ -118,7 +118,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
                 className="flex items-center w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
               >
                 <LogOut className="mr-3 h-4 w-4" />
-                <span>Cerrar Sesión</span>
+                <span>Cerrar sesión</span>
               </button>
             </div>
           )}
@@ -127,7 +127,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
           {showLogoutConfirm && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
               <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-sm mx-4">
-                <h3 className="text-lg font-medium text-foreground mb-2">Confirmar Cierre de Sesión</h3>
+                <h3 className="text-lg font-medium text-foreground mb-2">Confirmar cierre de sesión</h3>
                 <p className="text-muted-foreground mb-6">¿Estás seguro de que quieres cerrar sesión?</p>
                 <div className="flex gap-3 justify-end">
                   <button
@@ -140,7 +140,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
                     onClick={handleLogout}
                     className="px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700"
                   >
-                    Cerrar Sesión
+                    Cerrar sesión
                   </button>
                 </div>
               </div>

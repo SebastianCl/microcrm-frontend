@@ -24,7 +24,7 @@ const CreateClientDialog: React.FC<CreateClientDialogProps> = ({ children }) => 
         {children || (
           <Button className="flex items-center gap-1">
             <Plus className="h-4 w-4" />
-            <span>Añadir Cliente</span>
+            <span>Añadir cliente</span>
           </Button>
         )}
       </DialogTrigger>

@@ -12,17 +12,17 @@ const Dashboard = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Panel de Control</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Panel de control</h1>
         <p className="text-muted-foreground mt-2">
           Bienvenido. Realiza acciones rápidas o revisa el estado de tu negocio.
         </p>
       </div>
 
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold tracking-tight">Acciones Rápidas</h2>
+        <h2 className="text-xl font-semibold tracking-tight">Acciones rápidas</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           <QuickActionCard
-            title="Crear Pedido"
+            title="Crear pedido"
             description="Inicia un nuevo pedido para un cliente."
             icon={<ShoppingCart className="h-6 w-6 text-muted-foreground" />}
             href="/orders/new"
@@ -34,19 +34,19 @@ const Dashboard = () => {
             href="/invoices"
           />*/}
           <QuickActionCard
-            title="Gestionar Clientes"
+            title="Gestionar clientes"
             description="Añade o edita la información de tus clientes."
             icon={<Users className="h-6 w-6 text-muted-foreground" />}
             href="/clients"
           />
           <QuickActionCard
-            title="Gestionar Inventario"
+            title="Gestionar inventario"
             description="Controla el stock de tus productos."
             icon={<Package className="h-6 w-6 text-muted-foreground" />}
             href="/inventory"
           />
           <QuickActionCard
-            title="Ver Informes"
+            title="Ver informes"
             description="Analiza las ventas y el rendimiento."
             icon={<BarChart4 className="h-6 w-6 text-muted-foreground" />}
             href="/reports"
@@ -55,27 +55,28 @@ const Dashboard = () => {
       </div>
 
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold tracking-tight">Resumen Financiero</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">          <StatCard
-          title="Ingresos Totales"
-          value={formatCurrency(dashboardStats.totalRevenue)}
-          icon={<PiggyBank />}
-          trend={{ value: 12, isPositive: true }}
-        />
+        <h2 className="text-xl font-semibold tracking-tight">Resumen financiero</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
-            title="Facturas Pagadas"
+            title="Ingresos totales"
+            value={formatCurrency(dashboardStats.totalRevenue)}
+            icon={<PiggyBank />}
+            trend={{ value: 12, isPositive: true }}
+          />
+          <StatCard
+            title="Facturas pagadas"
             value={formatCurrency(dashboardStats.paidInvoices)}
             icon={<CreditCard />}
             description={`${dashboardStats.invoiceCount.paid} facturas`}
           />
           <StatCard
-            title="Cantidad Pendiente"
+            title="Cantidad pendiente"
             value={formatCurrency(dashboardStats.pendingAmount)}
             icon={<CreditCard />}
             description={`${dashboardStats.invoiceCount.pending} facturas`}
           />
           <StatCard
-            title="Cantidad Vencida"
+            title="Cantidad vencida"
             value={formatCurrency(dashboardStats.overdueAmount)}
             icon={<AlertCircle />}
             description={`${dashboardStats.invoiceCount.overdue} facturas`}

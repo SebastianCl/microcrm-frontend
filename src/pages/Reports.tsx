@@ -28,7 +28,7 @@ const Reports = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Distribución de Estado de Facturas</CardTitle>
+            <CardTitle>Distribución de estado de facturas</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
@@ -62,19 +62,20 @@ const Reports = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">                <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Ingresos Totales</p>
-                <p className="text-2xl font-bold">{formatCurrency(dashboardStats.totalRevenue)}</p>
-              </div>
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground">Total Facturas</p>
+                  <p className="text-sm font-medium text-muted-foreground">Ingresos totales</p>
+                  <p className="text-2xl font-bold">{formatCurrency(dashboardStats.totalRevenue)}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">Total facturas</p>
                   <p className="text-2xl font-bold">{dashboardStats.invoiceCount.total}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground">Total Clientes</p>
+                  <p className="text-sm font-medium text-muted-foreground">Total clientes</p>
                   <p className="text-2xl font-bold">{dashboardStats.clientCount}</p>
                 </div>                <div className="space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground">Factura Promedio</p>
+                  <p className="text-sm font-medium text-muted-foreground">Factura promedio</p>
                   <p className="text-2xl font-bold">
                     {formatCurrency(Math.round(dashboardStats.totalRevenue / dashboardStats.invoiceCount.total))}
                   </p>
@@ -82,10 +83,11 @@ const Reports = () => {
               </div>
 
               <div className="pt-4 border-t">
-                <h3 className="font-medium mb-2">Resumen Mensual</h3>
+                <h3 className="font-medium mb-2">Resumen mensual</h3>
                 <p className="text-sm text-muted-foreground mb-1">
                   Ingresos para {monthNames[currentMonth]}:
-                </p>                <p className="text-xl font-bold">
+                </p>
+                <p className="text-xl font-bold">
                   {formatCurrency(monthlyRevenue[currentMonth % monthlyRevenue.length].revenue)}
                 </p>
 

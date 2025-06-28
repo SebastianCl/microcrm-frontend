@@ -8,7 +8,7 @@ const RevenueChart = () => {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>Revenue Overview</CardTitle>
+        <CardTitle>Descripción general de los ingresos</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-[300px]">
@@ -24,22 +24,22 @@ const RevenueChart = () => {
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
-              <YAxis 
+              <YAxis
                 tickFormatter={(value) => `$${value}`}
               />
-              <Tooltip 
+              <Tooltip
                 formatter={(value) => [`$${value}`, 'Revenue']}
                 labelStyle={{ color: '#333' }}
-                contentStyle={{ 
-                  backgroundColor: 'white', 
+                contentStyle={{
+                  backgroundColor: 'white',
                   border: '1px solid #e2e8f0',
                   borderRadius: '0.375rem'
                 }}
               />
-              <Bar 
-                dataKey="revenue" 
+              <Bar
+                dataKey="revenue"
                 fill="hsl(var(--primary))"
-                radius={[4, 4, 0, 0]} 
+                radius={[4, 4, 0, 0]}
               />
             </BarChart>
           </ResponsiveContainer>
