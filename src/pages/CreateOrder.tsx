@@ -263,9 +263,9 @@ const CreateOrder = () => {
 
   return (
     <Form {...form}>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen h-full bg-background flex flex-col">
         {/* Header */}
-        <div className="bg-card shadow-sm border-b sticky top-0 z-20">
+        <div className="bg-card shadow-sm border-b sticky top-0 z-20 flex-shrink-0">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
               <div className="flex items-center space-x-3">
@@ -326,9 +326,6 @@ const CreateOrder = () => {
                     </TableSelectorModal>)}
                 </div>
 
-
-
-
                 <Button
                   variant="outline"
                   onClick={handleCancelClick}
@@ -342,9 +339,9 @@ const CreateOrder = () => {
           </div>
         </div>
 
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="grid lg:grid-cols-3 gap-8">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
+            <div className="grid lg:grid-cols-3 gap-8 h-full">
               {/* Contenido principal */}
               <div className="lg:col-span-2 space-y-8">
                 {/* Selección de clientes y tablas para pantallas más pequeñas*/}

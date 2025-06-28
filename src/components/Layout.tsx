@@ -10,23 +10,23 @@ import { ThemeToggle } from './ThemeToggle';
 const Layout = () => {
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
-  
+
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
-  
+
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen h-screen bg-background flex">
       <div className={`${sidebarOpen ? 'w-64' : 'w-0 md:w-16'} transition-all duration-300 overflow-hidden fixed md:relative h-screen z-40`}>
         <Sidebar collapsed={!sidebarOpen} />
       </div>
-      <main className={`flex-1 transition-all duration-300 ${isMobile && sidebarOpen ? 'opacity-50' : ''}`}>
-        <div className="container mx-auto py-4 px-4 md:px-6 lg:px-8 max-w-7xl">
-          <div className="flex justify-between items-center mb-6">
+      <main className={`flex-1 transition-all duration-300 flex flex-col h-screen overflow-auto ${isMobile && sidebarOpen ? 'opacity-50' : ''}`}>
+        <div className="container mx-auto py-4 px-4 md:px-6 lg:px-8 max-w-7xl flex-1 flex flex-col">
+          <div className="flex justify-between items-center mb-6 flex-shrink-0">
             <div className="flex items-center gap-2">
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={toggleSidebar}
                 className={isMobile ? "md:hidden" : ""}
                 aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
@@ -44,11 +44,13 @@ const Layout = () => {
               <ThemeToggle />
             </div>
           </div>
-          <Outlet />
+          <div className="flex-1 overflow-auto">
+            <Outlet />
+          </div>
         </div>
       </main>
       {isMobile && sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 z-30"
           onClick={() => setSidebarOpen(false)}
         />
