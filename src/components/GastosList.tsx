@@ -3,13 +3,14 @@ import DataTable from './ui/DataTable';
 import { Gasto } from '@/models/gastos.model';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import CreateGastoDialog from './CreateGastoDialog';
 import { Button } from '@/components/ui/button';
 import SearchAndFilter from './ui/SearchAndFilter';
-import { useGastos, useDeleteGasto } from '@/hooks/useGastos';
+import { useGastos } from '@/hooks/useGastos';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorDisplay } from '@/components/ui/error-display';
 import { useNetwork } from '@/hooks/useNetwork';
+import CreateGastoDialog from './CreateGastoDialog';
+import { Plus } from 'lucide-react';
 
 interface GastosListProps {
     limit?: number;
@@ -23,6 +24,7 @@ const GastosList: React.FC<GastosListProps> = ({
     const [currentPage, setCurrentPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
     const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
+    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const pageSize = 10;
 
     // Verificar conectividad de red
@@ -189,7 +191,14 @@ const GastosList: React.FC<GastosListProps> = ({
                                     Reintentar
                                 </Button>
                             )}
-                            <CreateGastoDialog />
+                            <Button
+                                onClick={() => setIsCreateDialogOpen(true)}
+                                size="sm"
+                                className="gap-2"
+                            >
+                                <Plus className="h-4 w-4" />
+                                Crear gasto
+                            </Button>
                         </div>
                     )}
                 </div>
@@ -219,6 +228,10 @@ const GastosList: React.FC<GastosListProps> = ({
                 />
             </Card>
 
+            <CreateGastoDialog
+                open={isCreateDialogOpen}
+                onOpenChange={setIsCreateDialogOpen}
+            />
         </>
     );
 };
