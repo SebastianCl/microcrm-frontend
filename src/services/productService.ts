@@ -72,4 +72,17 @@ export const productService = {
     async getCategories(): Promise<Category[]> {
         return await apiClient.get<Category[]>('/products/categorias');
     },
+
+    /**
+     * Crear un movimiento de inventario
+     */
+    async createInventoryMovement(movementData: {
+        id_producto: number;
+        cantidad: number;
+        tipo_movimiento: 'entrada' | 'salida';
+        comentario: string;
+        fecha: string;
+    }): Promise<InventoryMovement> {
+        return await apiClient.post<InventoryMovement>('/inventarios', movementData);
+    },
 };

@@ -10,7 +10,8 @@ import {
   TrendingUp,
   TrendingDown,
   RotateCcw,
-  Calendar
+  Calendar,
+  Plus
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -18,6 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import EditInventoryItemDialog from '@/components/EditInventoryItemDialog';
+import CreateInventoryMovementDialog from '@/components/CreateInventoryMovementDialog';
 import { InventoryItem } from '@/types/inventory';
 import { formatCurrency } from '@/lib/utils';
 import { useInventoryMovements } from '@/hooks/useInventoryMovements';
@@ -28,6 +30,7 @@ const InventoryDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isMovementDialogOpen, setIsMovementDialogOpen] = useState(false);
 
   // Obtener los datos del producto desde la API
   const { data: productData, isLoading: productLoading, error: productError } = useProduct(id);
@@ -118,6 +121,15 @@ const InventoryDetail = () => {
           <h1 className="text-2xl font-bold">Detalles del Producto</h1>
         </div>
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={() => setIsMovementDialogOpen(true)}
+            disabled={productLoading || !!productError}
+          >
+            <Plus className="h-4 w-4" />
+            <span className="hidden md:inline">Movimiento</span>
+          </Button>
           <Button
             variant="outline"
             className="flex items-center gap-2"
@@ -273,11 +285,20 @@ const InventoryDetail = () => {
       )}
 
       {productData && (
-        <EditInventoryItemDialog
-          open={isEditDialogOpen}
-          onOpenChange={setIsEditDialogOpen}
-          item={convertToInventoryItem(productData)}
-        />
+        <>
+          <EditInventoryItemDialog
+            open={isEditDialogOpen}
+            onOpenChange={setIsEditDialogOpen}
+            item={convertToInventoryItem(productData)}
+          />
+          <CreateInventoryMovementDialog
+            open={isMovementDialogOpen}
+            onOpenChange={setIsMovementDialogOpen}
+            productId={productData.id.toString()}
+            productName={productData.name}
+            currentStock={productData.stockQuantity}
+          />
+        </>
       )}
     </div>
   );
