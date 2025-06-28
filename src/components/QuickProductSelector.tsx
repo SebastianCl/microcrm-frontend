@@ -222,14 +222,26 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
 
       {/* Category Tabs */}
       <Tabs value={activeCategory} onValueChange={setActiveCategory} className="w-full">
-        <div className="flex items-center gap-2 mb-4">
-          <Filter className="h-4 w-4 text-muted-foreground" />
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
-            <TabsTrigger value="all">Todos</TabsTrigger>
-            {categories.map(category => (
-              <TabsTrigger key={category.id} value={category.name}>{category.name}</TabsTrigger>
-            ))}
-          </TabsList>
+        <div className="flex items-start gap-2 mb-4">
+          <Filter className="h-4 w-4 text-muted-foreground mt-2 flex-shrink-0" />
+          <div className="flex-1 overflow-hidden">
+            <TabsList className="h-auto p-1 bg-muted rounded-md">
+              <div className="flex flex-wrap gap-1">
+                <TabsTrigger value="all" className="text-xs px-3 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                  Todos
+                </TabsTrigger>
+                {categories.map(category => (
+                  <TabsTrigger
+                    key={category.id}
+                    value={category.name}
+                    className="text-xs px-3 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm whitespace-nowrap"
+                  >
+                    {category.name}
+                  </TabsTrigger>
+                ))}
+              </div>
+            </TabsList>
+          </div>
         </div>
 
         {/* All Products Tab */}
