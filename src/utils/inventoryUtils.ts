@@ -19,6 +19,7 @@ export const productToInventoryItem = (product: AppProduct): InventoryItem => {
         id: product.id,
         name: product.name,
         category: product.categoryName,
+        categoryId: product.categoryId,
         price: product.price,
         stockQuantity: product.managesInventory ? product.stockQuantity : Infinity,
         status: product.isActive ? status : 'Inactivo',

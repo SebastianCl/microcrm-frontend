@@ -50,7 +50,7 @@ const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onC
   const { data: categoriesData } = useCategories();
   const updateProductMutation = useUpdateProduct();
 
-  // Transform categories data to the format expected by the component
+  // Transformar los datos de categorías al formato esperado por el componente
   const categories = React.useMemo(() => {
     if (!categoriesData) return [];
     return categoriesData.map(category => ({
@@ -63,7 +63,7 @@ const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onC
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: item.name,
-      category: "", // Will be set when categories are loaded
+      category: "",
       price: item.price.toString(),
       stockQuantity: item.stockQuantity === Infinity ? "0" : item.stockQuantity.toString(),
       description: item.description || "",
@@ -72,15 +72,22 @@ const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onC
     },
   });
 
-  // Set the category value once categories are loaded
+  // Establezca el valor de la categoría una vez cargadas las categorías
   React.useEffect(() => {
-    if (categoriesData && item.category) {
-      const matchingCategory = categoriesData.find(cat => cat.nombre_categoria === item.category);
-      if (matchingCategory) {
-        form.setValue('category', matchingCategory.id_categoria.toString());
+    if (categoriesData) {
+      // Primero intenta usar categoryId si está disponible
+      if (item.categoryId) {
+        form.setValue('category', item.categoryId.toString());
+      }
+      // Regresar a la búsqueda por nombre de categoría para elementos heredados
+      else if (item.category) {
+        const matchingCategory = categoriesData.find(cat => cat.nombre_categoria === item.category);
+        if (matchingCategory) {
+          form.setValue('category', matchingCategory.id_categoria.toString());
+        }
       }
     }
-  }, [categoriesData, item.category, form]);
+  }, [categoriesData, item.categoryId, item.category, form]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {

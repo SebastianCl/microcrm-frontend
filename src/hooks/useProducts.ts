@@ -31,12 +31,17 @@ const transformProductDetail = (apiProduct: ApiProductDetail): AppProduct => {
         name: apiProduct.nombre,
         description: apiProduct.descripcion,
         price: parseFloat(apiProduct.precio),
-        stockQuantity: apiProduct.stock,
-        managesInventory: true, // Asumimos que si tiene stock definido, maneja inventario
+        stockQuantity: apiProduct.maneja_inventario && apiProduct.stock !== null ? apiProduct.stock : Infinity,
+        managesInventory: apiProduct.maneja_inventario,
         isActive: apiProduct.estado,
-        additions: [], // El endpoint de detalle no incluye adiciones
-        categoryId: 0, // No incluido en la respuesta del detalle
-        categoryName: '', // No incluido en la respuesta del detalle
+        additions: apiProduct.adiciones.map(a => ({
+            id: a.id_adicion.toString(),
+            name: a.nombre,
+            price: a.precio_extra,
+            isActive: a.estado,
+        })),
+        categoryId: apiProduct.id_categoria,
+        categoryName: apiProduct.nombre_categoria,
     };
 };
 

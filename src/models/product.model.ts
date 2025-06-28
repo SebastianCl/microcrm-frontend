@@ -13,7 +13,11 @@ export interface ApiProductDetail {
   descripcion: string;
   precio: string; // Viene como string de la API
   stock: number;
+  maneja_inventario: boolean;
   estado: boolean;
+  id_categoria: number;
+  nombre_categoria: string;
+  adiciones: ApiAddition[];
 }
 
 export interface ApiProduct {

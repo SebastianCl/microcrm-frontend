@@ -52,12 +52,15 @@ const InventoryDetail = () => {
       id: product.id,
       name: product.name,
       category: product.categoryName || 'Sin categoría',
+      categoryId: product.categoryId,
       price: product.price,
       stockQuantity: product.stockQuantity,
       status,
       description: product.description,
       location: 'Almacén Principal', // Valor por defecto ya que no viene de la API
-      lastUpdated: new Date().toISOString().split('T')[0] // Fecha actual como fallback
+      lastUpdated: new Date().toISOString().split('T')[0], // Fecha actual como fallback
+      managesInventory: product.managesInventory ?? true, // Asume true si no existe la propiedad
+      isActive: product.isActive
     };
   };
 
