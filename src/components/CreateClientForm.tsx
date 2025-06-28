@@ -36,7 +36,7 @@ const CreateClientForm: React.FC<CreateClientFormProps> = ({ onClose }) => {
     resolver: zodResolver(clientFormSchema),
     defaultValues,
   });
-  
+
   async function onSubmit(data: ClientFormValues) {
     const payload = {
       nombre: data.nombre,
@@ -51,7 +51,7 @@ const CreateClientForm: React.FC<CreateClientFormProps> = ({ onClose }) => {
           title: "Cliente creado",
           description: `${data.nombre} ha sido añadido a tus clientes.`,
         });
-        onClose(); 
+        onClose();
       },
       onError: (error) => {
         console.error("Error al crear el cliente:", error);
@@ -119,7 +119,7 @@ const CreateClientForm: React.FC<CreateClientFormProps> = ({ onClose }) => {
             Cancelar
           </Button>
           <Button type="submit" disabled={createClientMutation.isPending}>
-            {createClientMutation.isPending ? "Creando..." : "Crear Cliente"}
+            {createClientMutation.isPending ? "Creando..." : "Crear cliente"}
           </Button>
         </div>
       </form>

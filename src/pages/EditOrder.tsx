@@ -19,7 +19,7 @@ const EditOrder = () => {
   });
 
   const adjustOrder = useAdjustOrder(id!);
-  
+
   // Estados para rastrear cambios
   const [originalItems, setOriginalItems] = useState<(OrderItem & { discount?: number; discountType?: string })[]>([]);
   const [currentItems, setCurrentItems] = useState<(OrderItem & { discount?: number; discountType?: string })[]>([]);
@@ -52,7 +52,7 @@ const EditOrder = () => {
       discount: 0,
       discountType: 'none'
     };
-    
+
     setNewItems([...newItems, newProductWithId]);
     toast.success(`${product.name} agregado a la orden`);
   };
@@ -94,7 +94,7 @@ const EditOrder = () => {
 
   const getAllItems = () => {
     return [...currentItems, ...newItems];
-  };  const handleSaveOrder = async () => {
+  }; const handleSaveOrder = async () => {
     const allItems = getAllItems();
     if (allItems.length === 0) {
       toast.error('Error: No hay productos');
@@ -118,10 +118,10 @@ const EditOrder = () => {
             // Buscar el item original correspondiente
             const originalItem = originalItems.find(orig => orig.id_detalle_pedido === item.id_detalle_pedido);
             if (!originalItem) return false;
-            
+
             // Verificar si hay cambios en cantidad o descuento
-            return originalItem.quantity !== item.quantity || 
-                   (originalItem.discount || 0) !== (item.discount || 0);
+            return originalItem.quantity !== item.quantity ||
+              (originalItem.discount || 0) !== (item.discount || 0);
           })
           .map(item => ({
             id_detalle_pedido: item.id_detalle_pedido!,
@@ -132,7 +132,7 @@ const EditOrder = () => {
       };
 
       await adjustOrder.mutateAsync(adjustData);
-      
+
       toast.success('Orden actualizada');
       navigate(`/orders/${id}`);
     } catch (error) {
@@ -154,8 +154,8 @@ const EditOrder = () => {
         <h2 className="text-2xl font-bold text-destructive">
           Error cargando orden
         </h2>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="mt-4"
           onClick={() => navigate('/orders')}
         >
@@ -178,14 +178,16 @@ const EditOrder = () => {
         >
           <ChevronLeft className="h-4 w-4 mr-1" />
           Volver
-        </Button>        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+        </Button>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
           Editar orden #{order.id_pedido}
         </h1>
       </div>
 
       <Card className="p-4 md:p-6">
         <div className="space-y-6">
-          {/* Order Info */}          <div className="grid md:grid-cols-3 gap-4 p-4 bg-muted/30 rounded-lg">
+          {/* Order Info */}
+          <div className="grid md:grid-cols-3 gap-4 p-4 bg-muted/30 rounded-lg">
             <div>
               <h4 className="font-medium">Cliente</h4>
               <p className="text-muted-foreground">{order.nombre_cliente}</p>
@@ -216,9 +218,10 @@ const EditOrder = () => {
             <QuickProductSelector onAddProduct={handleAddProduct} />
           </div>
 
-          <Separator />          {/* Order Items */}
+          <Separator />
+          {/* Order Items */}
           <div className="space-y-4">
-            
+
             <div className="border rounded-md overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -273,15 +276,16 @@ const EditOrder = () => {
                 </div>
               </div>
             </div>
-          </div>          <div className="flex flex-col sm:flex-row sm:justify-between gap-4 pt-6">
-            <Button 
-              variant="outline" 
+          </div>
+          <div className="flex flex-col sm:flex-row sm:justify-between gap-4 pt-6">
+            <Button
+              variant="outline"
               onClick={() => navigate(`/orders/${id}`)}
               className="w-full sm:w-auto"
             >
               Cancelar
             </Button>
-            <Button 
+            <Button
               onClick={handleSaveOrder}
               disabled={getAllItems().length === 0 || adjustOrder.isPending}
               className="w-full sm:w-auto"

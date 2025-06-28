@@ -232,7 +232,7 @@ const OrderList: React.FC<OrderListProps> = ({
               onClick={() => navigate('/orders/new')}
               className="w-full md:w-auto"
             >
-              Crear Orden
+              Crear orden
             </Button>
           </div>
         )}

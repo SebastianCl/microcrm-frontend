@@ -34,14 +34,14 @@ const ClientSelectorModal: React.FC<ClientSelectorModalProps> = ({
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredClients = clients.filter(client => 
+  const filteredClients = clients.filter(client =>
     client.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (client.telefono && client.telefono.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const selectedClient = clients.find(client => client.id_cliente.toString() === selectedClientId);
 
-  const handleClientSelect = (client: Client) => { 
+  const handleClientSelect = (client: Client) => {
     onClientSelect(client.id_cliente.toString(), client.nombre);
     setOpen(false);
     setSearchQuery('');
@@ -64,7 +64,7 @@ const ClientSelectorModal: React.FC<ClientSelectorModalProps> = ({
             Seleccionar cliente
           </DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -75,22 +75,22 @@ const ClientSelectorModal: React.FC<ClientSelectorModalProps> = ({
               className="pl-10 h-11"
             />
           </div>
-          
+
           <div className="max-h-80 overflow-y-auto space-y-2">
             {isLoading && <p className="text-center py-4">Cargando clientes...</p>}
             {error && <p className="text-center py-4 text-red-500">Error al cargar clientes: {error.message}</p>}
             {!isLoading && !error && filteredClients.map(client => (
               <div
-                key={client.id_cliente} 
+                key={client.id_cliente}
                 className="flex items-center justify-between p-4 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
                 onClick={() => handleClientSelect(client)}
               >
                 <div className="flex-1">
                   <p className="font-medium text-gray-900">{client.nombre}</p>
-                  {client.telefono && ( 
+                  {client.telefono && (
                     <p className="text-sm text-gray-500">{client.telefono}</p>
                   )}
-                  {client.correo && ( 
+                  {client.correo && (
                     <p className="text-xs text-gray-400">{client.correo}</p>
                   )}
                 </div>
@@ -99,7 +99,7 @@ const ClientSelectorModal: React.FC<ClientSelectorModalProps> = ({
                 </div>
               </div>
             ))}
-            
+
             {!isLoading && !error && filteredClients.length === 0 && (
               <div className="text-center py-12 text-gray-500">
                 <User className="h-12 w-12 mx-auto mb-4 text-gray-300" />
@@ -108,12 +108,12 @@ const ClientSelectorModal: React.FC<ClientSelectorModalProps> = ({
               </div>
             )}
           </div>
-          
+
           <div className="pt-4 border-t border-gray-200">
             <CreateClientDialog>
               <Button variant="outline" className="w-full h-11 hover:bg-gray-50">
                 <Plus className="h-4 w-4 mr-2" />
-                Crear Nuevo Cliente
+                Crear nuevo cliente
               </Button>
             </CreateClientDialog>
           </div>

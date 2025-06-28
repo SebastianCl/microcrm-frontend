@@ -342,13 +342,12 @@ const CreateOrder = () => {
           </div>
         </div>
 
-        {/* HTML form element wraps the main content area including the submit button */}
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="grid lg:grid-cols-3 gap-8">
-              {/* Main Content */}
+              {/* Contenido principal */}
               <div className="lg:col-span-2 space-y-8">
-                {/* Client and Table selection for smaller screens */}
+                {/* Selección de clientes y tablas para pantallas más pequeñas*/}
                 <Card className="shadow-sm hover:shadow-md transition-shadow sm:hidden"> {/* Mostrar solo en pantallas pequeñas */}
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-lg">
@@ -358,7 +357,7 @@ const CreateOrder = () => {
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="grid grid-cols-1 gap-6">
-                      {/* Client Selection for small screens */}
+                      {/* Selección de clientes para pantallas pequeñas */}
                       <div className="space-y-3">
                         <label className="text-sm font-medium text-foreground">Cliente</label>
                         {selectedClientId ? (
@@ -375,17 +374,18 @@ const CreateOrder = () => {
                           <ClientSelectorModal
                             selectedClientId={selectedClientId}
                             onClientSelect={handleClientSelect}
-                            clients={clientsFromAPI} // Pass clients data from API response
-                            isLoading={isLoadingClients} // Pass loading state
-                            error={clientsError} // Pass error state
+                            clients={clientsFromAPI} // Pasar datos de clientes desde la respuesta de la API
+                            isLoading={isLoadingClients} // Pasar estado de carga
+                            error={clientsError} // Pasar estado de error
                           >
-                            {/* Trigger button for the modal */}
+                            {/* Botón de activación del modal */}
                             <Button variant="outline" className="w-full justify-start text-left font-normal hover:bg-muted/50">
                               {isLoadingClients ? 'Cargando clientes...' : clientsError ? 'Error al cargar clientes' : 'Seleccionar cliente'}
                             </Button>
                           </ClientSelectorModal>
                         )}
-                      </div>                      {/* Table Selection for small screens */}
+                      </div>
+                      {/* Selección de mesa para pantallas pequeñas*/}
                       <div className="space-y-3">
                         <label className="text-sm font-medium text-foreground flex items-center gap-2">
                           <MapPin className="h-4 w-4 text-primary" />
@@ -415,7 +415,7 @@ const CreateOrder = () => {
                           </TableSelectorModal>)}
                       </div>
 
-                      {/* Observations field for takeaway orders - small screens */}
+                      {/* Campo de observaciones para pedidos para llevar - pantallas pequeñas*/}
                       {selectedTableName === 'Para llevar' && (
                         <div className="space-y-3">
                           <label className="text-sm font-medium text-foreground">
@@ -429,7 +429,7 @@ const CreateOrder = () => {
                                 <FormControl>
                                   <Textarea
                                     placeholder="Observaciones"
-                                    className="min-h-[80px] resize-none"
+                                    className="min-h-[60px] resize-none"
                                     {...field}
                                   />
                                 </FormControl>
@@ -444,7 +444,7 @@ const CreateOrder = () => {
                   </CardContent>
                 </Card>
 
-                {/* Product Selection */}
+                {/* Selección de productos */}
                 <Card className="shadow-sm hover:shadow-md transition-shadow">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-lg">
@@ -457,7 +457,7 @@ const CreateOrder = () => {
                   </CardContent>
                 </Card>
 
-                {/* Order Items */}
+                {/* Artículos del pedido */}
                 {orderItems.length > 0 && (
                   <Card className="shadow-sm hover:shadow-md transition-shadow">
                     <CardHeader>
@@ -494,10 +494,10 @@ const CreateOrder = () => {
                 )}
               </div>
 
-              {/* Sidebar - Order Summary */}
+              {/* Barra lateral - Resumen del pedido */}
               <div className="lg:col-span-1">
                 <div className="sticky top-24 space-y-6">
-                  {/* Observations field for takeaway orders */}
+                  {/* Campo de observaciones para pedidos para llevar*/}
                   {selectedTableName === 'Para llevar' && (
                     <Card className="shadow-sm hover:shadow-md transition-shadow">
                       <CardHeader>
@@ -512,7 +512,7 @@ const CreateOrder = () => {
                               <FormControl>
                                 <Textarea
                                   placeholder="Ingrese observaciones para este pedido para llevar..."
-                                  className="min-h-[100px] resize-none"
+                                  className="min-h-[70px] resize-none"
                                   {...field}
                                 />
                               </FormControl>
@@ -533,7 +533,7 @@ const CreateOrder = () => {
                     onDiscountChange={handleDiscountChange}
                   />
 
-                  {/* Action Buttons */}
+                  {/* Botones de acción */}
                   <div className="space-y-3">
                     <Button
                       type="submit"
@@ -541,7 +541,7 @@ const CreateOrder = () => {
                       className="w-full h-12 text-base font-medium shadow-sm hover:shadow-md transition-shadow"
                       size="lg"
                     >
-                      Crear Orden
+                      Crear orden
                     </Button>
 
                     <Button
@@ -557,7 +557,7 @@ const CreateOrder = () => {
               </div>
             </div>
           </div>
-        </form> {/* End of HTML form element */}
+        </form>
 
         <CancelOrderConfirmation
           open={isCancelConfirmationOpen}
