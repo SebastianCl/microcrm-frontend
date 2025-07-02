@@ -16,13 +16,6 @@ const Orders = () => {
             Gestiona todas tus pedidos de clientes.
           </p>
         </div>
-        <Button
-          onClick={() => navigate('/orders/new')}
-          className="flex items-center gap-1"
-        >
-          <Plus className="h-4 w-4" />
-          <span>Crear orden</span>
-        </Button>
       </div>
       <OrderList showCreateButton={false} />
     </div>

@@ -23,58 +23,49 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
     switch (status) {
       case 'Pendiente':
         return (
-          <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 flex items-center gap-1">
+          <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 flex items-center gap-1 px-3 py-1">
             <Clock className="h-3 w-3" />
-            <span>Pendiente</span>
+            <span className="font-medium">Pendiente</span>
           </Badge>
         );
       case 'Preparando':
         return (
-          <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 flex items-center gap-1">
-            <Loader className="h-3 w-3" />
-            <span>Preparando</span>
+          <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 flex items-center gap-1 px-3 py-1">
+            <Loader className="h-3 w-3 animate-spin" />
+            <span className="font-medium">Preparando</span>
           </Badge>
-        ); case 'Cancelado':
+        );
+      case 'Cancelado':
         return (
-          <Badge className="bg-red-100 text-red-800 hover:bg-red-200 flex items-center gap-1">
+          <Badge className="bg-red-100 text-red-800 hover:bg-red-200 flex items-center gap-1 px-3 py-1">
             <X className="h-3 w-3" />
-            <span>Cancelado</span>
+            <span className="font-medium">Cancelado</span>
           </Badge>
         );
       case 'Entregado':
         return (
-          <Badge className="bg-red-100 text-red-800 hover:bg-red-200 flex items-center gap-1">
-            <X className="h-3 w-3" />
-            <span>Entregado</span>
+          <Badge className="bg-green-100 text-green-800 hover:bg-green-200 flex items-center gap-1 px-3 py-1">
+            <Check className="h-3 w-3" />
+            <span className="font-medium">Entregado</span>
           </Badge>
         );
       case 'Finalizado':
         return (
-          <Badge className="bg-red-100 text-red-800 hover:bg-red-200 flex items-center gap-1">
-            <X className="h-3 w-3" />
-            <span>Finalizado</span>
+          <Badge className="bg-teal-100 text-teal-800 hover:bg-teal-200 flex items-center gap-1 px-3 py-1">
+            <Check className="h-3 w-3" />
+            <span className="font-medium">Finalizado</span>
+          </Badge>
+        );
+      default:
+        return (
+          <Badge variant="secondary" className="flex items-center gap-1 px-3 py-1">
+            <span className="font-medium">{status}</span>
           </Badge>
         );
     }
   };
 
-  const getOrderTypeBadge = () => {
-    if (order.nombre_mesa === 'Para llevar') {
-      return (
-        <Badge variant="outline" className="flex items-center gap-1 font-medium">
-          <ShoppingBag className="h-3 w-3" />
-          <span>Para Llevar</span>
-        </Badge>
-      );
-    } else {
-      return (
-        <Badge variant="outline" className="flex items-center gap-1 font-medium">
-          <UtensilsCrossed className="h-3 w-3" />
-          <span>{order.nombre_mesa}</span>
-        </Badge>
-      );
-    }
-  }; const getNextStatus = (currentStatus: string) => {
+  const getNextStatus = (currentStatus: string) => {
     switch (currentStatus) {
       case 'Pendiente': return 'Preparando';    // 1 -> 2
       case 'Preparando': return 'Entregado';    // 2 -> 3  
@@ -171,77 +162,98 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
   return (
     <>
       <Card
-        className="cursor-pointer hover:shadow-md transition-shadow duration-200 p-4"
+        className="cursor-pointer hover:shadow-xl transition-all duration-300 border hover:border-primary/30 group bg-card/80 backdrop-blur-sm"
         onClick={() => navigate(`/orders/${order.id_pedido}`)}
       >
-        <CardContent className="p-0">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            {/* Order Info */}
-            <div className="flex-1 space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                <h3 className="font-semibold text-lg">#{order.id_pedido}</h3>
-                <div className="flex gap-2">
-                  {getStatusBadge(order.estado)}
-                  {getOrderTypeBadge()}
-                </div>
+        <CardContent className="p-4">
+          {/* Header compacto */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                {order.tipo_pedido === 'para_llevar' || order.nombre_mesa === 'Para llevar' ? (
+                  <ShoppingBag className="h-4 w-4 text-primary" />
+                ) : (
+                  <UtensilsCrossed className="h-4 w-4 text-primary" />
+                )}
               </div>
+              <h3 className="font-bold text-lg">#{order.id_pedido}</h3>
+            </div>
+            {getStatusBadge(order.estado)}
+          </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-muted-foreground">
-                <div>
-                  <span className="font-medium">Cliente:</span> {order.nombre_cliente}
-                </div>
-                {/* <div>
-                  <span className="font-medium">Items:</span> {order.items.length} producto{order.items.length !== 1 ? 's' : ''}
-                </div> */}
-              </div>
-
-              {/* <div className="text-lg font-bold text-primary">
-                ${order.total.toFixed(2)}
-              </div> */}
+          {/* Información compacta */}
+          <div className="space-y-2 mb-3">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground font-medium">Cliente:</span>
+              <span className="font-semibold truncate ml-2 max-w-[120px]" title={order.nombre_cliente}>
+                {order.nombre_cliente}
+              </span>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-2 min-w-0 sm:min-w-[200px]">
-              {nextStatus && (
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={handleNextStatus}
-                  disabled={updateStatus.isPending}
-                  className="flex items-center gap-1 whitespace-nowrap"
-                >
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground font-medium">Tipo:</span>
+              <Badge variant="outline" className="text-xs px-2 py-0.5 flex items-center gap-1">
+                {order.tipo_pedido === 'para_llevar' || order.nombre_mesa === 'Para llevar' ? (
+                  <>
+                    <ShoppingBag className="h-3 w-3" />
+                    <span>Para llevar</span>
+                  </>
+                ) : (
+                  <>
+                    <UtensilsCrossed className="h-3 w-3" />
+                    <span>{order.nombre_mesa}</span>
+                  </>
+                )}
+              </Badge>
+            </div>
+
+          </div>
+
+          {/* Botones de acción con espaciado para touch */}
+          <div className="space-y-3">
+            {nextStatus && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleNextStatus}
+                disabled={updateStatus.isPending}
+                className="w-full h-11 flex items-center justify-center gap-2 text-sm font-medium shadow-sm hover:shadow-md transition-shadow"
+              >
+                {updateStatus.isPending ? (
+                  <Loader className="h-3 w-3 animate-spin" />
+                ) : (
                   <ArrowRight className="h-3 w-3" />
-                  {nextStatusLabel}
-                </Button>
-              )}
+                )}
+                {nextStatusLabel}
+              </Button>
+            )}
 
-              {order.estado === 'Finalizado' && (
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={handleDownloadInvoice}
-                  className="flex items-center gap-1 whitespace-nowrap bg-green-500 hover:bg-green-600"
-                >
-                  <Download className="h-3 w-3" />
-                  Descargar Factura
-                </Button>
-              )}
+            {order.estado === 'Finalizado' && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleDownloadInvoice}
+                className="w-full h-11 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-sm font-medium"
+              >
+                <Download className="h-3 w-3" />
+                Descargar Factura
+              </Button>
+            )}
 
-              {order.estado !== 'Cancelado' && order.estado !== 'Finalizado' && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowCancelDialog(true);
-                  }}
-                  className="flex items-center gap-1 text-red-600 hover:text-red-700 whitespace-nowrap"
-                >
-                  <Ban className="h-3 w-3" />
-                  Cancelar
-                </Button>
-              )}
-            </div>
+            {order.estado !== 'Cancelado' && order.estado !== 'Finalizado' && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowCancelDialog(true);
+                }}
+                className="w-full h-10 flex items-center justify-center gap-2 text-red-600 hover:text-red-700 border-red-200 hover:border-red-300 text-xs"
+              >
+                <Ban className="h-3 w-3" />
+                Cancelar
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>

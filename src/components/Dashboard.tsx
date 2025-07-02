@@ -22,31 +22,31 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           <QuickActionCard
             title="Crear pedido"
-            description="Inicia un nuevo pedido para un cliente."
+            description="Inicia un nuevo pedido"
             icon={<ShoppingCart className="h-6 w-6 text-muted-foreground" />}
             href="/orders/new"
           />
           <QuickActionCard
             title="Registrar gasto"
-            description="Registra un nuevo gasto del negocio."
+            description="Registra un nuevo gasto del negocio"
             icon={<CreditCard className="h-6 w-6 text-muted-foreground" />}
             href="/gastos"
           />
           <QuickActionCard
             title="Gestionar clientes"
-            description="Añade o edita la información de tus clientes."
+            description="Añade o edita la información de tus clientes"
             icon={<Users className="h-6 w-6 text-muted-foreground" />}
             href="/clients"
           />
           <QuickActionCard
             title="Gestionar inventario"
-            description="Controla el stock de tus productos."
+            description="Controla el stock de tus productos"
             icon={<Package className="h-6 w-6 text-muted-foreground" />}
             href="/inventory"
           />
           <QuickActionCard
             title="Ver informes"
-            description="Analiza las ventas y el rendimiento."
+            description="Analiza las ventas y el rendimiento"
             icon={<BarChart4 className="h-6 w-6 text-muted-foreground" />}
             href="/reports"
           />
