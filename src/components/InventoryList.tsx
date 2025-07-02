@@ -72,6 +72,15 @@ const InventoryList = () => {
       });
     }
 
+    // Ordenar por cantidad de stock (menor a mayor) para mostrar primero los productos con bajo stock
+    result.sort((a, b) => {
+      // Tratar Infinity como un valor muy alto para que aparezca al final
+      const stockA = a.stockQuantity === Infinity ? 999999 : a.stockQuantity;
+      const stockB = b.stockQuantity === Infinity ? 999999 : b.stockQuantity;
+
+      return stockA - stockB;
+    });
+
     return result;
   }, [inventoryItems, searchQuery, activeFilters.category, activeFilters.status, activeFilters.minPrice, activeFilters._sort]);
 
