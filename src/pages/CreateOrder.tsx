@@ -349,7 +349,7 @@ const CreateOrder = () => {
 
       {tablesFromAPI && tablesFromAPI.length > 0 && (
         <div>
-          <h3 className="text-xl font-semibold mb-6 text-center">Mesas Disponibles</h3>
+          <h3 className="text-xl font-semibold mb-6 text-center">Mesas disponibles</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {tablesFromAPI.map((table) => (
               <Card
