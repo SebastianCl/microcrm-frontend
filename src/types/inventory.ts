@@ -19,5 +19,6 @@ export interface InventoryMovement {
   cantidad: number;
   fecha: string;
   tipo_movimiento: 'entrada' | 'salida';
+  subtipo_salida?: 'venta' | 'dano' | 'vencimiento' | 'ajuste';
   comentario: string;
 }

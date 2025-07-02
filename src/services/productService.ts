@@ -80,6 +80,7 @@ export const productService = {
         id_producto: number;
         cantidad: number;
         tipo_movimiento: 'entrada' | 'salida';
+        subtipo_salida?: 'venta' | 'dano' | 'vencimiento' | 'ajuste';
         comentario: string;
         fecha: string;
     }): Promise<InventoryMovement> {

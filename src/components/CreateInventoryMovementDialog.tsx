@@ -29,14 +29,16 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, TrendingUp, TrendingDown } from 'lucide-react';
+import { Loader2, TrendingUp, TrendingDown, ShoppingCart, AlertTriangle, Package } from 'lucide-react';
 import { useCreateInventoryMovement } from '@/hooks/useInventoryMovements';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 const movementSchema = z.object({
     tipo_movimiento: z.enum(['entrada', 'salida'], {
         required_error: 'Debe seleccionar un tipo de movimiento',
     }),
+    subtipo_salida: z.enum(['venta', 'dano', 'vencimiento', 'ajuste']).optional(),
     cantidad: z.string()
         .min(1, 'La cantidad es requerida')
         .refine((val) => {
@@ -48,6 +50,15 @@ const movementSchema = z.object({
         .max(255, 'El comentario no puede exceder 255 caracteres'),
     fecha: z.string()
         .min(1, 'La fecha es requerida'),
+}).refine((data) => {
+    // Si es salida, el subtipo_salida es requerido
+    if (data.tipo_movimiento === 'salida' && !data.subtipo_salida) {
+        return false;
+    }
+    return true;
+}, {
+    message: 'Debe seleccionar un motivo para la salida',
+    path: ['subtipo_salida']
 });
 
 type MovementFormData = z.infer<typeof movementSchema>;
@@ -69,12 +80,14 @@ const CreateInventoryMovementDialog = ({
 }: CreateInventoryMovementDialogProps) => {
     const [error, setError] = useState<string | null>(null);
     const { toast } = useToast();
+    const { user } = useAuth();
     const createMovementMutation = useCreateInventoryMovement();
 
     const form = useForm<MovementFormData>({
         resolver: zodResolver(movementSchema),
         defaultValues: {
             tipo_movimiento: undefined,
+            subtipo_salida: undefined,
             cantidad: '',
             comentario: '',
             fecha: new Date().toISOString().split('T')[0], // Fecha actual
@@ -82,12 +95,49 @@ const CreateInventoryMovementDialog = ({
     });
 
     const watchedTipoMovimiento = form.watch('tipo_movimiento');
+    const watchedSubtipoSalida = form.watch('subtipo_salida');
     const watchedCantidad = form.watch('cantidad');
 
     const onSubmit = async (data: MovementFormData) => {
         setError(null);
 
         const cantidad = parseInt(data.cantidad);
+
+        // Validaciones por roles
+        if (user) {
+            // Validar permisos para salidas según el rol
+            if (data.tipo_movimiento === 'salida') {
+                if (user.role === 'Collaborator') {
+                    setError('Los colaboradores no pueden realizar salidas de inventario. Solo un administrador puede autorizar las salidas.');
+                    return;
+                }
+                
+                if (user.role === 'Viewer') {
+                    setError('No tienes permisos para realizar movimientos de inventario.');
+                    return;
+                }
+
+                // Validar subtipo de salida es requerido
+                if (!data.subtipo_salida) {
+                    setError('Debe seleccionar un motivo para la salida.');
+                    return;
+                }
+
+                // Solo administradores pueden realizar salidas diferentes a ventas
+                if (user.role !== 'Administrator' && data.subtipo_salida !== 'venta') {
+                    setError('Solo los administradores pueden autorizar salidas por motivos diferentes a ventas.');
+                    return;
+                }
+            }
+
+            // Validar permisos para entradas
+            if (data.tipo_movimiento === 'entrada') {
+                if (user.role === 'Viewer') {
+                    setError('Los visualizadores no pueden realizar movimientos de inventario.');
+                    return;
+                }
+            }
+        }
 
         // Validar que no se pueda sacar más stock del disponible
         if (data.tipo_movimiento === 'salida' && cantidad > currentStock) {
@@ -100,13 +150,17 @@ const CreateInventoryMovementDialog = ({
                 id_producto: parseInt(productId),
                 cantidad,
                 tipo_movimiento: data.tipo_movimiento,
+                subtipo_salida: data.subtipo_salida,
                 comentario: data.comentario,
                 fecha: data.fecha,
             });
 
+            const tipoMovimientoText = data.tipo_movimiento === 'entrada' ? 'entrada' : 
+                `salida${data.subtipo_salida ? ` por ${data.subtipo_salida}` : ''}`;
+
             toast({
                 title: 'Movimiento registrado',
-                description: `Se ha registrado exitosamente el movimiento de ${data.tipo_movimiento} de ${cantidad} unidades.`,
+                description: `Se ha registrado exitosamente el movimiento de ${tipoMovimientoText} de ${cantidad} unidades.`,
             });
 
             form.reset();
@@ -117,7 +171,13 @@ const CreateInventoryMovementDialog = ({
     };
 
     const handleClose = () => {
-        form.reset();
+        form.reset({
+            tipo_movimiento: undefined,
+            subtipo_salida: undefined,
+            cantidad: '',
+            comentario: '',
+            fecha: new Date().toISOString().split('T')[0],
+        });
         setError(null);
         onOpenChange(false);
     };
@@ -160,7 +220,16 @@ const CreateInventoryMovementDialog = ({
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Tipo de movimiento</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <Select 
+                                        onValueChange={(value) => {
+                                            field.onChange(value);
+                                            // Limpiar subtipo cuando cambie el tipo
+                                            if (value === 'entrada') {
+                                                form.setValue('subtipo_salida', undefined);
+                                            }
+                                        }} 
+                                        defaultValue={field.value}
+                                    >
                                         <FormControl>
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Selecciona el tipo de movimiento" />
@@ -173,18 +242,83 @@ const CreateInventoryMovementDialog = ({
                                                     Entrada (Agregar stock)
                                                 </div>
                                             </SelectItem>
-                                            <SelectItem value="salida">
-                                                <div className="flex items-center gap-2">
-                                                    <TrendingDown className="h-4 w-4 text-red-600" />
-                                                    Salida (Reducir stock)
-                                                </div>
-                                            </SelectItem>
+                                            {/* Solo mostrar opción de salida si el usuario tiene permisos */}
+                                            {user && user.role !== 'Collaborator' && (
+                                                <SelectItem value="salida">
+                                                    <div className="flex items-center gap-2">
+                                                        <TrendingDown className="h-4 w-4 text-red-600" />
+                                                        Salida (Reducir stock)
+                                                    </div>
+                                                </SelectItem>
+                                            )}
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />
+                                    {user && user.role === 'Collaborator' && (
+                                        <p className="text-xs text-amber-600">
+                                            Los colaboradores solo pueden registrar entradas de inventario
+                                        </p>
+                                    )}
                                 </FormItem>
                             )}
                         />
+
+                        {/* Campo de subtipo de salida - solo se muestra cuando se selecciona "salida" */}
+                        {watchedTipoMovimiento === 'salida' && (
+                            <FormField
+                                control={form.control}
+                                name="subtipo_salida"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Motivo de la salida</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Selecciona el motivo de la salida" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                <SelectItem value="venta">
+                                                    <div className="flex items-center gap-2">
+                                                        <ShoppingCart className="h-4 w-4 text-blue-600" />
+                                                        Venta
+                                                    </div>
+                                                </SelectItem>
+                                                {/* Solo administradores pueden seleccionar otros motivos */}
+                                                {user && user.role === 'Administrator' && (
+                                                    <>
+                                                        <SelectItem value="dano">
+                                                            <div className="flex items-center gap-2">
+                                                                <AlertTriangle className="h-4 w-4 text-red-600" />
+                                                                Daño/Deterioro
+                                                            </div>
+                                                        </SelectItem>
+                                                        <SelectItem value="vencimiento">
+                                                            <div className="flex items-center gap-2">
+                                                                <Package className="h-4 w-4 text-orange-600" />
+                                                                Vencimiento
+                                                            </div>
+                                                        </SelectItem>
+                                                        <SelectItem value="ajuste">
+                                                            <div className="flex items-center gap-2">
+                                                                <TrendingDown className="h-4 w-4 text-purple-600" />
+                                                                Ajuste de inventario
+                                                            </div>
+                                                        </SelectItem>
+                                                    </>
+                                                )}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                        {user && user.role !== 'Administrator' && (
+                                            <p className="text-xs text-amber-600">
+                                                Solo los administradores pueden autorizar salidas diferentes a ventas
+                                            </p>
+                                        )}
+                                    </FormItem>
+                                )}
+                            />
+                        )}
 
                         <FormField
                             control={form.control}

@@ -11,7 +11,9 @@ import {
   TrendingDown,
   RotateCcw,
   Calendar,
-  Plus
+  Plus,
+  ShoppingCart,
+  AlertTriangle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -88,23 +90,47 @@ const InventoryDetail = () => {
     });
   };
 
-  const getMovementIcon = (type: string) => {
+  const getMovementIcon = (type: string, subtipo?: string) => {
     switch (type) {
       case 'entrada':
         return <TrendingUp className="h-4 w-4 text-green-600" />;
       case 'salida':
-        return <TrendingDown className="h-4 w-4 text-red-600" />;
+        // Iconos diferentes según el subtipo de salida
+        switch (subtipo) {
+          case 'venta':
+            return <ShoppingCart className="h-4 w-4 text-blue-600" />;
+          case 'dano':
+            return <AlertTriangle className="h-4 w-4 text-red-600" />;
+          case 'vencimiento':
+            return <Package className="h-4 w-4 text-orange-600" />;
+          case 'ajuste':
+            return <TrendingDown className="h-4 w-4 text-purple-600" />;
+          default:
+            return <TrendingDown className="h-4 w-4 text-red-600" />;
+        }
       default:
         return <RotateCcw className="h-4 w-4 text-blue-600" />;
     }
   };
 
-  const getMovementBadge = (type: string) => {
+  const getMovementBadge = (type: string, subtipo?: string) => {
     switch (type) {
       case 'entrada':
         return <Badge className="bg-green-100 text-green-800">Entrada</Badge>;
       case 'salida':
-        return <Badge className="bg-red-100 text-red-800">Salida</Badge>;
+        // Badges diferentes según el subtipo de salida
+        switch (subtipo) {
+          case 'venta':
+            return <Badge className="bg-blue-100 text-blue-800">Salida por venta</Badge>;
+          case 'dano':
+            return <Badge className="bg-red-100 text-red-800">Salida por daño</Badge>;
+          case 'vencimiento':
+            return <Badge className="bg-orange-100 text-orange-800">Salida por vencimiento</Badge>;
+          case 'ajuste':
+            return <Badge className="bg-purple-100 text-purple-800">Ajuste de inventario</Badge>;
+          default:
+            return <Badge className="bg-red-100 text-red-800">Salida</Badge>;
+        }
       default:
         return <Badge className="bg-blue-100 text-blue-800">Ajuste</Badge>;
     }
@@ -253,10 +279,10 @@ const InventoryDetail = () => {
                       .map((movement, index) => (
                         <div key={index} className="flex justify-between items-start border-b pb-3 last:border-b-0">
                           <div className="flex items-start gap-3">
-                            {getMovementIcon(movement.tipo_movimiento)}
+                            {getMovementIcon(movement.tipo_movimiento, movement.subtipo_salida)}
                             <div>
                               <div className="flex items-center gap-2 mb-1">
-                                {getMovementBadge(movement.tipo_movimiento)}
+                                {getMovementBadge(movement.tipo_movimiento, movement.subtipo_salida)}
                                 <p className="font-medium text-sm">
                                   {movement.tipo_movimiento === 'entrada' ? '+' : '-'}{movement.cantidad} unidades
                                 </p>
