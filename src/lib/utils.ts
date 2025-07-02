@@ -39,3 +39,21 @@ export function formatNumber(amount: number | string): string {
 
   return new Intl.NumberFormat("es-CO").format(numericAmount);
 }
+
+/**
+ * Obtiene la fecha actual en formato YYYY-MM-DD en zona horaria de Colombia
+ * @returns String con la fecha actual en formato ISO (YYYY-MM-DD)
+ */
+export function getCurrentDate(): string {
+  const today = new Date();
+  // Convertir a zona horaria de Colombia (UTC-5)
+  const colombiaDate = new Date(today.toLocaleString("en-US", { timeZone: "America/Bogota" }));
+
+  const year = colombiaDate.getFullYear();
+  const month = String(colombiaDate.getMonth() + 1).padStart(2, '0');
+  const day = String(colombiaDate.getDate()).padStart(2, '0');
+
+  const dateString = `${year}-${month}-${day}`;
+  return dateString;
+
+}

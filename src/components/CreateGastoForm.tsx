@@ -26,6 +26,8 @@ import {
 import { useCreateGasto, useTiposGasto } from "@/hooks/useGastos";
 import { CreateGastoDto } from "@/models/gastos.model";
 
+import { getCurrentDate } from '@/lib/utils';
+
 const formSchema = z.object({
     descripcion: z.string().min(1, { message: "La descripción es obligatoria" }),
     monto: z.string().refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0, {
@@ -48,7 +50,7 @@ const CreateGastoForm: React.FC<CreateGastoFormProps> = ({ onClose }) => {
         defaultValues: {
             descripcion: "",
             monto: "",
-            fecha: new Date().toISOString().split('T')[0], // Fecha actual
+            fecha: getCurrentDate(), // Fecha actual por defecto
             id_tipo_gasto: "",
         },
     });

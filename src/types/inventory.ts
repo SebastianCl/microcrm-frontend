@@ -8,7 +8,6 @@ export interface InventoryItem {
   status: string;
   description?: string;
   imageUrl?: string;
-  location?: string;
   lastUpdated?: string;
   managesInventory: boolean;
   isActive: boolean;

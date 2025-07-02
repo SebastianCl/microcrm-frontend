@@ -11,6 +11,7 @@ import { ErrorDisplay } from '@/components/ui/error-display';
 import { useNetwork } from '@/hooks/useNetwork';
 import CreateGastoDialog from './CreateGastoDialog';
 import { Plus } from 'lucide-react';
+import { getCurrentDate } from '@/lib/utils';
 
 interface GastosListProps {
     limit?: number;
@@ -30,14 +31,14 @@ const GastosList: React.FC<GastosListProps> = ({
     // Verificar conectividad de red
     const { isOnline } = useNetwork();
 
-    // Usar React Query para obtener los gastos
+    // Usar React Query para obtener los gastos con fecha actual por defecto
     const {
         data: gastos = [],
         isLoading,
         isError,
         error,
         refetch
-    } = useGastos();
+    } = useGastos(getCurrentDate());
 
     // Filtrar gastos
     const filteredGastos = React.useMemo(() => {

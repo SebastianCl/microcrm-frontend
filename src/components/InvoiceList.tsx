@@ -12,16 +12,16 @@ import { useInvoices } from '@/hooks/useInvoices';
 import { ErrorDisplay } from '@/components/ui/error-display';
 import { useNetwork } from '@/hooks/useNetwork';
 import SearchAndFilter from './ui/SearchAndFilter';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, getCurrentDate } from '@/lib/utils';
 
 interface InvoiceListProps {
   limit?: number;
   showCreateButton?: boolean;
 }
 
-const InvoiceList: React.FC<InvoiceListProps> = ({ 
-  limit, 
-  showCreateButton = true 
+const InvoiceList: React.FC<InvoiceListProps> = ({
+  limit,
+  showCreateButton = true
 }) => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
@@ -29,17 +29,17 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
   const pageSize = 5;
-  
+
   // Verificar conectividad de red
   const { isOnline } = useNetwork();
-  
+
   // Usar React Query para obtener las facturas
-  const { 
-    data: invoices = [], 
-    isLoading: loading, 
-    isError, 
-    error, 
-    refetch 
+  const {
+    data: invoices = [],
+    isLoading: loading,
+    isError,
+    error,
+    refetch
   } = useInvoices();
 
   const filteredInvoices = React.useMemo(() => {
@@ -50,7 +50,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
     // Aplicar filtro de busqueda
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      result = result.filter(invoice => 
+      result = result.filter(invoice =>
         invoice.id.toLowerCase().includes(query) ||
         invoice.client.toLowerCase().includes(query)
       );
@@ -64,7 +64,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
     //  Aplicar filtro de fecha
     if (activeFilters.date) {
       result = result.filter(invoice => {
-        const invoiceDate = new Date(invoice.date).toISOString().split('T')[0];
+        const invoiceDate = getCurrentDate();
         return invoiceDate === activeFilters.date;
       });
     }
@@ -86,10 +86,10 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
     }
     return result;
   }, [invoices, searchQuery, activeFilters]);
-  
+
   // Aplicar límite si se especifica
   const displayInvoices = limit ? filteredInvoices.slice(0, limit) : filteredInvoices;
-  
+
   const getStatusBadge = (status: 'paid' | 'pending' | 'overdue') => {
     switch (status) {
       case 'paid':
@@ -137,7 +137,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
     {
       header: 'Cliente',
       accessorKey: (invoice: Invoice) => invoice.client,
-    },    {
+    }, {
       header: 'Importe',
       accessorKey: (invoice: Invoice) => formatCurrency(invoice.amount),
     },
@@ -161,9 +161,9 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
       accessorKey: (invoice: Invoice) => invoice.id,
       cell: (invoice: Invoice) => (
         <div className="flex justify-end">
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             onClick={(e) => {
               e.stopPropagation();
               navigate(`/invoices/${invoice.id}`);
@@ -187,7 +187,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
         <h2 className="text-xl font-semibold">{limit ? 'Facturas Recientes' : 'Facturas'}</h2>
         <div className="flex flex-col sm:flex-row gap-2">
           {!limit && (
-            <Button 
+            <Button
               variant="outline"
               onClick={() => refetch()}
               disabled={loading}
@@ -198,7 +198,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
             </Button>
           )}
           {showCreateButton && (
-            <Button 
+            <Button
               className="flex items-center gap-1 w-full sm:w-auto"
               onClick={() => setIsCreateDialogOpen(true)}
             >
@@ -208,25 +208,25 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
           )}
         </div>
       </div>
-      
+
       {!isOnline && (
-        <ErrorDisplay 
+        <ErrorDisplay
           error="No hay conexión a Internet. Verifica tu conexión e intenta nuevamente."
-          variant="warning" 
+          variant="warning"
         />
       )}
-      
+
       {isError && (
-        <ErrorDisplay 
-          error={error} 
-          onRetry={() => refetch()} 
+        <ErrorDisplay
+          error={error}
+          onRetry={() => refetch()}
           variant="error"
         />
       )}
 
       {!limit && !loading && (
         <div className="mb-4">
-          <SearchAndFilter 
+          <SearchAndFilter
             search={searchQuery}
             onSearchChange={handleSearch}
             filters={filterOptions}
@@ -235,7 +235,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
           />
         </div>
       )}
-      
+
       {loading ? (
         <div className="space-y-4">
           <Skeleton className="h-10 w-full" />
@@ -245,9 +245,9 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
           <Skeleton className="h-10 w-full" />
         </div>
       ) : (
-        <DataTable 
-          columns={columns} 
-          data={displayInvoices} 
+        <DataTable
+          columns={columns}
+          data={displayInvoices}
           onRowClick={handleRowClick}
           pagination={!limit ? {
             pageSize,
@@ -257,8 +257,8 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
           } : undefined}
         />
       )}
-      
-      <CreateInvoiceDialog 
+
+      <CreateInvoiceDialog
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
       />

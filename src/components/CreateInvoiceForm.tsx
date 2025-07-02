@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { X, Plus } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, getCurrentDate } from '@/lib/utils';
 
 // Schema for invoice creation form
 const invoiceFormSchema = z.object({
@@ -43,11 +43,11 @@ interface CreateInvoiceFormProps {
 const CreateInvoiceForm: React.FC<CreateInvoiceFormProps> = ({ onClose }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   // Default form values
   const defaultValues: InvoiceFormValues = {
     client: "",
-    invoiceDate: new Date().toISOString().split('T')[0],
+    invoiceDate: getCurrentDate(),
     dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     items: [
       { description: "", quantity: 1, rate: 0 }
@@ -58,13 +58,13 @@ const CreateInvoiceForm: React.FC<CreateInvoiceFormProps> = ({ onClose }) => {
     resolver: zodResolver(invoiceFormSchema),
     defaultValues,
   });
-  
+
   // Use useFieldArray for managing dynamic form items
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "items",
   });
-  
+
   function onSubmit(data: InvoiceFormValues) {
     // In a real app, this would save to a database
     console.log("Invoice created:", data);
@@ -76,7 +76,7 @@ const CreateInvoiceForm: React.FC<CreateInvoiceFormProps> = ({ onClose }) => {
       title: "Invoice created",
       description: `Invoice for ${clients.find(c => c.id === data.client)?.name || data.client} with total ${formatCurrency(total)} has been created.`,
     });
-    
+
     queryClient.invalidateQueries({ queryKey: ['orders'] });
     onClose();
   }
@@ -84,7 +84,7 @@ const CreateInvoiceForm: React.FC<CreateInvoiceFormProps> = ({ onClose }) => {
   function addItem() {
     append({ description: "", quantity: 1, rate: 0 });
   }
-  
+
   function calculateTotal() {
     const items = form.getValues("items");
     return items.reduce((total, item) => {
@@ -158,7 +158,7 @@ const CreateInvoiceForm: React.FC<CreateInvoiceFormProps> = ({ onClose }) => {
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-medium">Invoice Items</h3>
           </div>
-          
+
           {fields.map((field, index) => (
             <div key={field.id} className="flex flex-col md:flex-row gap-4 items-start bg-gray-50 p-4 rounded-md">
               <div className="flex-1">
@@ -176,7 +176,7 @@ const CreateInvoiceForm: React.FC<CreateInvoiceFormProps> = ({ onClose }) => {
                   )}
                 />
               </div>
-              
+
               <div className="w-full md:w-24">
                 <FormField
                   control={form.control}
@@ -192,7 +192,7 @@ const CreateInvoiceForm: React.FC<CreateInvoiceFormProps> = ({ onClose }) => {
                   )}
                 />
               </div>
-              
+
               <div className="w-full md:w-32">
                 <FormField
                   control={form.control}
@@ -201,7 +201,7 @@ const CreateInvoiceForm: React.FC<CreateInvoiceFormProps> = ({ onClose }) => {
                     <FormItem>
                       <FormLabel>Rate</FormLabel>
                       <FormControl>
-                        <CurrencyInput 
+                        <CurrencyInput
                           value={field.value}
                           onValueChange={(value) => field.onChange(value)}
                         />
@@ -211,16 +211,16 @@ const CreateInvoiceForm: React.FC<CreateInvoiceFormProps> = ({ onClose }) => {
                   )}
                 />
               </div>
-                <div className="w-full md:w-32 self-end">
+              <div className="w-full md:w-32 self-end">
                 <p className="text-sm font-medium mt-8">
                   Amount: {formatCurrency(form.watch(`items.${index}.quantity`, 0) * form.watch(`items.${index}.rate`, 0))}
                 </p>
               </div>
-              
+
               <div className="self-end pt-4">
-                <Button 
-                  type="button" 
-                  variant="ghost" 
+                <Button
+                  type="button"
+                  variant="ghost"
                   onClick={() => remove(index)}
                   className="h-10 w-10 p-0"
                   disabled={fields.length <= 1}
@@ -230,7 +230,7 @@ const CreateInvoiceForm: React.FC<CreateInvoiceFormProps> = ({ onClose }) => {
               </div>
             </div>
           ))}
-          
+
           <Button
             type="button"
             variant="outline"
@@ -239,7 +239,7 @@ const CreateInvoiceForm: React.FC<CreateInvoiceFormProps> = ({ onClose }) => {
           >
             <Plus className="mr-2 h-4 w-4" /> Add Item
           </Button>
-          
+
           <div className="text-right">
             <p className="text-lg font-bold">
               Total: {formatCurrency(calculateTotal())}

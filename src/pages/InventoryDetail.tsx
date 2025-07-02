@@ -4,7 +4,6 @@ import {
   Package,
   ArrowLeft,
   Edit,
-  Trash,
   Box,
   Activity,
   TrendingUp,
@@ -23,7 +22,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import EditInventoryItemDialog from '@/components/EditInventoryItemDialog';
 import CreateInventoryMovementDialog from '@/components/CreateInventoryMovementDialog';
 import { InventoryItem } from '@/types/inventory';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, getCurrentDate } from '@/lib/utils';
 import { useInventoryMovements } from '@/hooks/useInventoryMovements';
 import { useProduct } from '@/hooks/useProducts';
 import { AppProduct } from '@/models/product.model';
@@ -59,8 +58,7 @@ const InventoryDetail = () => {
       stockQuantity: product.stockQuantity,
       status,
       description: product.description,
-      location: 'Almacén Principal', // Valor por defecto ya que no viene de la API
-      lastUpdated: new Date().toISOString().split('T')[0], // Fecha actual como fallback
+      lastUpdated: getCurrentDate(), // Fecha actual como fallback
       managesInventory: product.managesInventory ?? true, // Asume true si no existe la propiedad
       isActive: product.isActive
     };

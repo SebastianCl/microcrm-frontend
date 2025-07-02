@@ -33,6 +33,7 @@ import { Loader2, TrendingUp, TrendingDown, ShoppingCart, AlertTriangle, Package
 import { useCreateInventoryMovement } from '@/hooks/useInventoryMovements';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { getCurrentDate } from '@/lib/utils';
 
 const movementSchema = z.object({
     tipo_movimiento: z.enum(['entrada', 'salida'], {
@@ -90,7 +91,7 @@ const CreateInventoryMovementDialog = ({
             subtipo_salida: undefined,
             cantidad: '',
             comentario: '',
-            fecha: new Date().toISOString().split('T')[0], // Fecha actual
+            fecha: getCurrentDate(),
         },
     });
 
@@ -111,7 +112,7 @@ const CreateInventoryMovementDialog = ({
                     setError('Los colaboradores no pueden realizar salidas de inventario. Solo un administrador puede autorizar las salidas.');
                     return;
                 }
-                
+
                 if (user.role === 'Viewer') {
                     setError('No tienes permisos para realizar movimientos de inventario.');
                     return;
@@ -155,7 +156,7 @@ const CreateInventoryMovementDialog = ({
                 fecha: data.fecha,
             });
 
-            const tipoMovimientoText = data.tipo_movimiento === 'entrada' ? 'entrada' : 
+            const tipoMovimientoText = data.tipo_movimiento === 'entrada' ? 'entrada' :
                 `salida${data.subtipo_salida ? ` por ${data.subtipo_salida}` : ''}`;
 
             toast({
@@ -176,7 +177,7 @@ const CreateInventoryMovementDialog = ({
             subtipo_salida: undefined,
             cantidad: '',
             comentario: '',
-            fecha: new Date().toISOString().split('T')[0],
+            fecha: getCurrentDate(),
         });
         setError(null);
         onOpenChange(false);
@@ -220,14 +221,14 @@ const CreateInventoryMovementDialog = ({
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Tipo de movimiento</FormLabel>
-                                    <Select 
+                                    <Select
                                         onValueChange={(value) => {
                                             field.onChange(value);
                                             // Limpiar subtipo cuando cambie el tipo
                                             if (value === 'entrada') {
                                                 form.setValue('subtipo_salida', undefined);
                                             }
-                                        }} 
+                                        }}
                                         defaultValue={field.value}
                                     >
                                         <FormControl>
