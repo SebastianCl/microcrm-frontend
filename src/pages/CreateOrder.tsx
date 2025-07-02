@@ -432,8 +432,7 @@ const CreateOrder = () => {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold mb-3">Selecciona productos</h2>
-          <p className="text-muted-foreground text-lg">Agrega productos a tu orden</p>
+          <h2 className="text-2xl font-bold mb-3">Selecciona productos</h2>
         </div>
         {orderItems.length > 0 && (
           <Button
@@ -477,7 +476,7 @@ const CreateOrder = () => {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="text-xl">Detalles de la Orden</CardTitle>
+          <CardTitle className="text-xl">Detalles de la orden</CardTitle>
         </CardHeader>
         <CardContent className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

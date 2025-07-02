@@ -7,13 +7,14 @@ import { Textarea } from '@/components/ui/textarea';
 // import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, Plus, ShoppingCart, Filter, Loader2 } from 'lucide-react';
+import { Search, Plus, ShoppingCart, Filter, Loader2, X, Minus } from 'lucide-react';
 // import { SAMPLE_INVENTORY } from '@/components/InventoryList'; // Eliminado
 import { OrderItem, Addition } from '@/models/order.model';
 // import { productHasAdditions, getProductAdditions } from '@/lib/sample-additions'; // Eliminado
 import { useProducts, productHasAdditions, getProductAdditions } from '@/hooks/useProducts'; // Añadido
 import { AppProduct, AppAddition as AppAdditionFromProduct } from '@/models/product.model'; // Renombrar AppAddition para evitar conflicto
 import { formatCurrency } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface QuickProductSelectorProps {
   onAddProduct: (product: OrderItem) => void;
@@ -26,6 +27,7 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
   const [quantity, setQuantity] = useState(1);
   const [observaciones, setObservaciones] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [customPrice, setCustomPrice] = useState<number>(0);
 
   const { data: productsData, isLoading: isLoadingProducts, error: productsError } = useProducts();
 
@@ -86,7 +88,8 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
 
   const calculateTotal = () => {
     if (!selectedProduct) return 0;
-    const productTotal = selectedProduct.price * quantity;
+    const effectivePrice = selectedProduct.price === 0 ? customPrice : selectedProduct.price;
+    const productTotal = effectivePrice * quantity;
     // Corregido: selectedAdditions es un array de Addition (de order.model), que ya tiene price y quantity
     const additionsSubTotal = selectedAdditions.reduce((sum, addition) => sum + (addition.price * addition.quantity), 0);
     return productTotal + (additionsSubTotal * quantity); // El subtotal de adiciones se multiplica por la cantidad del producto principal
@@ -110,16 +113,24 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
   const handleAddWithOptions = () => {
     if (!selectedProduct) return;
 
+    const effectivePrice = selectedProduct.price === 0 ? customPrice : selectedProduct.price;
+
+    // Validar que el precio sea válido cuando es personalizado
+    if (selectedProduct.price === 0 && (customPrice <= 0 || isNaN(customPrice))) {
+      toast.error('Por favor ingresa un precio válido para este producto');
+      return;
+    }
+
     // El precio base del producto ya está en selectedProduct.price
     // Las adiciones se manejan por separado y su costo se suma al total del OrderItem
-    const baseProductTotal = selectedProduct.price * quantity;
+    const baseProductTotal = effectivePrice * quantity;
     const additionsTotalForOrderItem = selectedAdditions.reduce((sum, addition) => sum + (addition.price * addition.quantity), 0);
 
     const orderItem: OrderItem = {
       productId: selectedProduct.id,
       name: selectedProduct.name,
       quantity: quantity,
-      price: selectedProduct.price, // Precio unitario del producto base
+      price: effectivePrice, // Usar el precio efectivo (original o personalizado)
       total: baseProductTotal + additionsTotalForOrderItem, // Total para esta cantidad de producto, incluyendo sus adiciones
       additions: selectedAdditions.length > 0 ? selectedAdditions : undefined,
       observacion: observaciones.trim() || undefined
@@ -132,6 +143,7 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
     setSelectedAdditions([]);
     setQuantity(1);
     setObservaciones('');
+    setCustomPrice(0);
   };
 
   const getProductsByCategory = (categoryName: string) => {
@@ -143,43 +155,62 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
 
   // ProductGrid ahora recibe AppProduct[]
   const ProductGrid = ({ products }: { products: AppProduct[] }) => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-80 overflow-y-auto">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
       {products.map((product) => (
         <Card
           key={product.id}
-          className={`p-3 cursor-pointer transition-all hover:shadow-md ${selectedProductId === product.id ? 'ring-2 ring-primary' : ''
+          className={`p-4 cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] border-2 ${selectedProductId === product.id ? 'border-primary bg-primary/5 shadow-lg' : 'border-border hover:border-primary/50'
             }`}
-          onClick={() => setSelectedProductId(product.id)}
+          onClick={() => {
+            setSelectedProductId(product.id);
+            // Inicializar el precio personalizado cuando el producto tiene precio 0
+            if (product.price === 0) {
+              setCustomPrice(0);
+            }
+          }}
         >
-          <div className="flex justify-between items-start mb-2">
-            <div className="flex-1">
-              <h4 className="font-medium text-sm">{product.name}</h4> {/* Mostrar nombre del producto */}
-              <p className="text-xs text-muted-foreground">Precio: {formatCurrency(product.price)}</p>
-            </div>            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={(e) => {
-                e.stopPropagation(); // Evitar que el click en el botón seleccione la tarjeta
-                handleQuickAdd(product.id);
-              }}
-              className="h-8 w-8 p-0"
-            >
-              <Plus className="h-3 w-3" />
-            </Button>
-          </div>
+          <div className="space-y-3">
+            <div className="flex justify-between items-start">
+              <div className="flex-1 min-w-0">
+                <h4 className="font-semibold text-base truncate">{product.name}</h4>
+                <p className="text-sm text-muted-foreground">{formatCurrency(product.price)}</p>
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleQuickAdd(product.id);
+                }}
+                className="h-10 w-10 p-0 ml-2 flex-shrink-0 hover:bg-primary hover:text-primary-foreground"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
 
-          {/* Adaptar llamada a productHasAdditions */}
-          {productsData && productHasAdditions(product.id, productsData) && (
-            <Badge variant="secondary" className="text-xs">
-              Tiene adiciones
-            </Badge>
-          )}
+            <div className="flex items-center justify-between">
+              {/* Adaptar llamada a productHasAdditions */}
+              {productsData && productHasAdditions(product.id, productsData) && (
+                <Badge variant="secondary" className="text-xs px-2 py-1">
+                  Tiene adiciones
+                </Badge>
+              )}
+              <div className="flex-1"></div>
+              {selectedProductId === product.id && (
+                <Badge className="text-xs px-2 py-1 bg-primary text-primary-foreground">
+                  Seleccionado
+                </Badge>
+              )}
+            </div>
+          </div>
         </Card>
       ))}
       {products.length === 0 && (
-        <div className="col-span-full text-center py-8 text-muted-foreground">
-          No se encontraron productos
+        <div className="col-span-full text-center py-12 text-muted-foreground">
+          <ShoppingCart className="h-12 w-12 mx-auto mb-4 opacity-30" />
+          <p className="text-lg font-medium">No se encontraron productos</p>
+          <p className="text-sm">Intenta con una búsqueda diferente</p>
         </div>
       )}
     </div>
@@ -208,7 +239,7 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Search Bar */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -216,7 +247,7 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
           placeholder="Buscar productos"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10"
+          className="pl-10 h-12 text-base"
         />
       </div>
 
@@ -227,14 +258,14 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
           <div className="flex-1 overflow-hidden">
             <TabsList className="h-auto p-1 bg-muted rounded-md">
               <div className="flex flex-wrap gap-1">
-                <TabsTrigger value="all" className="text-xs px-3 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                <TabsTrigger value="all" className="text-sm px-4 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">
                   Todos
                 </TabsTrigger>
                 {categories.map(category => (
                   <TabsTrigger
                     key={category.id}
                     value={category.name}
-                    className="text-xs px-3 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm whitespace-nowrap"
+                    className="text-sm px-4 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm whitespace-nowrap"
                   >
                     {category.name}
                   </TabsTrigger>
@@ -244,106 +275,201 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
           </div>
         </div>
 
-        {/* All Products Tab */}
-        <TabsContent value="all" className="mt-0">
-          <ProductGrid products={getProductsByCategory('all')} />
-        </TabsContent>
+        {/* Contenido principal organizado en dos columnas para aprovechar el espacio */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Columna izquierda: Lista de productos (2/3 del espacio en pantallas grandes) */}
+          <div className="lg:col-span-2">
+            {/* All Products Tab */}
+            <TabsContent value="all" className="mt-0">
+              <ProductGrid products={getProductsByCategory('all')} />
+            </TabsContent>
 
-        {/* Category-specific Tabs */}
-        {categories.map(category => (
-          <TabsContent key={category.id} value={category.name} className="mt-0">
-            <ProductGrid products={getProductsByCategory(category.name)} />
-          </TabsContent>
-        ))}
-      </Tabs>
-
-      {/* Selected Product Configuration */}
-      {selectedProduct && (
-        <Card className="p-4 border-primary">
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">{selectedProduct.name}</h3> {/* Mostrar nombre */}
-              <Button variant="ghost" size="sm" onClick={() => { setSelectedProductId(''); setSelectedAdditions([]); setQuantity(1); setObservaciones(''); }}>
-                Limpiar
-              </Button>
-            </div>
-
-            {/* Quantity Selector */}
-            <div className="flex items-center space-x-2">
-              <label htmlFor="quantity" className="text-sm font-medium">Cantidad:</label>
-              <Input
-                type="number"
-                id="quantity"
-                value={quantity}
-                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                className="w-20"
-                min="1"
-              />
-            </div>
-
-            {/* Selector adiciones */}
-            {hasAdditions && availableAdditions.length > 0 && (
-              <div>
-                <h4 className="text-sm font-medium mb-2">Adiciones disponibles:</h4>
-                <div className="space-y-2 max-h-40 overflow-y-auto pr-2">
-                  {availableAdditions.map((productAddition) => {
-                    const currentSelectedAddition = selectedAdditions.find(sa => sa.id === productAddition.id);
-                    return (
-                      <div key={productAddition.id} className="flex items-center justify-between p-2 border rounded-md">
-                        <div>
-                          <span className="text-sm">{productAddition.name}</span>
-                          <span className="text-xs text-muted-foreground ml-2">(+{formatCurrency(productAddition.price)})</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {currentSelectedAddition && (
-                            <Input
-                              type="number"
-                              value={currentSelectedAddition.quantity}
-                              onChange={(e) => handleAdditionQuantityChange(productAddition.id, parseInt(e.target.value) || 1)}
-                              className="w-16 h-8 text-sm"
-                              min="1"
-                            />
-                          )}                          <Button
-                            type="button"
-                            size="sm"
-                            variant={currentSelectedAddition ? "default" : "outline"}
-                            onClick={() => toggleAddition(productAddition)}
-                            className="h-8"
-                          >
-                            {currentSelectedAddition ? "Quitar" : "Agregar"}
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Observaciones */}
-            <div className="space-y-2">
-              <label htmlFor="observaciones" className="text-sm font-medium">Observaciones (opcional):</label>
-              <Textarea
-                id="observaciones"
-                value={observaciones}
-                onChange={(e) => setObservaciones(e.target.value)}
-                placeholder="Escribe observaciones específicas para este producto..."
-                className="min-h-[80px] resize-none"
-              />
-            </div>
-
-            {/* Total Price & Add Button */}            <div className="flex justify-between items-center pt-2 border-t">
-              <div>
-                <span className="text-sm">Total:</span>
-                <span className="font-bold text-lg ml-2">{formatCurrency(calculateTotal())}</span>
-              </div><Button type="button" onClick={handleAddWithOptions} disabled={quantity <= 0}>
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                Agregar a la Orden
-              </Button>
-            </div>
+            {/* Category-specific Tabs */}
+            {categories.map(category => (
+              <TabsContent key={category.id} value={category.name} className="mt-0">
+                <ProductGrid products={getProductsByCategory(category.name)} />
+              </TabsContent>
+            ))}
           </div>
-        </Card>
-      )}
+
+          {/* Columna derecha: Configuración del producto seleccionado (1/3 del espacio) */}
+          <div className="lg:col-span-1">
+            {selectedProduct && (
+              <Card className="sticky top-4 border-primary shadow-lg">
+                <div className="p-4 space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-semibold truncate">{selectedProduct.name}</h3>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedProductId('');
+                        setSelectedAdditions([]);
+                        setQuantity(1);
+                        setObservaciones('');
+                        setCustomPrice(0);
+                      }}
+                      className="h-8 w-8 p-0"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  {/* Cantidad y precio base en una fila */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">Cantidad</label>
+                      <div className="flex items-center border rounded-lg">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                          className="h-12 w-12 p-0 hover:bg-muted"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <Input
+                          type="number"
+                          value={quantity}
+                          onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                          className="border-0 text-center h-12 focus-visible:ring-0"
+                          min="1"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setQuantity(quantity + 1)}
+                          className="h-12 w-12 p-0 hover:bg-muted"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">
+                        {selectedProduct.price === 0 ? 'Precio (editable)' : 'Precio'}
+                      </label>
+                      {selectedProduct.price === 0 ? (
+                        <div className="relative">
+                          <Input
+                            type="number"
+                            value={customPrice || ''}
+                            onChange={(e) => setCustomPrice(parseFloat(e.target.value) || 0)}
+                            placeholder="Ingresa el precio"
+                            className="h-12 text-center font-semibold text-base"
+                            min="0"
+                            step="0.01"
+                          />
+                          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+                            $
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="h-12 flex items-center justify-center bg-muted rounded-lg">
+                          <span className="font-semibold">{formatCurrency(selectedProduct.price)}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Adiciones en formato compacto */}
+                  {hasAdditions && availableAdditions.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-medium mb-2">Adiciones</h4>
+                      <div className="space-y-2 max-h-48 overflow-y-auto">
+                        {availableAdditions.map((productAddition) => {
+                          const currentSelectedAddition = selectedAdditions.find(sa => sa.id === productAddition.id);
+                          return (
+                            <div key={productAddition.id} className="flex items-center justify-between p-3 border rounded-lg bg-muted/30">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">{productAddition.name}</p>
+                                <p className="text-xs text-muted-foreground">+{formatCurrency(productAddition.price)}</p>
+                              </div>
+                              <div className="flex items-center gap-2 ml-2">
+                                {currentSelectedAddition && (
+                                  <div className="flex items-center border rounded">
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleAdditionQuantityChange(productAddition.id, currentSelectedAddition.quantity - 1)}
+                                      className="h-8 w-8 p-0"
+                                    >
+                                      <Minus className="h-3 w-3" />
+                                    </Button>
+                                    <span className="w-8 text-center text-sm">{currentSelectedAddition.quantity}</span>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleAdditionQuantityChange(productAddition.id, currentSelectedAddition.quantity + 1)}
+                                      className="h-8 w-8 p-0"
+                                    >
+                                      <Plus className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                )}
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant={currentSelectedAddition ? "default" : "outline"}
+                                  onClick={() => toggleAddition(productAddition)}
+                                  className="h-8 px-3 text-xs"
+                                >
+                                  {currentSelectedAddition ? "✓" : "+"}
+                                </Button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Observaciones compactas */}
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">Observaciones</label>
+                    <Textarea
+                      value={observaciones}
+                      onChange={(e) => setObservaciones(e.target.value)}
+                      placeholder="Notas especiales..."
+                      className="min-h-[60px] resize-none text-sm"
+                    />
+                  </div>
+
+                  {/* Total y botón agregar */}
+                  <div className="space-y-3 pt-2 border-t">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">Total:</span>
+                      <span className="font-bold text-xl text-primary">{formatCurrency(calculateTotal())}</span>
+                    </div>
+                    <Button
+                      type="button"
+                      onClick={handleAddWithOptions}
+                      disabled={quantity <= 0 || (selectedProduct.price === 0 && (customPrice <= 0 || isNaN(customPrice)))}
+                      className="w-full h-12 text-base font-semibold shadow-md"
+                      size="lg"
+                    >
+                      <ShoppingCart className="mr-2 h-5 w-5" />
+                      Agregar a la orden
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            )}
+            {!selectedProduct && (
+              <Card className="p-8 text-center border-dashed">
+                <div className="text-muted-foreground">
+                  <ShoppingCart className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">Selecciona un producto para configurarlo</p>
+                </div>
+              </Card>
+            )}
+          </div>
+        </div>
+      </Tabs>
     </div>
   );
 };
