@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RefreshCcw } from 'lucide-react';
+import { RefreshCcw, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -213,33 +213,43 @@ const OrderList: React.FC<OrderListProps> = ({
   };
 
   return (
-    <Card className="p-4">
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
-        <h2 className="text-xl font-semibold">{limit ? 'Pedidos Recientes' : 'Pedidos'}</h2>
-        {showCreateButton && (
-          <div className="flex gap-2 items-center">
-            {!isOnline && <Badge variant="destructive">Sin conexión</Badge>}
-            {isError && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => refetch()}
-              >
-                <RefreshCcw className="h-4 w-4 mr-1" /> Reintentar
-              </Button>
-            )}
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 p-6 bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl border border-primary/20">
+        <div>
+          <h2 className="text-3xl font-bold text-foreground mb-1">
+            {limit ? 'Pedidos recientes' : 'Gestión de pedidos'}
+          </h2>
+          <p className="text-muted-foreground">
+            {limit ? 'Últimos pedidos registrados' : 'Administra y supervisa todas las órdenes'}
+          </p>
+        </div>
+
+        <div className="flex gap-3 items-center">
+          {!isOnline && <Badge variant="destructive">Sin conexión</Badge>}
+          {isError && (
             <Button
-              onClick={() => navigate('/orders/new')}
-              className="w-full md:w-auto"
+              variant="outline"
+              size="sm"
+              onClick={() => refetch()}
+              className="h-10"
             >
-              Crear orden
+              <RefreshCcw className="h-4 w-4 mr-2" /> Reintentar
             </Button>
-          </div>
-        )}
+          )}
+          <Button
+            onClick={() => navigate('/orders/new')}
+            className="h-12 px-8 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300 bg-primary hover:bg-primary/90"
+            size="lg"
+          >
+            <Plus className="h-5 w-5 mr-2" />
+            Nueva orden
+          </Button>
+        </div>
+
       </div>
 
       {!limit && (
-        <div className="mb-6">
+        <Card className="p-4">
           <SearchAndFilter
             search={searchQuery}
             onSearchChange={handleSearch}
@@ -247,7 +257,7 @@ const OrderList: React.FC<OrderListProps> = ({
             onFilter={handleFilter}
             placeholder="Buscar por ID, cliente o mesa..."
           />
-        </div>
+        </Card>
       )}
 
       {/* Mostrar error si existe */}
@@ -260,75 +270,94 @@ const OrderList: React.FC<OrderListProps> = ({
 
       {/* Mostrar esqueleto durante la carga */}
       {isLoading && (
-        <div className="space-y-4">
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Card key={i} className="p-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-6 w-16" />
+                  <Skeleton className="h-5 w-20 rounded-full" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-3/4" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+                <Skeleton className="h-8 w-full" />
+              </div>
+            </Card>
+          ))}
         </div>
       )}
 
       {/* Mostrar cards cuando no hay error y no está cargando */}
       {!isLoading && !isError && (
-        <div className="space-y-4">
+        <>
           {!displayOrders || displayOrders.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              {searchQuery && searchQuery.trim()
-                ? `No se encontraron pedidos que coincidan con "${searchQuery}"`
-                : "No hay pedidos registrados aún."
-              }
-            </div>
+            <Card className="p-8">
+              <div className="text-center text-muted-foreground">
+                {searchQuery && searchQuery.trim()
+                  ? `No se encontraron pedidos que coincidan con "${searchQuery}"`
+                  : "No hay pedidos registrados aún."
+                }
+              </div>
+            </Card>
           ) : (
-            displayOrders.map((order) => (
-              order && order.id_pedido ? (
-                <OrderCard key={order.id_pedido} order={order} />
-              ) : null
-            ))
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+              {displayOrders.map((order) => (
+                order && order.id_pedido ? (
+                  <OrderCard key={order.id_pedido} order={order} />
+                ) : null
+              ))}
+            </div>
           )}
-        </div>
+        </>
       )}
 
       {/* Paginación solo si no hay límite y hay más de una página */}
       {!limit && totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-2">
-          <div className="text-xs sm:text-sm text-muted-foreground order-2 sm:order-1">
-            Mostrando {startIndex + 1} a {Math.min(endIndex, filteredOrders?.length || 0)} de {filteredOrders?.length || 0} pedidos
-          </div>
-          <Pagination className="order-1 sm:order-2">
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  className={currentPage <= 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                />
-              </PaginationItem>
-
-              {getVisiblePages().map((page, i) => (
-                <PaginationItem key={page < 0 ? `ellipsis-${i}` : page}>
-                  {page < 0 ? (
-                    <PaginationEllipsis />
-                  ) : (
-                    <PaginationLink
-                      onClick={() => handlePageChange(page)}
-                      isActive={page === currentPage}
-                      className="cursor-pointer"
-                    >
-                      {page}
-                    </PaginationLink>
-                  )}
+        <Card className="p-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-sm text-muted-foreground order-2 sm:order-1">
+              Mostrando {startIndex + 1} a {Math.min(endIndex, filteredOrders?.length || 0)} de {filteredOrders?.length || 0} pedidos
+            </div>
+            <Pagination className="order-1 sm:order-2">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    className={currentPage <= 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
                 </PaginationItem>
-              ))}
 
-              <PaginationItem>
-                <PaginationNext
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  className={currentPage >= totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
+                {getVisiblePages().map((page, i) => (
+                  <PaginationItem key={page < 0 ? `ellipsis-${i}` : page}>
+                    {page < 0 ? (
+                      <PaginationEllipsis />
+                    ) : (
+                      <PaginationLink
+                        onClick={() => handlePageChange(page)}
+                        isActive={page === currentPage}
+                        className="cursor-pointer"
+                      >
+                        {page}
+                      </PaginationLink>
+                    )}
+                  </PaginationItem>
+                ))}
+
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    className={currentPage >= totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        </Card>
       )}
-    </Card>
+    </div>
   );
 };
 

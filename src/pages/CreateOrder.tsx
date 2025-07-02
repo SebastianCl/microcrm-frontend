@@ -268,7 +268,7 @@ const CreateOrder = () => {
   const renderTableSelection = () => (
     <div className="space-y-8">
       <div className="text-center">
-        <h2 className="text-3xl font-bold mb-3">Selecciona la Mesa</h2>
+        <h2 className="text-3xl font-bold mb-3">Selecciona la mesa</h2>
         <p className="text-muted-foreground text-lg">¿Dónde se servirá esta orden?</p>
       </div>
 
@@ -284,7 +284,7 @@ const CreateOrder = () => {
               <UtensilsCrossed className="w-8 h-8" />
             </div>
             <div className="text-center">
-              <h3 className="text-xl font-semibold mb-1">Para Llevar</h3>
+              <h3 className="text-xl font-semibold mb-1">Para llevar</h3>
               <p className="text-muted-foreground">Orden para llevar del cliente</p>
             </div>
           </div>
@@ -320,7 +320,7 @@ const CreateOrder = () => {
   const renderClientSelection = () => (
     <div className="space-y-8">
       <div className="text-center">
-        <h2 className="text-3xl font-bold mb-3">Selecciona Cliente</h2>
+        <h2 className="text-3xl font-bold mb-3">Selecciona cliente</h2>
         <p className="text-muted-foreground text-lg">¿Quién realizará esta orden?</p>
       </div>
 
@@ -334,7 +334,7 @@ const CreateOrder = () => {
               <Plus className="w-8 h-8" />
             </div>
             <div className="text-center">
-              <h3 className="text-xl font-semibold mb-1">Continuar sin Cliente</h3>
+              <h3 className="text-xl font-semibold mb-1">Continuar sin cliente</h3>
               <p className="text-muted-foreground">Cliente no especificado</p>
             </div>
           </div>
@@ -343,7 +343,7 @@ const CreateOrder = () => {
 
       {clientsFromAPI && clientsFromAPI.length > 0 && (
         <div>
-          <h3 className="text-xl font-semibold mb-6 text-center">Clientes Registrados</h3>
+          <h3 className="text-xl font-semibold mb-6 text-center">Clientes registrados</h3>
           <div className="grid gap-4 max-h-96 overflow-y-auto">
             {clientsFromAPI.map((client) => (
               <Card
@@ -386,7 +386,7 @@ const CreateOrder = () => {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold mb-3">Selecciona Productos</h2>
+          <h2 className="text-3xl font-bold mb-3">Selecciona productos</h2>
           <p className="text-muted-foreground text-lg">Agrega productos a tu orden</p>
         </div>
         {orderItems.length > 0 && (
@@ -395,7 +395,7 @@ const CreateOrder = () => {
             className="h-14 px-8 text-lg shadow-lg"
             size="lg"
           >
-            Ver Resumen ({orderItems.length})
+            Ver resumen ({orderItems.length})
           </Button>
         )}
       </div>
@@ -415,7 +415,7 @@ const CreateOrder = () => {
             onClick={() => setCurrentStep('review')}
             className="flex-1 h-14 text-lg"
           >
-            Revisar Orden
+            Revisar orden
           </Button>
         )}
       </div>
@@ -425,7 +425,7 @@ const CreateOrder = () => {
   const renderOrderReview = () => (
     <div className="space-y-8">
       <div className="text-center">
-        <h2 className="text-3xl font-bold mb-3">Revisar Orden</h2>
+        <h2 className="text-3xl font-bold mb-3">Revisar orden</h2>
         <p className="text-muted-foreground text-lg">Verifica tu orden antes de confirmar</p>
       </div>
 
@@ -567,7 +567,7 @@ const CreateOrder = () => {
           onClick={() => setCurrentStep('products')}
           className="flex-1 h-14 text-lg"
         >
-          Agregar Más
+          Agregar más productos
         </Button>
         <Button
           type="submit"
@@ -575,7 +575,7 @@ const CreateOrder = () => {
           className="flex-1 h-14 text-lg font-semibold shadow-lg"
           onClick={form.handleSubmit(onSubmit)}
         >
-          {createOrderMutation.isPending ? 'Creando orden...' : 'Confirmar Orden'}
+          {createOrderMutation.isPending ? 'Creando orden...' : 'Confirmar orden'}
         </Button>
       </div>
     </div>
@@ -592,7 +592,7 @@ const CreateOrder = () => {
                 <div className="p-2 bg-primary/10 rounded-lg">
                   <ShoppingCart className="h-6 w-6 text-primary" />
                 </div>
-                <h1 className="text-xl md:text-2xl font-bold text-foreground">Nueva Orden</h1>
+                <h1 className="text-xl md:text-2xl font-bold text-foreground">Nueva orden</h1>
               </div>
               <Button
                 variant="outline"
