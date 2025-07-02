@@ -133,6 +133,16 @@ const CreateOrder = () => {
     toast.success(`${product.name} agregado a la orden`);
   };
 
+  const handleUpdateProduct = (index: number, updatedProduct: OrderItem) => {
+    const updatedItems = [...orderItems];
+    updatedItems[index] = {
+      ...updatedProduct,
+      discount: 0,
+      discountType: DiscountTypes.NONE
+    };
+    setOrderItems(updatedItems);
+  };
+
   const handleRemoveProduct = (index: number) => {
     setOrderItems(orderItems.filter((_, i) => i !== index));
     toast.success("Producto removido");
@@ -445,7 +455,12 @@ const CreateOrder = () => {
         )}
       </div>
 
-      <QuickProductSelector onAddProduct={handleAddProduct} />
+      <QuickProductSelector
+        onAddProduct={handleAddProduct}
+        onUpdateProduct={handleUpdateProduct}
+        onRemoveProduct={handleRemoveProduct}
+        existingProducts={orderItems}
+      />
 
       <div className="flex space-x-4">
         <Button
@@ -539,7 +554,7 @@ const CreateOrder = () => {
       {orderItems.length > 0 && (
         <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle className="text-xl">Productos Seleccionados</CardTitle>
+            <CardTitle className="text-xl">Productos seleccionados</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">

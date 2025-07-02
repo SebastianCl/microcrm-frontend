@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 // Checkbox no se usa, se puede eliminar si no se va a usar más adelante
@@ -18,9 +18,17 @@ import { toast } from 'sonner';
 
 interface QuickProductSelectorProps {
   onAddProduct: (product: OrderItem) => void;
+  onUpdateProduct?: (index: number, product: OrderItem) => void;
+  onRemoveProduct?: (index: number) => void;
+  existingProducts?: OrderItem[];
 }
 
-const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduct }) => {
+const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({
+  onAddProduct,
+  onUpdateProduct,
+  onRemoveProduct,
+  existingProducts = []
+}) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProductId, setSelectedProductId] = useState<string>('');
   const [selectedAdditions, setSelectedAdditions] = useState<Addition[]>([]); // Addition de order.model ahora incluye cantidad
@@ -28,6 +36,7 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
   const [observaciones, setObservaciones] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [customPrice, setCustomPrice] = useState<number>(0);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   const { data: productsData, isLoading: isLoadingProducts, error: productsError } = useProducts();
 
@@ -109,7 +118,6 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
 
     onAddProduct(orderItem);
   };
-
   const handleAddWithOptions = () => {
     if (!selectedProduct) return;
 
@@ -136,7 +144,15 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
       observacion: observaciones.trim() || undefined
     };
 
-    onAddProduct(orderItem);
+    // Si está editando un producto existente, usar onUpdateProduct
+    if (editingIndex !== null && onUpdateProduct) {
+      onUpdateProduct(editingIndex, orderItem);
+      toast.success(`${selectedProduct.name} actualizado en la orden`);
+    } else {
+      // Si no está editando, agregar nuevo producto
+      onAddProduct(orderItem);
+      toast.success(`${selectedProduct.name} agregado a la orden`);
+    }
 
     // Reset selection
     setSelectedProductId('');
@@ -144,6 +160,7 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
     setQuantity(1);
     setObservaciones('');
     setCustomPrice(0);
+    setEditingIndex(null);
   };
 
   const getProductsByCategory = (categoryName: string) => {
@@ -278,18 +295,97 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
         {/* Contenido principal organizado en dos columnas para aprovechar el espacio */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Columna izquierda: Lista de productos (2/3 del espacio en pantallas grandes) */}
-          <div className="lg:col-span-2">
-            {/* All Products Tab */}
-            <TabsContent value="all" className="mt-0">
-              <ProductGrid products={getProductsByCategory('all')} />
-            </TabsContent>
-
-            {/* Category-specific Tabs */}
-            {categories.map(category => (
-              <TabsContent key={category.id} value={category.name} className="mt-0">
-                <ProductGrid products={getProductsByCategory(category.name)} />
+          <div className="lg:col-span-2 space-y-6">
+            {/* Lista de productos disponibles */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Productos disponibles</h3>
+              {/* All Products Tab */}
+              <TabsContent value="all" className="mt-0">
+                <ProductGrid products={getProductsByCategory('all')} />
               </TabsContent>
-            ))}
+
+              {/* Category-specific Tabs */}
+              {categories.map(category => (
+                <TabsContent key={category.id} value={category.name} className="mt-0">
+                  <ProductGrid products={getProductsByCategory(category.name)} />
+                </TabsContent>
+              ))}
+            </div>
+
+            {/* Productos ya agregados */}
+            {existingProducts.length > 0 && (
+              <Card className="border-border/60">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <ShoppingCart className="h-5 w-5 text-primary" />
+                    Productos en la orden ({existingProducts.length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3 max-h-64 overflow-y-auto">
+                    {existingProducts.map((item, index) => (
+                      <div key={`existing-${index}`} className="flex items-center justify-between p-3 bg-muted/30 border rounded-lg hover:shadow-sm transition-shadow">
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-sm truncate">{item.name}</h4>
+                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                            <span>Cantidad: {item.quantity}</span>
+                            <span>Precio: {formatCurrency(item.price)}</span>
+                            <span className="font-medium text-primary">Total: {formatCurrency(item.total)}</span>
+                          </div>
+                          {item.additions && item.additions.length > 0 && (
+                            <div className="mt-1">
+                              <span className="text-xs text-blue-600 dark:text-blue-400">
+                                Adiciones: {item.additions.map(add => `${add.name} (${add.quantity})`).join(', ')}
+                              </span>
+                            </div>
+                          )}
+                          {item.observacion && (
+                            <div className="mt-1">
+                              <span className="text-xs text-orange-600 dark:text-orange-400">Nota: {item.observacion}</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 ml-3">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              // Cargar el producto para edición
+                              const product = productsData?.find(p => p.id === item.productId);
+                              if (product) {
+                                setSelectedProductId(item.productId);
+                                setQuantity(item.quantity);
+                                setObservaciones(item.observacion || '');
+                                setSelectedAdditions(item.additions || []);
+                                setEditingIndex(index); // Establecer el índice de edición
+                                if (product.price === 0) {
+                                  setCustomPrice(item.price);
+                                }
+                              }
+                            }}
+                            className="h-8 px-3 text-xs"
+                          >
+                            Editar
+                          </Button>
+                          {onRemoveProduct && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => onRemoveProduct(index)}
+                              className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Columna derecha: Configuración del producto seleccionado (1/3 del espacio) */}
@@ -308,6 +404,7 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
                         setQuantity(1);
                         setObservaciones('');
                         setCustomPrice(0);
+                        setEditingIndex(null);
                       }}
                       className="h-8 w-8 p-0"
                     >
@@ -453,7 +550,7 @@ const QuickProductSelector: React.FC<QuickProductSelectorProps> = ({ onAddProduc
                       size="lg"
                     >
                       <ShoppingCart className="mr-2 h-5 w-5" />
-                      Agregar a la orden
+                      {editingIndex !== null ? 'Actualizar producto' : 'Agregar a la orden'}
                     </Button>
                   </div>
                 </div>
