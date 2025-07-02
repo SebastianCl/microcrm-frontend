@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import SearchAndFilter from './ui/SearchAndFilter';
-import { useGastos } from '@/hooks/useGastos';
+import { useGastos, useTiposGasto } from '@/hooks/useGastos';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorDisplay } from '@/components/ui/error-display';
 import { useNetwork } from '@/hooks/useNetwork';
@@ -30,6 +30,9 @@ const GastosList: React.FC<GastosListProps> = ({
 
     // Verificar conectividad de red
     const { isOnline } = useNetwork();
+
+    // Obtener tipos de gasto para el filtro
+    const { data: tiposGasto = [] } = useTiposGasto();
 
     // Usar React Query para obtener los gastos con fecha actual por defecto
     const {
@@ -95,6 +98,17 @@ const GastosList: React.FC<GastosListProps> = ({
     }, []);
 
     const filterOptions = [
+        {
+            id: 'tipo_gasto',
+            label: 'Tipo de gasto',
+            type: 'select' as const,
+            options: [
+                ...tiposGasto.map(tipo => ({
+                    value: tipo.nombre_tipo,
+                    label: tipo.nombre_tipo
+                }))
+            ]
+        },
         {
             id: 'monto_minimo',
             label: 'Monto mínimo',
