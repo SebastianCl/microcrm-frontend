@@ -38,7 +38,7 @@ const EditClientForm: React.FC<EditClientFormProps> = ({ client, onClose }) => {
     resolver: zodResolver(clientFormSchema),
     defaultValues,
   });
-  
+
   async function onSubmit(data: ClientFormValues) {
     const payload = {
       nombre: data.nombre,
@@ -52,7 +52,7 @@ const EditClientForm: React.FC<EditClientFormProps> = ({ client, onClose }) => {
           title: "Cliente actualizado",
           description: `${data.nombre} ha sido actualizado correctamente.`,
         });
-        onClose(); 
+        onClose();
       },
       onError: (error) => {
         console.error("Error al actualizar el cliente:", error);
@@ -120,7 +120,7 @@ const EditClientForm: React.FC<EditClientFormProps> = ({ client, onClose }) => {
             Cancelar
           </Button>
           <Button type="submit" disabled={updateClientMutation.isPending}>
-            {updateClientMutation.isPending ? "Actualizando..." : "Actualizar Cliente"}
+            {updateClientMutation.isPending ? "Actualizando..." : "Actualizar cliente"}
           </Button>
         </div>
       </form>
