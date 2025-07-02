@@ -17,7 +17,18 @@ export const GASTOS_QUERY_KEYS = {
 export const useGastos = (fechaInicio?: string, options = {}) => {
     return useQuery({
         queryKey: fechaInicio ? GASTOS_QUERY_KEYS.GASTOS_BY_DATE_RANGE(fechaInicio) : [GASTOS_QUERY_KEYS.GASTOS],
-        queryFn: () => gastosService.getAll(fechaInicio),
+        queryFn: async () => {
+            try {
+                return await gastosService.getAll(fechaInicio);
+            } catch (error) {
+                // Si es un error 404, retornar array vacío (no hay gastos registrados)
+                if (error?.status === 404) {
+                    return [];
+                }
+                // Relanzar otros errores
+                throw error;
+            }
+        },
         ...options,
     });
 };
@@ -40,7 +51,18 @@ export const useGasto = (id: string, options = {}) => {
 export const useGastosByDateRange = (fechaInicio: string, fechaFin?: string, options = {}) => {
     return useQuery({
         queryKey: GASTOS_QUERY_KEYS.GASTOS_BY_DATE_RANGE(fechaInicio, fechaFin),
-        queryFn: () => gastosService.getByDateRange(fechaInicio, fechaFin),
+        queryFn: async () => {
+            try {
+                return await gastosService.getByDateRange(fechaInicio, fechaFin);
+            } catch (error) {
+                // Si es un error 404, retornar array vacío (no hay gastos en el rango de fechas)
+                if (error?.status === 404) {
+                    return [];
+                }
+                // Relanzar otros errores
+                throw error;
+            }
+        },
         enabled: Boolean(fechaInicio), // Solo realizar la consulta si hay fecha de inicio
         ...options,
     });

@@ -223,17 +223,28 @@ const GastosList: React.FC<GastosListProps> = ({
                     </div>
                 )}
 
-                <DataTable
-                    data={displayGastos}
-                    columns={columns}
-                    onRowClick={handleRowClick}
-                    pagination={!limit ? {
-                        currentPage: currentPage,
-                        pageSize,
-                        totalItems: filteredGastos.length,
-                        onPageChange: setCurrentPage,
-                    } : undefined}
-                />
+                {displayGastos.length === 0 ? (
+                    <div className="text-center py-8">
+                        <div className="text-muted-foreground">
+                            {searchQuery || Object.keys(activeFilters).length > 0
+                                ? "No se encontraron gastos que coincidan con los criterios de búsqueda."
+                                : "No hay gastos registrados aún."
+                            }
+                        </div>
+                    </div>
+                ) : (
+                    <DataTable
+                        data={displayGastos}
+                        columns={columns}
+                        onRowClick={handleRowClick}
+                        pagination={!limit ? {
+                            currentPage: currentPage,
+                            pageSize,
+                            totalItems: filteredGastos.length,
+                            onPageChange: setCurrentPage,
+                        } : undefined}
+                    />
+                )}
             </Card>
 
             <CreateGastoDialog

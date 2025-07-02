@@ -274,7 +274,7 @@ const OrderList: React.FC<OrderListProps> = ({
             <div className="text-center py-8 text-muted-foreground">
               {searchQuery && searchQuery.trim()
                 ? `No se encontraron pedidos que coincidan con "${searchQuery}"`
-                : "No se encontraron pedidos"
+                : "No hay pedidos registrados aún."
               }
             </div>
           ) : (
