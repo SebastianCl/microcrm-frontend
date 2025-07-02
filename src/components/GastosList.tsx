@@ -201,7 +201,7 @@ const GastosList: React.FC<GastosListProps> = ({
         <>
             <Card className="p-4">
                 <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
-                    <h2 className="text-xl font-semibold">{limit ? 'Gastos Recientes' : 'Gastos'}</h2>
+                    <h2 className="text-xl font-semibold">{limit ? 'Gastos recientes' : 'Gastos'}</h2>
                     {showCreateButton && (
                         <div className="flex gap-2 items-center">
                             {!isOnline && <Badge variant="destructive">Sin conexión</Badge>}

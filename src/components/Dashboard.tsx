@@ -89,17 +89,6 @@ const Dashboard = () => {
         ) : null}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold tracking-tight">Gastos Recientes</h2>
-          <GastosList limit={5} showCreateButton={false} />
-        </div>
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold tracking-tight">Clientes Activos</h2>
-          <ClientList limit={5} showCreateButton={false} />
-        </div>
-      </div>
-
     </div>
   );
 };

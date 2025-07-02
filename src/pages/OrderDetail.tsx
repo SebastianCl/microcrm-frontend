@@ -13,7 +13,10 @@ import {
   RefreshCw,
   Loader2,
   ArrowRight,
-  Download
+  Download,
+  User,
+  MapPin,
+  CreditCard
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Addition } from '@/models/order.model';
@@ -222,14 +225,20 @@ const OrderDetail = () => {
             {/* Información principal en tarjeta con estilo de EditOrder */}
             <div className="grid md:grid-cols-3 gap-4 p-4 bg-muted/30 rounded-lg">
               <div>
-                <h4 className="font-medium">Cliente</h4>
+                <div className="flex items-center gap-2 mb-1">
+                  <User className="h-4 w-4 text-muted-foreground" />
+                  <h4 className="font-medium">Cliente</h4>
+                </div>
                 <p className="text-muted-foreground">{order.nombre_cliente}</p>
               </div>
 
               <div>
-                <h4 className="font-medium">
-                  {order.nombre_mesa && order.nombre_mesa !== 'Para llevar' ? 'Mesa' : 'Tipo'}
-                </h4>
+                <div className="flex items-center gap-2 mb-1">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <h4 className="font-medium">
+                    {order.nombre_mesa && order.nombre_mesa !== 'Para llevar' ? 'Mesa' : 'Tipo'}
+                  </h4>
+                </div>
                 <p className="text-muted-foreground">
                   {order.nombre_mesa && order.nombre_mesa !== 'Para llevar'
                     ? order.nombre_mesa
@@ -239,7 +248,10 @@ const OrderDetail = () => {
               </div>
 
               <div>
-                <h4 className="font-medium">Medio de pago</h4>
+                <div className="flex items-center gap-2 mb-1">
+                  <CreditCard className="h-4 w-4 text-muted-foreground" />
+                  <h4 className="font-medium">Medio de pago</h4>
+                </div>
                 <p className="text-muted-foreground capitalize">
                   {order.medio_pago === 'efectivo' ? 'Efectivo' :
                     order.medio_pago === 'transferencia' ? 'Transferencia' :
