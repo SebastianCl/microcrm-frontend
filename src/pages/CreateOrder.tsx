@@ -224,6 +224,42 @@ const CreateOrder = () => {
     }
   };
 
+  const canNavigateToStep = (stepKey: string) => {
+    const steps = ['table', 'client', 'products', 'review'];
+    const currentIndex = steps.indexOf(currentStep);
+    const targetIndex = steps.indexOf(stepKey);
+
+    // Siempre puede ir a pasos anteriores
+    if (targetIndex < currentIndex) return true;
+
+    // Para ir a pasos futuros, verificar si se puede avanzar
+    switch (stepKey) {
+      case 'client':
+        return selectedTableId !== '' || selectedTableName === 'Para llevar';
+      case 'products':
+        return (selectedTableId !== '' || selectedTableName === 'Para llevar');
+      case 'review':
+        return (selectedTableId !== '' || selectedTableName === 'Para llevar') && orderItems.length > 0;
+      default:
+        return true;
+    }
+  };
+
+  const handleStepClick = (stepKey: 'table' | 'client' | 'products' | 'review') => {
+    if (canNavigateToStep(stepKey)) {
+      setCurrentStep(stepKey);
+    } else {
+      // Mostrar mensaje de que no puede navegar a ese paso aún
+      if (stepKey === 'client' && !selectedTableId && selectedTableName !== 'Para llevar') {
+        toast.error('Primero selecciona una mesa');
+      } else if (stepKey === 'products' && !selectedTableId && selectedTableName !== 'Para llevar') {
+        toast.error('Primero selecciona una mesa');
+      } else if (stepKey === 'review' && orderItems.length === 0) {
+        toast.error('Primero agrega productos a la orden');
+      }
+    }
+  };
+
   const renderStepIndicator = () => {
     const steps = [
       { key: 'table', label: 'Mesa', icon: MapPin },
@@ -239,18 +275,28 @@ const CreateOrder = () => {
             const Icon = step.icon;
             const isActive = step.key === currentStep;
             const isCompleted = steps.findIndex(s => s.key === currentStep) > index;
+            const canNavigate = canNavigateToStep(step.key as 'table' | 'client' | 'products' | 'review');
 
             return (
               <div key={step.key} className="flex items-center">
-                <div className={`
-                  flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300
-                  ${isActive ? 'bg-primary text-primary-foreground shadow-lg scale-110' :
-                    isCompleted ? 'bg-green-500 text-white' : 'bg-background text-muted-foreground border border-muted'}
-                `}>
+                <div
+                  className={`
+                    flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300
+                    ${canNavigate ? 'cursor-pointer hover:scale-105' : 'cursor-not-allowed opacity-50'}
+                    ${isActive ? 'bg-primary text-primary-foreground shadow-lg scale-110' :
+                      isCompleted ? 'bg-green-500 text-white hover:bg-green-600' :
+                        canNavigate ? 'bg-background text-muted-foreground border border-muted hover:border-primary/50 hover:bg-muted/50' :
+                          'bg-background text-muted-foreground border border-muted'}
+                  `}
+                  onClick={() => handleStepClick(step.key as 'table' | 'client' | 'products' | 'review')}
+                >
                   <Icon className="w-5 h-5" />
                 </div>
-                <span className={`ml-2 text-sm font-medium transition-colors duration-200 hidden sm:block ${isActive ? 'text-primary' : isCompleted ? 'text-green-600' : 'text-muted-foreground'
-                  }`}>
+                <span
+                  className={`ml-2 text-sm font-medium transition-colors duration-200 hidden sm:block ${canNavigate ? 'cursor-pointer' : 'cursor-not-allowed'
+                    } ${isActive ? 'text-primary' : isCompleted ? 'text-green-600' : canNavigate ? 'text-muted-foreground hover:text-foreground' : 'text-muted-foreground opacity-50'}`}
+                  onClick={() => handleStepClick(step.key as 'table' | 'client' | 'products' | 'review')}
+                >
                   {step.label}
                 </span>
                 {index < steps.length - 1 && (
