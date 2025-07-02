@@ -1,15 +1,13 @@
-
-import React from 'react';
 import { PiggyBank, CreditCard, AlertCircle, ShoppingCart, BarChart4, Package, Users, Receipt } from 'lucide-react';
 import StatCard from './stats/StatCard';
-import InvoiceList from './InvoiceList';
 import ClientList from './ClientList';
 import GastosList from './GastosList';
-import { dashboardStats } from '@/lib/sample-data';
+import { useFinancialSummary } from '@/hooks/useFinancialSummary';
 import QuickActionCard from './dashboard/QuickActionCard';
 import { formatCurrency } from '@/lib/utils';
 
 const Dashboard = () => {
+  const { data: financialData, isLoading, error } = useFinancialSummary();
   return (
     <div className="space-y-8">
       <div>
@@ -34,12 +32,6 @@ const Dashboard = () => {
             icon={<CreditCard className="h-6 w-6 text-muted-foreground" />}
             href="/gastos"
           />
-          {/*<QuickActionCard
-            title="Ver Facturas"
-            description="Consulta y gestiona tus facturas."
-            icon={<Receipt className="h-6 w-6 text-muted-foreground" />}
-            href="/invoices"
-          />*/}
           <QuickActionCard
             title="Gestionar clientes"
             description="Añade o edita la información de tus clientes."
@@ -63,33 +55,38 @@ const Dashboard = () => {
 
       <div className="space-y-4">
         <h2 className="text-xl font-semibold tracking-tight">Resumen financiero</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            title="Ingresos totales"
-            value={formatCurrency(dashboardStats.totalRevenue)}
-            icon={<PiggyBank />}
-            trend={{ value: 12, isPositive: true }}
-          />
-          <StatCard
-            title="Facturas pagadas"
-            value={formatCurrency(dashboardStats.paidInvoices)}
-            icon={<CreditCard />}
-            description={`${dashboardStats.invoiceCount.paid} facturas`}
-          />
-          <StatCard
-            title="Cantidad pendiente"
-            value={formatCurrency(dashboardStats.pendingAmount)}
-            icon={<CreditCard />}
-            description={`${dashboardStats.invoiceCount.pending} facturas`}
-          />
-          <StatCard
-            title="Cantidad vencida"
-            value={formatCurrency(dashboardStats.overdueAmount)}
-            icon={<AlertCircle />}
-            description={`${dashboardStats.invoiceCount.overdue} facturas`}
-            trend={{ value: 5, isPositive: false }}
-          />
-        </div>
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="h-32 bg-muted animate-pulse rounded-lg"></div>
+            <div className="h-32 bg-muted animate-pulse rounded-lg"></div>
+            <div className="h-32 bg-muted animate-pulse rounded-lg"></div>
+          </div>
+        ) : error ? (
+          <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
+            <p>Error al cargar el resumen financiero</p>
+          </div>
+        ) : financialData ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <StatCard
+              title="Total en ventas"
+              value={formatCurrency(Number(financialData.total_venta) || 0)}
+              icon={<PiggyBank />}
+              description="Ingresos por ventas"
+            />
+            <StatCard
+              title="Total en gastos"
+              value={formatCurrency(Number(financialData.total_gastos) || 0)}
+              icon={<CreditCard />}
+              description="Gastos registrados"
+            />
+            <StatCard
+              title="Pedidos pendientes"
+              value={financialData.total_pen}
+              icon={<AlertCircle />}
+              description="Pedidos por procesar"
+            />
+          </div>
+        ) : null}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
