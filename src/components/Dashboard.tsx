@@ -1,7 +1,5 @@
 import { PiggyBank, CreditCard, AlertCircle, ShoppingCart, BarChart4, Package, Users, Receipt } from 'lucide-react';
 import StatCard from './stats/StatCard';
-import ClientList from './ClientList';
-import GastosList from './GastosList';
 import { useFinancialSummary } from '@/hooks/useFinancialSummary';
 import QuickActionCard from './dashboard/QuickActionCard';
 import { formatCurrency } from '@/lib/utils';
