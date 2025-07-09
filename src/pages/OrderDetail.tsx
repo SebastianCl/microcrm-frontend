@@ -83,12 +83,23 @@ const OrderDetail = () => {
     }
   };
 
-  const handlePaymentMethodConfirm = async (paymentMethod: string) => {
+  const handlePaymentMethodConfirm = async (paymentMethod: string, paidAmount?: number) => {
     try {
       // Usar el nuevo endpoint que combina actualizar método de pago y finalizar la orden
       await finalizeOrderWithPayment.mutateAsync(paymentMethod);
 
-      toast.success(`Orden ${order.id_pedido} finalizada exitosamente`);
+      // Si es efectivo, mostrar información del cambio
+      if (paymentMethod === 'efectivo' && paidAmount) {
+        const change = paidAmount - orderTotal;
+        if (change > 0) {
+          toast.success(`Orden ${order.id_pedido} finalizada exitosamente. Cambio a devolver: ${formatCurrency(change)}`);
+        } else {
+          toast.success(`Orden ${order.id_pedido} finalizada exitosamente`);
+        }
+      } else {
+        toast.success(`Orden ${order.id_pedido} finalizada exitosamente`);
+      }
+
       setShowPaymentDialog(false);
     } catch (error) {
       toast.error('Error al finalizar la orden');
@@ -169,6 +180,14 @@ const OrderDetail = () => {
   }
   const order = orderData.order;
   const orderItems = orderData.items;
+
+  // Calcular el total de la orden
+  const orderTotal = orderItems.reduce((sum, item) => {
+    const itemTotal = item.total;
+    const additionsTotal = item.additions?.reduce((addSum, addition) =>
+      addSum + (addition.price * addition.quantity), 0) || 0;
+    return sum + itemTotal + additionsTotal;
+  }, 0);
 
   const nextStatus = getNextStatus(order.estado);
   const nextStatusLabel = getNextStatusLabel(order.estado);
@@ -422,6 +441,7 @@ const OrderDetail = () => {
         onConfirm={handlePaymentMethodConfirm}
         isLoading={finalizeOrderWithPayment.isPending || updateOrderStatus.isPending}
         orderId={order.id_pedido}
+        totalAmount={orderTotal}
       />
     </div>
   );
