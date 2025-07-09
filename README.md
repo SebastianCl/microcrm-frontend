@@ -7,7 +7,7 @@
 
 ## 📋 Descripción
 
-Micro CRM es una aplicación web moderna para gestión de ventas, inventario, clientes y pedidos. Diseñada para pequeñas y medianas empresas que necesitan una solución integral para administrar sus operaciones comerciales diarias de manera eficiente.
+Micro CRM es una aplicación web moderna para gestión de ventas, inventario, clientes y ordenes. Diseñada para pequeñas y medianas empresas que necesitan una solución integral para administrar sus operaciones comerciales diarias de manera eficiente.
 
 ### ✨ Características Principales
 
@@ -15,7 +15,7 @@ Micro CRM es una aplicación web moderna para gestión de ventas, inventario, cl
 - **Gestión de Facturas**: Crea, consulta y administra facturas fácilmente
 - **Seguimiento de Clientes**: Mantén una base de datos actualizada de tus clientes
 - **Gestión de Inventario**: Controla tus productos y existencias
-- **Gestión de Pedidos**: Administra pedidos desde su creación hasta la entrega
+- **Gestión de Ordenes**: Administra ordenes desde su creación hasta la entrega
 - **Informes y Estadísticas**: Genera reportes sobre tu desempeño financiero
 - **Interfaz Responsiva**: Diseño adaptable a dispositivos móviles y escritorio
 

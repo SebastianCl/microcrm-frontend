@@ -48,10 +48,10 @@ interface ApiOrderDetailResponse {
   data: OrderDetailItem[];
 }
 
-// Servicio específico para las operaciones de pedidos
+// Servicio específico para las operaciones de ordenes
 export const orderService = {
   /**
-   * Obtiene todas las pedidos
+   * Obtiene todas las ordenes
    */
   async getAll(): Promise<Order[]> {
     const response = await apiClient.get<ApiOrderResponse>(`${API_CONFIG.ENDPOINTS.ORDERS}/dia`);

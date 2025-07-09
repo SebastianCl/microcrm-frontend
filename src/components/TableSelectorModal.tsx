@@ -65,7 +65,7 @@ const TableSelectorModal = ({
           {/* Información sobre mesas inactivas */}
           <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
             <p className="text-sm text-blue-800 dark:text-blue-200">
-              💡 Las mesas marcadas como "Inactiva" no están disponibles para tomar pedidos.
+              💡 Las mesas marcadas como "Inactiva" no están disponibles para tomar ordenes.
             </p>
           </div>
 

@@ -200,7 +200,7 @@ const CreateOrder = () => {
     }
 
     if (selectedTableName === 'Para llevar' && (!values.observations || values.observations.trim() === '')) {
-      toast.error('Las observaciones son obligatorias para pedidos para llevar');
+      toast.error('Las observaciones son obligatorias para ordenes para llevar');
       return;
     }
 

@@ -78,10 +78,10 @@ const Dashboard = () => {
               description="Gastos registrados"
             />
             <StatCard
-              title="Pedidos pendientes"
+              title="Ordenes pendientes"
               value={financialData.total_pen}
               icon={<AlertCircle />}
-              description="Pedidos por procesar"
+              description="Ordenes por procesar"
             />
           </div>
         ) : null}

@@ -40,7 +40,7 @@ const OrderList: React.FC<OrderListProps> = ({
   // Verificar conectividad de red
   const { isOnline } = useNetwork();
 
-  // Usar React Query para obtener las pedidos
+  // Usar React Query para obtener las ordenes
   const {
     data: orders = [],
     isLoading,
@@ -48,7 +48,7 @@ const OrderList: React.FC<OrderListProps> = ({
     error,
     refetch
   } = useOrders();
-  // Estado para pedidos filtradas usando useMemo para evitar re-renders innecesarios
+  // Estado para ordenes filtradas usando useMemo para evitar re-renders innecesarios
   const filteredOrders = useMemo(() => {
     console.log('Filtering orders. Raw orders:', orders, 'Search query:', searchQuery, 'Active filters:', activeFilters);
 
@@ -217,10 +217,10 @@ const OrderList: React.FC<OrderListProps> = ({
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 p-6 bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl border border-primary/20">
         <div>
           <h2 className="text-3xl font-bold text-foreground mb-1">
-            {limit ? 'Pedidos recientes' : 'Gestión de pedidos'}
+            {limit ? 'Ordenes recientes' : 'Gestión de ordenes'}
           </h2>
           <p className="text-muted-foreground">
-            {limit ? 'Últimos pedidos registrados' : 'Administra y supervisa todas las órdenes'}
+            {limit ? 'Últimos ordenes registrados' : 'Administra y supervisa todas las órdenes'}
           </p>
         </div>
 
@@ -263,7 +263,7 @@ const OrderList: React.FC<OrderListProps> = ({
       {/* Mostrar error si existe */}
       {isError && (
         <ErrorDisplay
-          error={error instanceof Error ? error : 'Error al cargar las pedidos'}
+          error={error instanceof Error ? error : 'Error al cargar las ordenes'}
           onRetry={() => refetch()}
         />
       )}
@@ -297,8 +297,8 @@ const OrderList: React.FC<OrderListProps> = ({
             <Card className="p-8">
               <div className="text-center text-muted-foreground">
                 {searchQuery && searchQuery.trim()
-                  ? `No se encontraron pedidos que coincidan con "${searchQuery}"`
-                  : "No hay pedidos registrados aún."
+                  ? `No se encontraron ordenes que coincidan con "${searchQuery}"`
+                  : "No hay ordenes registrados aún."
                 }
               </div>
             </Card>
@@ -319,7 +319,7 @@ const OrderList: React.FC<OrderListProps> = ({
         <Card className="p-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-sm text-muted-foreground order-2 sm:order-1">
-              Mostrando {startIndex + 1} a {Math.min(endIndex, filteredOrders?.length || 0)} de {filteredOrders?.length || 0} pedidos
+              Mostrando {startIndex + 1} a {Math.min(endIndex, filteredOrders?.length || 0)} de {filteredOrders?.length || 0} ordenes
             </div>
             <Pagination className="order-1 sm:order-2">
               <PaginationContent>

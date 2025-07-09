@@ -343,7 +343,7 @@ const OrderDetail = () => {
           </div>
         </Card>
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Gestionar pedidos</h2>
+          <h2 className="text-xl font-semibold mb-4">Gestionar ordenes</h2>
 
           {/* Mensaje informativo para finalización */}
           {order.estado === 'Entregado' && !order.medio_pago && (
