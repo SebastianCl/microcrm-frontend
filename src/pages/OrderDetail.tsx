@@ -39,8 +39,7 @@ const OrderDetail = () => {
 
   const getNextStatus = (currentStatus: string) => {
     switch (currentStatus) {
-      case 'Pendiente': return 'Preparando';    // 1 -> 2
-      case 'Preparando': return 'Entregado';    // 2 -> 3  
+      case 'Pendiente': return 'Entregado';    // 1 -> 3 
       case 'Entregado': return 'Finalizado';    // 3 -> 5
       default: return null;
     }
@@ -48,8 +47,7 @@ const OrderDetail = () => {
 
   const getNextStatusLabel = (currentStatus: string) => {
     switch (currentStatus) {
-      case 'Pendiente': return 'Iniciar preparación';
-      case 'Preparando': return 'Marcar como entregado';
+      case 'Pendiente': return 'Marcar como entregado';
       case 'Entregado': return 'Finalizar y seleccionar pago';
       default: return null;
     }
@@ -68,7 +66,6 @@ const OrderDetail = () => {
     // Mapear estados en español a IDs de estado que espera el backend
     const statusIdMap: Record<string, number> = {
       'Pendiente': 1,
-      'Preparando': 2,
       'Entregado': 3,
       'Finalizado': 5,
       'Cancelado': 4
@@ -175,15 +172,14 @@ const OrderDetail = () => {
 
   const nextStatus = getNextStatus(order.estado);
   const nextStatusLabel = getNextStatusLabel(order.estado);
+
   // Helper function to get status icon
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'Pendiente':
-        return <Clock className="h-5 w-5 text-yellow-500" />;
-      case 'Preparando':
-        return <RefreshCw className="h-5 w-5 text-blue-500" />;
+        return <Clock className="h-5 w-5 text-yellow-500" />
       case 'Entregado':
-        return <CheckCircle2 className="h-5 w-5 text-green-500" />;
+        return <CheckCircle2 className="h-5 w-5 text-blue-500" />;
       case 'Cancelado':
         return <Ban className="h-5 w-5 text-red-500" />;
       case 'Finalizado':

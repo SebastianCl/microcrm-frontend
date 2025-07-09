@@ -19,20 +19,13 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
   const updateStatus = useUpdateOrderStatus(order.id_pedido);
   const [showCancelDialog, setShowCancelDialog] = React.useState(false);
 
-  const getStatusBadge = (status: 'Pendiente' | 'Preparando' | 'Cancelado' | 'Entregado' | 'Finalizado') => {
+  const getStatusBadge = (status: 'Pendiente' | 'Cancelado' | 'Entregado' | 'Finalizado') => {
     switch (status) {
       case 'Pendiente':
         return (
           <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 flex items-center gap-1 px-3 py-1">
             <Clock className="h-3 w-3" />
             <span className="font-medium">Pendiente</span>
-          </Badge>
-        );
-      case 'Preparando':
-        return (
-          <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 flex items-center gap-1 px-3 py-1">
-            <Loader className="h-3 w-3 animate-spin" />
-            <span className="font-medium">Preparando</span>
           </Badge>
         );
       case 'Cancelado':
@@ -44,7 +37,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
         );
       case 'Entregado':
         return (
-          <Badge className="bg-green-100 text-green-800 hover:bg-green-200 flex items-center gap-1 px-3 py-1">
+          <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 flex items-center gap-1 px-3 py-1">
             <Check className="h-3 w-3" />
             <span className="font-medium">Entregado</span>
           </Badge>
@@ -67,8 +60,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
 
   const getNextStatus = (currentStatus: string) => {
     switch (currentStatus) {
-      case 'Pendiente': return 'Preparando';    // 1 -> 2
-      case 'Preparando': return 'Entregado';    // 2 -> 3  
+      case 'Pendiente': return 'Entregado';    // 1 -> 3 
       case 'Entregado': return 'Finalizado';    // 3 -> 5
       default: return null;
     }
@@ -76,8 +68,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
 
   const getNextStatusLabel = (currentStatus: string) => {
     switch (currentStatus) {
-      case 'Pendiente': return 'Iniciar preparación';
-      case 'Preparando': return 'Marcar como entregado';
+      case 'Pendiente': return 'Marcar como entregado';
       case 'Entregado': return 'Finalizar';
       default: return null;
     }
@@ -97,7 +88,6 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
     // Mapear estados en español a IDs de estado que espera el backend
     const statusIdMap: Record<string, number> = {
       'Pendiente': 1,     // Pendiente
-      'Preparando': 2,    // Preparando  
       'Entregado': 3,     // Entregado
       'Finalizado': 5,    // Finalizado
       'Cancelado': 4      // Cancelado

@@ -92,12 +92,14 @@ const OrderList: React.FC<OrderListProps> = ({
           order?.nombre_mesa === 'Para llevar'
         );
       }
-    }    // Definir el orden de prioridad de estados
+    }
+
+    // Definir el orden de prioridad de estados
     const statusOrder = {
-      'Pendiente': 1,
-      'Preparando': 2,
-      'Finalizado': 3,
-      'Cancelado': 4
+      'Pendiente': 1,     // Pendiente
+      'Entregado': 2,     // Entregado
+      'Finalizado': 3,    // Finalizado
+      'Cancelado': 4      // Cancelado
     };
 
     // Aplicar ordenamiento por defecto por estado, luego por filtro personalizado si existe
@@ -169,7 +171,7 @@ const OrderList: React.FC<OrderListProps> = ({
       id: 'status',
       label: 'Estado',
       type: 'select' as const,
-      options: ['Pendiente', 'Preparando', 'Finalizado', 'Cancelado']
+      options: ['Pendiente', 'Entregado', 'Finalizado', 'Cancelado']
     },
     {
       id: 'orderType',

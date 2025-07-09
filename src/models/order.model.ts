@@ -2,7 +2,7 @@ export interface Order {
   id_pedido: string;
   fecha: string;
   tipo_pedido: string;
-  estado: "Pendiente" | "Cancelado" | "Preparando" | "Entregado" | "Finalizado";
+  estado: "Pendiente" | "Cancelado" | "Entregado" | "Finalizado";
   nombre_mesa?: string;
   nombre_cliente: string;
   correo_cliente?: string;
