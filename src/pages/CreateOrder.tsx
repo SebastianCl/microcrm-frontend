@@ -552,7 +552,7 @@ const CreateOrder = () => {
                 <FormItem>
                   <FormControl>
                     <Textarea
-                      placeholder="Ingrese observaciones para este pedido para llevar..."
+                      placeholder="Ingrese observaciones para este orden para llevar..."
                       className="min-h-[100px] resize-none text-base"
                       {...field}
                     />

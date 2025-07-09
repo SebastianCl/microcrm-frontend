@@ -40,7 +40,7 @@ export const invoiceService = {
   },
 
   /**
-   * Genera la factura para un pedido específico
+   * Genera la factura para un orden específico
    */
   async generateInvoice(orderId: number): Promise<{ success: boolean; data: { base64: string } }> {
     return apiClient.post<{ success: boolean; data: { base64: string } }>(`${API_CONFIG.ENDPOINTS.INVOICES}/${orderId}/generar`, {});

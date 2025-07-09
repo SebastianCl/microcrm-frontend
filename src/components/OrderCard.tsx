@@ -87,7 +87,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
     const nextStatus = getNextStatus(order.estado);
     if (!nextStatus) return;
 
-    // Si está tratando de finalizar, redireccionar al detalle del pedido
+    // Si está tratando de finalizar, redireccionar al detalle del orden
     if (nextStatus === 'Finalizado') {
       navigate(`/orders/${order.id_pedido}`);
       toast.info('Redirigiendo a detalle para finalizar orden y seleccionar método de pago');
@@ -122,7 +122,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
       // Asegurarse de que id_venta es un número
       const ventdaID = typeof order.id_venta === 'string' ? parseInt(order.id_venta, 10) : order.id_venta;
       if (isNaN(ventdaID)) {
-        toast.error('ID de pedido inválido');
+        toast.error('ID de orden inválido');
         return;
       }
       const response = await invoiceService.generateInvoice(ventdaID);

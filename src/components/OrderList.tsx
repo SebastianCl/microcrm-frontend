@@ -79,7 +79,7 @@ const OrderList: React.FC<OrderListProps> = ({
       result = result.filter(order => order?.estado === activeFilters.status);
     }
 
-    // Aplicar filtro de tipo de pedido
+    // Aplicar filtro de tipo de orden
     if (activeFilters.orderType && activeFilters.orderType.trim()) {
       if (activeFilters.orderType === 'En Mesa') {
         result = result.filter(order =>
@@ -127,7 +127,7 @@ const OrderList: React.FC<OrderListProps> = ({
         return statusA - statusB;
       }
 
-      // Si tienen el mismo estado, ordenar por ID de pedido (convertir a string para comparación segura)
+      // Si tienen el mismo estado, ordenar por ID de orden (convertir a string para comparación segura)
       const idA = a.id_pedido?.toString() || '';
       const idB = b.id_pedido?.toString() || '';
 

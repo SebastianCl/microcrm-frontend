@@ -19,8 +19,8 @@ const Dashboard = () => {
         <h2 className="text-xl font-semibold tracking-tight">Acciones rápidas</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           <QuickActionCard
-            title="Crear pedido"
-            description="Inicia un nuevo pedido"
+            title="Crear orden"
+            description="Inicia una nueva orden"
             icon={<ShoppingCart className="h-6 w-6 text-muted-foreground" />}
             href="/orders/new"
           />
