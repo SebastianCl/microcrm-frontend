@@ -31,9 +31,9 @@ export const useCurrencyInput = ({ initialValue = '', onChange }: UseCurrencyInp
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    
-    // Permitir solo números y punto decimal
-    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+
+    // Permitir solo números enteros (sin puntos decimales)
+    if (value === '' || /^\d*$/.test(value)) {
       setDisplayValue(value);
     }
   }, []);
