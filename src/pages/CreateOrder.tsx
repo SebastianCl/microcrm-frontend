@@ -347,26 +347,40 @@ const CreateOrder = () => {
         </CardContent>
       </Card>
 
-      {tablesFromAPI && tablesFromAPI.length > 0 && (
+      {tablesFromAPI && tablesFromAPI.filter(table => table.activa).length > 0 && (
         <div>
           <h3 className="text-xl font-semibold mb-6 text-center">Mesas disponibles</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {tablesFromAPI.map((table) => (
-              <Card
-                key={table.id_mesa}
-                className={`cursor-pointer transition-all duration-200 hover:shadow-lg border-2 ${selectedTableId === table.id_mesa.toString() ? 'border-primary bg-primary/5 shadow-md' : 'border-border hover:border-primary/50'
-                  }`}
-                onClick={() => handleTableSelect(table.id_mesa.toString(), table.nombre_mesa)}
-              >
-                <CardContent className="p-6 text-center">
-                  <div className={`w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center transition-colors duration-200 ${selectedTableId === table.id_mesa.toString() ? 'bg-primary text-primary-foreground' : 'bg-muted'
-                    }`}>
-                    <MapPin className="w-6 h-6" />
-                  </div>
-                  <h4 className="font-semibold text-lg">{table.nombre_mesa}</h4>
-                </CardContent>
-              </Card>
-            ))}
+            {tablesFromAPI
+              .filter(table => table.activa)
+              .map((table) => (
+                <Card
+                  key={table.id_mesa}
+                  className={`cursor-pointer transition-all duration-200 hover:shadow-lg border-2 ${selectedTableId === table.id_mesa.toString() ? 'border-primary bg-primary/5 shadow-md' : 'border-border hover:border-primary/50'
+                    }`}
+                  onClick={() => handleTableSelect(table.id_mesa.toString(), table.nombre_mesa)}
+                >
+                  <CardContent className="p-6 text-center">
+                    <div className={`w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center transition-colors duration-200 ${selectedTableId === table.id_mesa.toString() ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                      }`}>
+                      <MapPin className="w-6 h-6" />
+                    </div>
+                    <h4 className="font-semibold text-lg">{table.nombre_mesa}</h4>
+                  </CardContent>
+                </Card>
+              ))}
+          </div>
+        </div>
+      )}
+
+      {tablesFromAPI && tablesFromAPI.length > 0 && tablesFromAPI.filter(table => table.activa).length === 0 && (
+        <div className="text-center py-8">
+          <div className="p-6 bg-muted/20 rounded-lg border border-dashed border-muted-foreground/30">
+            <MapPin className="w-12 h-12 mx-auto mb-4 text-muted-foreground/60" />
+            <h3 className="text-lg font-medium text-muted-foreground mb-2">No hay mesas disponibles</h3>
+            <p className="text-sm text-muted-foreground">
+              Todas las mesas están ocupadas en este momento.
+            </p>
           </div>
         </div>
       )}

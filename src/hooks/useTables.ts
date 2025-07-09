@@ -5,5 +5,6 @@ export const useTables = () => {
     return useQuery({
         queryKey: ["tables"],
         queryFn: getTables,
+        staleTime: 0
     });
 };
