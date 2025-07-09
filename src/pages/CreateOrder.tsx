@@ -225,8 +225,8 @@ const CreateOrder = () => {
     };
 
     try {
-      await createOrderMutation.mutateAsync(backendOrderPayload);
-      toast.success('Orden creada');
+      const response = await createOrderMutation.mutateAsync(backendOrderPayload);
+      toast.success(`Orden creada exitosamente - ID: ${response.id_pedido}`);
       setTimeout(() => navigate('/orders'), 1000);
     } catch (error) {
       toast.error('Error al crear la orden');

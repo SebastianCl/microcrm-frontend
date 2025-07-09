@@ -13,6 +13,11 @@ interface ApiOrderSingleResponse {
   data: Order;
 }
 
+interface ApiCreateOrderResponse {
+  success: boolean;
+  id_pedido: number;
+}
+
 // Interface para el detalle individual de un producto en la orden
 interface OrderDetailItemProduct {
   cantidad: number;
@@ -95,7 +100,7 @@ export const orderService = {
     }
 
     const orderData = response.data[0];
-    
+
     // Crear el objeto Order a partir de los datos de la orden
     const order: Order = {
       id_pedido: id,
@@ -159,9 +164,9 @@ export const orderService = {
       }>;
     }>;
     id_estado: number;
-  }): Promise<Order> {
-    const response = await apiClient.post<ApiOrderSingleResponse>(API_CONFIG.ENDPOINTS.ORDERS, orderData);
-    return response.data;
+  }): Promise<ApiCreateOrderResponse> {
+    const response = await apiClient.post<ApiCreateOrderResponse>(API_CONFIG.ENDPOINTS.ORDERS, orderData);
+    return response;
   },
 
   /**
@@ -293,17 +298,17 @@ export const orderService = {
    */
   async getDetail(orderId: string): Promise<OrderDetailItemProduct[]> {
     const response = await apiClient.get<ApiOrderDetailResponse>(`${API_CONFIG.ENDPOINTS.ORDERS}/${orderId}/detalle`);
-    
+
     if (!response.data || response.data.length === 0) {
       return [];
     }
-    
+
     // Extraer todos los detalles de todos los elementos en la respuesta
     const allDetails: OrderDetailItemProduct[] = [];
     response.data.forEach(orderItem => {
       allDetails.push(...orderItem.detalles);
     });
-    
+
     return allDetails;
   }
 };

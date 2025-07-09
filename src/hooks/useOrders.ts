@@ -2,6 +2,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { orderService } from '@/services/orderService';
 import { Order } from '@/models/order.model';
 
+// Interfaz para la respuesta de creación de orden
+interface CreateOrderResponse {
+  success: boolean;
+  id_pedido: number;
+}
+
 // Keys para las queries
 export const ORDER_QUERY_KEYS = {
   ORDERS: 'orders',
@@ -64,26 +70,26 @@ export const useCreateOrder = () => {
 export const useCreateOrderWithProducts = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (orderData: {
-      id_cliente: number | null;
-      id_usuario: number;
-      id_mesa: number | null;
-      tipo_pedido: string;
-      Observacion: string;
-      medio_pago: string | null;
-      productos: Array<{
-        id_producto: number;
+  return useMutation<CreateOrderResponse, Error, {
+    id_cliente: number | null;
+    id_usuario: number;
+    id_mesa: number | null;
+    tipo_pedido: string;
+    Observacion: string;
+    medio_pago: string | null;
+    productos: Array<{
+      id_producto: number;
+      cantidad: number;
+      precio_unitario: number;
+      observacion: string;
+      adiciones: Array<{
+        id_adicion: number;
         cantidad: number;
-        precio_unitario: number;
-        observacion: string;
-        adiciones: Array<{
-          id_adicion: number;
-          cantidad: number;
-        }>;
       }>;
-      id_estado: number;
-    }) => orderService.createOrderWithProducts(orderData),
+    }>;
+    id_estado: number;
+  }>({
+    mutationFn: (orderData) => orderService.createOrderWithProducts(orderData),
     onSuccess: () => {
       // Invalidar la caché para recargar los datos
       queryClient.invalidateQueries({ queryKey: [ORDER_QUERY_KEYS.ORDERS] });
