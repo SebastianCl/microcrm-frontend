@@ -38,7 +38,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
     //{ path: '/users', label: 'Usuarios', icon: <Users size={20} />, roles: ['Administrator'] },
     { path: '/clients', label: 'Clientes', icon: <Users size={20} />, roles: ['Administrator', 'Collaborator'] },
     { path: '/reports', label: 'Informes', icon: <BarChart4 size={20} />, roles: ['Administrator'] },
-    //{ path: '/settings', label: 'Configuración', icon: <SettingsIcon size={20} />, roles: ['Administrator'] }
+    { path: '/configuration', label: 'Configuración', icon: <SettingsIcon size={20} />, roles: ['Administrator'] }
   ];
 
   const filteredLinks = allLinks.filter(link =>

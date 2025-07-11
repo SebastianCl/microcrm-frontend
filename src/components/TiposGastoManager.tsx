@@ -9,7 +9,7 @@ const TiposGastoManager: React.FC = () => {
     return (
         <Card className="p-4">
             <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold">Tipos de Gasto</h3>
+                <h3 className="text-lg font-semibold">Tipos de gasto</h3>
             </div>
 
             {isLoading ? (

@@ -24,8 +24,8 @@ const Users = () => {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
 
-  const filteredUsers = users.filter(user => 
-    user.name.toLowerCase().includes(search.toLowerCase()) || 
+  const filteredUsers = users.filter(user =>
+    user.name.toLowerCase().includes(search.toLowerCase()) ||
     user.email.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -48,11 +48,11 @@ const Users = () => {
           'Collaborator': 'bg-blue-500 hover:bg-blue-600',
           'Viewer': 'bg-green-500 hover:bg-green-600'
         };
-        
+
         return (
           <Badge className={roleColors[user.role]}>
-            {user.role === 'Administrator' ? 'Administrador' : 
-             user.role === 'Collaborator' ? 'Colaborador' : 'Visualizador'}
+            {user.role === 'Administrator' ? 'Administrador' :
+              user.role === 'Collaborator' ? 'Colaborador' : 'Visualizador'}
           </Badge>
         );
       }
@@ -61,7 +61,7 @@ const Users = () => {
       header: "Estado",
       accessorKey: "status",
       cell: (user) => (
-        <Badge 
+        <Badge
           variant={user.status === "Active" ? "default" : "outline"}
           className={user.status === "Active" ? "bg-green-500 hover:bg-green-600" : ""}
         >
@@ -74,9 +74,9 @@ const Users = () => {
       accessorKey: "id",
       cell: (user) => (
         <div className="flex space-x-2 justify-end">
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             onClick={(e) => {
               e.stopPropagation();
               setEditingUser(user);
@@ -84,8 +84,8 @@ const Users = () => {
           >
             Editar
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             className={`text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600 ${isMobile ? '' : 'hidden md:inline-flex'}`}
             onClick={(e) => {
@@ -112,12 +112,12 @@ const Users = () => {
         </div>
         <Button onClick={() => setCreateDialogOpen(true)} className="hover-scale">
           <PlusCircle className="mr-2 h-4 w-4" />
-          Nuevo Usuario
+          Nuevo usuario
         </Button>
       </div>
 
       <Card className="p-4 responsive-card">
-        <SearchAndFilter 
+        <SearchAndFilter
           search={search}
           onSearchChange={setSearch}
           placeholder="Buscar por nombre o email..."
@@ -131,16 +131,16 @@ const Users = () => {
               <Skeleton className="h-12 w-full" />
             </div>
           ) : error ? (
-            <ErrorDisplay 
-              error={error instanceof Error ? error : 'Error al cargar los usuarios'} 
-              onRetry={refetch} 
+            <ErrorDisplay
+              error={error instanceof Error ? error : 'Error al cargar los usuarios'}
+              onRetry={refetch}
             />
           ) : (
             <div className="responsive-table-wrapper">
-              <DataTable 
-                columns={columns} 
+              <DataTable
+                columns={columns}
                 data={filteredUsers}
-                className="responsive-table" 
+                className="responsive-table"
               />
             </div>
           )}
@@ -148,20 +148,20 @@ const Users = () => {
       </Card>
 
       <CreateUserDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen} />
-      
+
       {editingUser && (
-        <EditUserDialog 
-          user={editingUser} 
-          open={!!editingUser} 
-          onOpenChange={(open) => !open && setEditingUser(null)} 
+        <EditUserDialog
+          user={editingUser}
+          open={!!editingUser}
+          onOpenChange={(open) => !open && setEditingUser(null)}
         />
       )}
-      
+
       {deletingUser && (
-        <DeleteUserDialog 
-          user={deletingUser} 
-          open={!!deletingUser} 
-          onOpenChange={(open) => !open && setDeletingUser(null)} 
+        <DeleteUserDialog
+          user={deletingUser}
+          open={!!deletingUser}
+          onOpenChange={(open) => !open && setDeletingUser(null)}
         />
       )}
     </div>

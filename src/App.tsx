@@ -12,6 +12,7 @@ import Clients from "./pages/Clients";
 import Gastos from "./pages/Gastos";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
+import Configuration from "./pages/Configuration";
 import Inventory from "./pages/Inventory";
 import InventoryDetail from "./pages/InventoryDetail";
 import Orders from "./pages/Orders";
@@ -54,6 +55,7 @@ const App = () => (
                 <Route path="/users" element={<Users />} />
                 <Route path="/reports" element={<Reports />} />
                 <Route path="/settings" element={<Settings />} />
+                <Route path="/configuration" element={<Configuration />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
