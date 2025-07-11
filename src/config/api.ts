@@ -10,6 +10,7 @@ export const API_CONFIG = {
     USERS: '/users',
     GASTOS: '/expenses',
     TIPOS_GASTO: '/expenses/type-of-expense',
+    ADDITIONS: '/additions',
   },
   DEFAULT_HEADERS: {
     'Content-Type': 'application/json',

@@ -13,7 +13,7 @@ class ApiClient {
     const token = localStorage.getItem('authToken');
     return token ? { Authorization: `Bearer ${token}` } : {};
   }
-  
+
   /**
    * Realiza una petición HTTP usando fetch con manejo consistente de errores
    */
@@ -30,7 +30,7 @@ class ApiClient {
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.TIMEOUT);
-    
+
     try {
       const response = await fetch(url, {
         ...options,
@@ -39,7 +39,7 @@ class ApiClient {
       });
 
       clearTimeout(timeoutId);
-      
+
       // Manejar respuesta no-OK
       if (!response.ok) {
         let errorData;
@@ -61,23 +61,23 @@ class ApiClient {
           errorData
         );
       }
-      
+
       // Para respuestas sin contenido
       if (response.status === 204) {
         return {} as T;
       }
-      
+
       const data = await response.json();
       return data as T;
     } catch (error) {
       if (error instanceof ApiError) {
         throw error;
       }
-      
+
       if (error.name === 'AbortError') {
         throw new ApiError('La solicitud excedió el tiempo de espera', 408);
       }
-      
+
       throw new ApiError(
         (error as Error).message || 'Error desconocido al realizar la solicitud',
         0
@@ -89,12 +89,12 @@ class ApiClient {
 
   // Métodos específicos para cada verbo HTTP
   async get<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    return this.request<T>(endpoint, { 
-      ...options, 
+    return this.request<T>(endpoint, {
+      ...options,
       method: 'GET'
     });
   }
-  
+
   async post<T>(endpoint: string, body: any, options?: RequestInit): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
@@ -102,7 +102,7 @@ class ApiClient {
       body: JSON.stringify(body),
     });
   }
-  
+
   async put<T>(endpoint: string, body: any, options?: RequestInit): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
@@ -110,15 +110,15 @@ class ApiClient {
       body: JSON.stringify(body),
     });
   }
-  
-  async patch<T>(endpoint: string, body: any, options?: RequestInit): Promise<T> {
+
+  async patch<T>(endpoint: string, body?: any, options?: RequestInit): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
       method: 'PATCH',
-      body: JSON.stringify(body),
+      body: body !== undefined ? JSON.stringify(body) : undefined,
     });
   }
-  
+
   async delete<T>(endpoint: string, options?: RequestInit): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,

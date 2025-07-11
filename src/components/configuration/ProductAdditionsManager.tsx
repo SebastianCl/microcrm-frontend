@@ -6,55 +6,29 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Edit, Trash2, Package } from 'lucide-react';
+import { Plus, Edit, Package, Loader2, Search } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { ProductAddition } from '@/models/product-addition.model';
+import { useAdditions } from '@/hooks/useAdditions';
+import { useProducts } from '@/hooks/useProducts';
 
 const ProductAdditionsManager: React.FC = () => {
   const { toast } = useToast();
 
-  // Mock data de productos para el selector
-  const mockProducts = [
-    { id: '1', name: 'Hamburguesa Clásica' },
-    { id: '2', name: 'Pizza Margherita' },
-    { id: '3', name: 'Ensalada César' },
-    { id: '4', name: 'Café Americano' },
-    { id: '5', name: 'Jugo Natural' }
-  ];
+  // Hooks para obtener datos
+  const {
+    additions,
+    isLoading,
+    isCreating,
+    isUpdating,
+    isTogglingStatus,
+    createAddition,
+    updateAddition,
+    toggleAdditionStatus
+  } = useAdditions();
 
-  const [additions, setAdditions] = useState<ProductAddition[]>([
-    {
-      id: '1',
-      name: 'Queso Extra',
-      price: 2.50,
-      productId: '1',
-      productName: 'Hamburguesa Clásica',
-      isActive: true,
-      createdAt: '2024-01-15T10:00:00Z',
-      updatedAt: '2024-01-15T10:00:00Z'
-    },
-    {
-      id: '2',
-      name: 'Bacon',
-      price: 3.00,
-      productId: '1',
-      productName: 'Hamburguesa Clásica',
-      isActive: true,
-      createdAt: '2024-01-15T10:30:00Z',
-      updatedAt: '2024-01-15T10:30:00Z'
-    },
-    {
-      id: '3',
-      name: 'Champiñones',
-      price: 1.75,
-      productId: '2',
-      productName: 'Pizza Margherita',
-      isActive: false,
-      createdAt: '2024-01-15T11:00:00Z',
-      updatedAt: '2024-01-15T11:00:00Z'
-    }
-  ]);
+  const productsQuery = useProducts();
+  const products = productsQuery.data || [];
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedAddition, setSelectedAddition] = useState<ProductAddition | null>(null);
@@ -63,13 +37,15 @@ const ProductAdditionsManager: React.FC = () => {
     price: '',
     productId: ''
   });
+  const [productSearchTerm, setProductSearchTerm] = useState('');
+  const [showProductSuggestions, setShowProductSuggestions] = useState(false);
 
   const handleCreateAddition = () => {
     if (!formData.name.trim() || !formData.price || !formData.productId) {
       toast({
-        title: "Error",
+        title: "Advertencia",
         description: "Todos los campos son obligatorios",
-        variant: "destructive",
+        variant: "default",
       });
       return;
     }
@@ -77,34 +53,20 @@ const ProductAdditionsManager: React.FC = () => {
     const price = parseFloat(formData.price);
     if (price <= 0) {
       toast({
-        title: "Error",
+        title: "Advertencia",
         description: "El precio debe ser mayor a 0",
-        variant: "destructive",
+        variant: "default",
       });
       return;
     }
 
-    const selectedProduct = mockProducts.find(p => p.id === formData.productId);
-
-    const newAddition: ProductAddition = {
-      id: Date.now().toString(),
+    createAddition({
       name: formData.name,
       price: price,
-      productId: formData.productId,
-      productName: selectedProduct?.name || '',
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-
-    setAdditions([...additions, newAddition]);
-    setFormData({ name: '', price: '', productId: '' });
-    setIsCreateDialogOpen(false);
-
-    toast({
-      title: "Adición creada",
-      description: `Adición "${formData.name}" creada exitosamente`,
+      productId: formData.productId
     });
+
+    handleCreateDialogClose();
   };
 
   const handleEditAddition = () => {
@@ -127,82 +89,108 @@ const ProductAdditionsManager: React.FC = () => {
       return;
     }
 
-    const selectedProduct = mockProducts.find(p => p.id === formData.productId);
-
-    const updatedAdditions = additions.map(addition =>
-      addition.id === selectedAddition.id
-        ? {
-          ...addition,
-          name: formData.name,
-          price: price,
-          productId: formData.productId,
-          productName: selectedProduct?.name || '',
-          updatedAt: new Date().toISOString()
-        }
-        : addition
-    );
-
-    setAdditions(updatedAdditions);
-    setIsEditDialogOpen(false);
-    setSelectedAddition(null);
-    setFormData({ name: '', price: '', productId: '' });
-
-    toast({
-      title: "Adición actualizada",
-      description: `Adición "${formData.name}" actualizada exitosamente`,
+    updateAddition({
+      id: selectedAddition.id,
+      data: {
+        name: formData.name,
+        price: price,
+        productId: formData.productId
+      }
     });
+
+    handleEditDialogClose();
   };
 
-  const handleDeleteAddition = (additionId: string) => {
-    setAdditions(additions.filter(addition => addition.id !== additionId));
-    toast({
-      title: "Adición eliminada",
-      description: "Adición eliminada exitosamente",
-    });
-  };
-
-  const toggleAdditionStatus = (additionId: string) => {
-    const updatedAdditions = additions.map(addition =>
-      addition.id === additionId
-        ? { ...addition, isActive: !addition.isActive, updatedAt: new Date().toISOString() }
-        : addition
-    );
-    setAdditions(updatedAdditions);
-
-    const addition = additions.find(a => a.id === additionId);
-    toast({
-      title: "Estado actualizado",
-      description: `Adición "${addition?.name}" ${addition?.isActive ? 'desactivada' : 'activada'}`,
-    });
+  const handleToggleAdditionStatus = (additionId: string) => {
+    toggleAdditionStatus(additionId);
   };
 
   const openEditDialog = (addition: ProductAddition) => {
     setSelectedAddition(addition);
+    const productName = getProductName(addition.productId);
     setFormData({
       name: addition.name,
       price: addition.price.toString(),
       productId: addition.productId
     });
+    setProductSearchTerm(productName);
     setIsEditDialogOpen(true);
+    setShowProductSuggestions(false);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  const getProductName = (productId: string) => {
+    const product = products?.find(p => p.id === productId);
+    return product ? product.name : 'Producto no encontrado';
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('es-ES', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2
-    }).format(price);
+  const getFilteredProducts = () => {
+    if (!productSearchTerm.trim()) {
+      return products || [];
+    }
+    return (products || []).filter(product =>
+      product.name.toLowerCase().includes(productSearchTerm.toLowerCase())
+    );
   };
+
+  const resetProductSearch = () => {
+    setProductSearchTerm('');
+    setShowProductSuggestions(false);
+  };
+
+  const handleProductSelect = (product: any) => {
+    setFormData({ ...formData, productId: product.id });
+    setProductSearchTerm(product.name);
+    setShowProductSuggestions(false);
+  };
+
+  const handleProductSearchChange = (value: string) => {
+    setProductSearchTerm(value);
+    setShowProductSuggestions(value.length > 0);
+
+    // Si el valor coincide exactamente con un producto, seleccionarlo
+    const exactMatch = products?.find(p => p.name.toLowerCase() === value.toLowerCase());
+    if (exactMatch) {
+      setFormData({ ...formData, productId: exactMatch.id });
+    } else {
+      setFormData({ ...formData, productId: '' });
+    }
+  };
+
+  const handleProductInputFocus = () => {
+    if (productSearchTerm.length > 0) {
+      setShowProductSuggestions(true);
+    }
+  };
+
+  const handleProductInputBlur = () => {
+    // Delay para permitir que el click en sugerencia funcione
+    setTimeout(() => {
+      setShowProductSuggestions(false);
+    }, 150);
+  };
+
+  const handleCreateDialogClose = () => {
+    setIsCreateDialogOpen(false);
+    setFormData({ name: '', price: '', productId: '' });
+    resetProductSearch();
+  };
+
+  const handleEditDialogClose = () => {
+    setIsEditDialogOpen(false);
+    setSelectedAddition(null);
+    setFormData({ name: '', price: '', productId: '' });
+    resetProductSearch();
+  };
+
+  // Mostrar loading si estamos cargando los datos
+  if (isLoading || productsQuery.isLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Cargando datos...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -218,7 +206,7 @@ const ProductAdditionsManager: React.FC = () => {
               Crear adición
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Crear nueva adición</DialogTitle>
               <DialogDescription>
@@ -232,7 +220,6 @@ const ProductAdditionsManager: React.FC = () => {
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="ej: Queso Extra, Bacon, Champiñones"
                 />
               </div>
               <div>
@@ -244,30 +231,65 @@ const ProductAdditionsManager: React.FC = () => {
                   min="0.01"
                   value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                  placeholder="ej: 2.50"
                 />
               </div>
               <div>
-                <Label htmlFor="productId">Producto Vinculado</Label>
-                <Select value={formData.productId} onValueChange={(value) => setFormData({ ...formData, productId: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona un producto" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {mockProducts.map((product) => (
-                      <SelectItem key={product.id} value={product.id}>
-                        {product.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="productId">Producto vinculado</Label>
+                <div className="relative">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Escribe el nombre del producto..."
+                      value={productSearchTerm}
+                      onChange={(e) => handleProductSearchChange(e.target.value)}
+                      onFocus={handleProductInputFocus}
+                      onBlur={handleProductInputBlur}
+                      className="pl-10"
+                    />
+                  </div>
+
+                  {showProductSuggestions && getFilteredProducts().length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-background border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                      {getFilteredProducts().map((product) => (
+                        <div
+                          key={product.id}
+                          className="px-3 py-2 cursor-pointer hover:bg-muted border-b last:border-b-0 text-foreground"
+                          onMouseDown={() => handleProductSelect(product)}
+                        >
+                          <div className="font-medium">{product.name}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {formData.productId && (
+                    <div className="text-sm text-green-600 mt-2 flex items-center">
+                      <span className="mr-1">✓</span>
+                      Producto seleccionado
+                    </div>
+                  )}
+
+                  {productSearchTerm && !formData.productId && (
+                    <div className="text-sm text-amber-600 mt-2 flex items-center">
+                      <span className="mr-1">⚠</span>
+                      Selecciona un producto de la lista
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="flex justify-end space-x-2">
-                <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                <Button variant="outline" onClick={handleCreateDialogClose}>
                   Cancelar
                 </Button>
-                <Button onClick={handleCreateAddition}>
-                  Crear Adición
+                <Button onClick={handleCreateAddition} disabled={isCreating}>
+                  {isCreating ? (
+                    <>
+                      <Loader2 size={16} className="mr-2 animate-spin" />
+                      Creando...
+                    </>
+                  ) : (
+                    'Crear adición'
+                  )}
                 </Button>
               </div>
             </div>
@@ -288,9 +310,8 @@ const ProductAdditionsManager: React.FC = () => {
               <TableRow>
                 <TableHead>Nombre</TableHead>
                 <TableHead>Precio</TableHead>
-                <TableHead>Producto Vinculado</TableHead>
+                <TableHead>Producto vinculado</TableHead>
                 <TableHead>Estado</TableHead>
-                <TableHead>Creada</TableHead>
                 <TableHead>Acciones</TableHead>
               </TableRow>
             </TableHeader>
@@ -298,19 +319,16 @@ const ProductAdditionsManager: React.FC = () => {
               {additions.map((addition) => (
                 <TableRow key={addition.id}>
                   <TableCell className="font-medium">{addition.name}</TableCell>
-                  <TableCell className="font-mono">{formatPrice(addition.price)}</TableCell>
+                  <TableCell className="font-mono">{addition.price.toLocaleString('es-CO')}</TableCell>
                   <TableCell>
                     <Badge variant="outline">
-                      {addition.productName}
+                      {getProductName(addition.productId)}
                     </Badge>
                   </TableCell>
                   <TableCell>
                     <Badge variant={addition.isActive ? 'default' : 'destructive'}>
                       {addition.isActive ? 'Activa' : 'Inactiva'}
                     </Badge>
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {formatDate(addition.createdAt)}
                   </TableCell>
                   <TableCell>
                     <div className="flex space-x-2">
@@ -324,16 +342,14 @@ const ProductAdditionsManager: React.FC = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => toggleAdditionStatus(addition.id)}
+                        onClick={() => handleToggleAdditionStatus(addition.id)}
+                        disabled={isTogglingStatus}
                       >
-                        {addition.isActive ? 'Desactivar' : 'Activar'}
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDeleteAddition(addition.id)}
-                      >
-                        <Trash2 size={14} />
+                        {isTogglingStatus ? (
+                          <Loader2 size={14} className="animate-spin" />
+                        ) : (
+                          addition.isActive ? 'Desactivar' : 'Activar'
+                        )}
                       </Button>
                     </div>
                   </TableCell>
@@ -346,21 +362,20 @@ const ProductAdditionsManager: React.FC = () => {
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Editar Adición</DialogTitle>
+            <DialogTitle>Editar adición</DialogTitle>
             <DialogDescription>
               Modifica la información de la adición seleccionada.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="edit-name">Nombre de la Adición</Label>
+              <Label htmlFor="edit-name">Nombre de la adición</Label>
               <Input
                 id="edit-name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="ej: Queso Extra, Bacon, Champiñones"
               />
             </div>
             <div>
@@ -372,30 +387,65 @@ const ProductAdditionsManager: React.FC = () => {
                 min="0.01"
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                placeholder="ej: 2.50"
               />
             </div>
             <div>
-              <Label htmlFor="edit-productId">Producto Vinculado</Label>
-              <Select value={formData.productId} onValueChange={(value) => setFormData({ ...formData, productId: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona un producto" />
-                </SelectTrigger>
-                <SelectContent>
-                  {mockProducts.map((product) => (
-                    <SelectItem key={product.id} value={product.id}>
-                      {product.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="edit-productId">Producto vinculado</Label>
+              <div className="relative">
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Escribe el nombre del producto..."
+                    value={productSearchTerm}
+                    onChange={(e) => handleProductSearchChange(e.target.value)}
+                    onFocus={handleProductInputFocus}
+                    onBlur={handleProductInputBlur}
+                    className="pl-10"
+                  />
+                </div>
+
+                {showProductSuggestions && getFilteredProducts().length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-background border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                    {getFilteredProducts().map((product) => (
+                      <div
+                        key={product.id}
+                        className="px-3 py-2 cursor-pointer hover:bg-muted border-b last:border-b-0 text-foreground"
+                        onMouseDown={() => handleProductSelect(product)}
+                      >
+                        <div className="font-medium">{product.name}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {formData.productId && (
+                  <div className="text-sm text-green-600 mt-2 flex items-center">
+                    <span className="mr-1">✓</span>
+                    Producto seleccionado
+                  </div>
+                )}
+
+                {productSearchTerm && !formData.productId && (
+                  <div className="text-sm text-amber-600 mt-2 flex items-center">
+                    <span className="mr-1">⚠</span>
+                    Selecciona un producto de la lista
+                  </div>
+                )}
+              </div>
             </div>
             <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+              <Button variant="outline" onClick={handleEditDialogClose}>
                 Cancelar
               </Button>
-              <Button onClick={handleEditAddition}>
-                Guardar cambios
+              <Button onClick={handleEditAddition} disabled={isUpdating}>
+                {isUpdating ? (
+                  <>
+                    <Loader2 size={16} className="mr-2 animate-spin" />
+                    Guardando...
+                  </>
+                ) : (
+                  'Guardar cambios'
+                )}
               </Button>
             </div>
           </div>
