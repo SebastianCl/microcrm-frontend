@@ -29,7 +29,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, TrendingUp, TrendingDown, ShoppingCart, AlertTriangle, Package } from 'lucide-react';
+import { Loader2, TrendingUp, TrendingDown, ShoppingCart, AlertTriangle, Package, Calendar, Clock } from 'lucide-react';
 import { useCreateInventoryMovement } from '@/hooks/useInventoryMovements';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -293,10 +293,9 @@ const CreateInventoryMovementDialog = ({
                                                                 <AlertTriangle className="h-4 w-4 text-red-600" />
                                                                 Daño/Deterioro
                                                             </div>
-                                                        </SelectItem>
-                                                        <SelectItem value="vencimiento">
+                                                        </SelectItem>                                        <SelectItem value="vencimiento">
                                                             <div className="flex items-center gap-2">
-                                                                <Package className="h-4 w-4 text-orange-600" />
+                                                                <Clock className="h-4 w-4 text-orange-600" />
                                                                 Vencimiento
                                                             </div>
                                                         </SelectItem>
@@ -353,7 +352,10 @@ const CreateInventoryMovementDialog = ({
                             name="fecha"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Fecha</FormLabel>
+                                    <FormLabel className="flex items-center gap-2">
+                                        <Calendar className="h-4 w-4" />
+                                        Fecha
+                                    </FormLabel>
                                     <FormControl>
                                         <Input type="date" {...field} />
                                     </FormControl>

@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { CreditCard, DollarSign } from 'lucide-react';
+import { CreditCard, DollarSign, Banknote, ArrowRightLeft } from 'lucide-react';
 
 interface PaymentMethodDialogProps {
   open: boolean;
@@ -143,8 +143,18 @@ const PaymentMethodDialog: React.FC<PaymentMethodDialogProps> = ({
                 <SelectValue placeholder="Seleccionar método de pago" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="efectivo">Efectivo</SelectItem>
-                <SelectItem value="transferencia">Transferencia</SelectItem>
+                <SelectItem value="efectivo">
+                  <div className="flex items-center gap-2">
+                    <Banknote className="h-4 w-4 text-green-600" />
+                    Efectivo
+                  </div>
+                </SelectItem>
+                <SelectItem value="transferencia">
+                  <div className="flex items-center gap-2">
+                    <ArrowRightLeft className="h-4 w-4 text-blue-600" />
+                    Transferencia
+                  </div>
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>

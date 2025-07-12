@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { useCreateGasto, useTiposGasto } from "@/hooks/useGastos";
 import { CreateGastoDto } from "@/models/gastos.model";
+import { Tag, FileText, DollarSign, Calendar } from 'lucide-react';
 
 import { getCurrentDate } from '@/lib/utils';
 
@@ -84,7 +85,10 @@ const CreateGastoForm: React.FC<CreateGastoFormProps> = ({ onClose }) => {
                     name="id_tipo_gasto"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Tipo de gasto</FormLabel>
+                            <FormLabel className="flex items-center gap-2">
+                                <Tag className="h-4 w-4" />
+                                Tipo de gasto
+                            </FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                     <SelectTrigger>
@@ -112,7 +116,10 @@ const CreateGastoForm: React.FC<CreateGastoFormProps> = ({ onClose }) => {
                     name="descripcion"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Descripción</FormLabel>
+                            <FormLabel className="flex items-center gap-2">
+                                <FileText className="h-4 w-4" />
+                                Descripción
+                            </FormLabel>
                             <FormControl>
                                 <Textarea
                                     placeholder="Descripción del gasto..."
@@ -130,7 +137,10 @@ const CreateGastoForm: React.FC<CreateGastoFormProps> = ({ onClose }) => {
                     name="monto"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Monto</FormLabel>
+                            <FormLabel className="flex items-center gap-2">
+                                <DollarSign className="h-4 w-4" />
+                                Monto
+                            </FormLabel>
                             <FormControl>
                                 <CurrencyInput
                                     value={field.value}
@@ -148,7 +158,10 @@ const CreateGastoForm: React.FC<CreateGastoFormProps> = ({ onClose }) => {
                     name="fecha"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Fecha</FormLabel>
+                            <FormLabel className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4" />
+                                Fecha
+                            </FormLabel>
                             <FormControl>
                                 <Input
                                     type="date"

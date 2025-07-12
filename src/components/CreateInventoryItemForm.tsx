@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useCreateProduct, useCategories } from "@/hooks/useProducts";
+import { Package, Tag, DollarSign, Hash, FileText, Settings } from 'lucide-react';
 
 const formSchema = z.object({
   name: z.string().min(3, { message: "El nombre debe tener al menos 3 caracteres" }),
@@ -97,7 +98,10 @@ const CreateInventoryItemForm: React.FC<CreateInventoryItemFormProps> = ({ onClo
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nombre del producto</FormLabel>
+                <FormLabel className="flex items-center gap-2">
+                  <Package className="h-4 w-4" />
+                  Nombre del producto
+                </FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
@@ -113,7 +117,10 @@ const CreateInventoryItemForm: React.FC<CreateInventoryItemFormProps> = ({ onClo
             name="category"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Categoría</FormLabel>
+                <FormLabel className="flex items-center gap-2">
+                  <Tag className="h-4 w-4" />
+                  Categoría
+                </FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
@@ -137,9 +144,12 @@ const CreateInventoryItemForm: React.FC<CreateInventoryItemFormProps> = ({ onClo
             control={form.control}
             name="price" render={({ field }) => (
               <FormItem>
-                <FormLabel>Precio (COP)</FormLabel>
+                <FormLabel className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4" />
+                  Precio (COP)
+                </FormLabel>
                 <FormControl>
-                  <CurrencyInput 
+                  <CurrencyInput
                     value={field.value}
                     onValueChange={(value) => field.onChange(value.toString())}
                   />
@@ -154,7 +164,10 @@ const CreateInventoryItemForm: React.FC<CreateInventoryItemFormProps> = ({ onClo
             name="stockQuantity"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Cantidad</FormLabel>
+                <FormLabel className="flex items-center gap-2">
+                  <Hash className="h-4 w-4" />
+                  Cantidad
+                </FormLabel>
                 <FormControl>
                   <Input type="number" min="0" step="1" {...field} />
                 </FormControl>
@@ -169,7 +182,10 @@ const CreateInventoryItemForm: React.FC<CreateInventoryItemFormProps> = ({ onClo
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Descripción</FormLabel>
+              <FormLabel className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                Descripción
+              </FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="Describe el producto..."
@@ -188,7 +204,8 @@ const CreateInventoryItemForm: React.FC<CreateInventoryItemFormProps> = ({ onClo
           render={({ field }) => (
             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
               <div className="space-y-0.5">
-                <FormLabel className="text-base">
+                <FormLabel className="text-base flex items-center gap-2">
+                  <Settings className="h-4 w-4" />
                   Maneja Inventario
                 </FormLabel>
                 <div className="text-sm text-muted-foreground">

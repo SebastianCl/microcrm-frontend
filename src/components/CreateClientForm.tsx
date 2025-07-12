@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useCreateClient } from '@/hooks/useClients';
+import { User, Mail, Phone } from 'lucide-react';
 
 // Schema for client creation form
 const clientFormSchema = z.object({
@@ -74,7 +75,10 @@ const CreateClientForm: React.FC<CreateClientFormProps> = ({ onClose }) => {
             name="nombre"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nombre completo</FormLabel>
+                <FormLabel className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Nombre completo
+                </FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
@@ -89,7 +93,10 @@ const CreateClientForm: React.FC<CreateClientFormProps> = ({ onClose }) => {
             name="correo"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Dirección de correo electrónico</FormLabel>
+                <FormLabel className="flex items-center gap-2">
+                  <Mail className="h-4 w-4" />
+                  Dirección de correo electrónico
+                </FormLabel>
                 <FormControl>
                   <Input type="email" {...field} />
                 </FormControl>
@@ -104,7 +111,10 @@ const CreateClientForm: React.FC<CreateClientFormProps> = ({ onClose }) => {
             name="telefono"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Número de teléfono</FormLabel>
+                <FormLabel className="flex items-center gap-2">
+                  <Phone className="h-4 w-4" />
+                  Número de teléfono
+                </FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>

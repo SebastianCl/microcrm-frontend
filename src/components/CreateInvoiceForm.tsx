@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Plus } from "lucide-react";
+import { X, Plus, User, Calendar, CalendarDays, FileText, Hash, DollarSign } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatCurrency, getCurrentDate } from '@/lib/utils';
 
@@ -102,7 +102,10 @@ const CreateInvoiceForm: React.FC<CreateInvoiceFormProps> = ({ onClose }) => {
             name="client"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Client</FormLabel>
+                <FormLabel className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Client
+                </FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
@@ -128,7 +131,10 @@ const CreateInvoiceForm: React.FC<CreateInvoiceFormProps> = ({ onClose }) => {
             name="invoiceDate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Invoice Date</FormLabel>
+                <FormLabel className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Invoice Date
+                </FormLabel>
                 <FormControl>
                   <Input type="date" {...field} />
                 </FormControl>
@@ -143,7 +149,10 @@ const CreateInvoiceForm: React.FC<CreateInvoiceFormProps> = ({ onClose }) => {
             name="dueDate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Due Date</FormLabel>
+                <FormLabel className="flex items-center gap-2">
+                  <CalendarDays className="h-4 w-4" />
+                  Due Date
+                </FormLabel>
                 <FormControl>
                   <Input type="date" {...field} />
                 </FormControl>
@@ -167,7 +176,10 @@ const CreateInvoiceForm: React.FC<CreateInvoiceFormProps> = ({ onClose }) => {
                   name={`items.${index}.description`}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Description</FormLabel>
+                      <FormLabel className="flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        Description
+                      </FormLabel>
                       <FormControl>
                         <Textarea {...field} />
                       </FormControl>
@@ -183,7 +195,10 @@ const CreateInvoiceForm: React.FC<CreateInvoiceFormProps> = ({ onClose }) => {
                   name={`items.${index}.quantity`}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Qty</FormLabel>
+                      <FormLabel className="flex items-center gap-2">
+                        <Hash className="h-4 w-4" />
+                        Qty
+                      </FormLabel>
                       <FormControl>
                         <Input type="number" min="1" {...field} />
                       </FormControl>
@@ -199,7 +214,10 @@ const CreateInvoiceForm: React.FC<CreateInvoiceFormProps> = ({ onClose }) => {
                   name={`items.${index}.rate`}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Rate</FormLabel>
+                      <FormLabel className="flex items-center gap-2">
+                        <DollarSign className="h-4 w-4" />
+                        Rate
+                      </FormLabel>
                       <FormControl>
                         <CurrencyInput
                           value={field.value}
