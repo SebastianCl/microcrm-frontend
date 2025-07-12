@@ -11,6 +11,7 @@ export const API_CONFIG = {
     GASTOS: '/expenses',
     TIPOS_GASTO: '/type-of-expense',
     ADDITIONS: '/additions',
+    CATEGORIES: '/categories',
   },
   DEFAULT_HEADERS: {
     'Content-Type': 'application/json',
