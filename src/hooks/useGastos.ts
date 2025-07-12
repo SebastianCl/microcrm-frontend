@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { gastosService, tiposGastoService } from '@/services/gastosService';
-import { Gasto, CreateGastoDto, UpdateGastoDto, TipoGasto } from '@/models/gastos.model';
+import { Gasto, CreateGastoDto, UpdateGastoDto, TipoGasto, CreateTipoGastoDto, UpdateTipoGastoDto } from '@/models/gastos.model';
 
 // Keys para las queries
 export const GASTOS_QUERY_KEYS = {
@@ -143,5 +143,44 @@ export const useTipoGasto = (id: string, options = {}) => {
         queryFn: () => tiposGastoService.getById(id),
         enabled: Boolean(id), // Solo realizar la consulta si hay un ID
         ...options,
+    });
+};
+
+/**
+ * Hook para crear un nuevo tipo de gasto
+ */
+export const useCreateTipoGasto = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (tipoGasto: CreateTipoGastoDto) => tiposGastoService.create(tipoGasto),
+        onSuccess: (data) => {
+            // Invalidar la caché para recargar los tipos de gasto
+            queryClient.invalidateQueries({ queryKey: [GASTOS_QUERY_KEYS.TIPOS_GASTO] });
+            console.log('Tipo de gasto creado exitosamente:', data);
+        },
+        onError: (error) => {
+            console.error('Error al crear tipo de gasto:', error);
+        },
+    });
+};
+
+/**
+ * Hook para actualizar un tipo de gasto
+ */
+export const useUpdateTipoGasto = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ id, tipoGasto }: { id: number; tipoGasto: UpdateTipoGastoDto }) =>
+            tiposGastoService.update(id, tipoGasto),
+        onSuccess: (data) => {
+            // Invalidar la caché para recargar los tipos de gasto
+            queryClient.invalidateQueries({ queryKey: [GASTOS_QUERY_KEYS.TIPOS_GASTO] });
+            console.log('Tipo de gasto actualizado exitosamente:', data);
+        },
+        onError: (error) => {
+            console.error('Error al actualizar tipo de gasto:', error);
+        },
     });
 };

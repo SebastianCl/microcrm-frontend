@@ -1,6 +1,6 @@
 import { apiClient } from './apiClient';
 import { API_CONFIG } from '@/config/api';
-import { Gasto, CreateGastoDto, UpdateGastoDto, TipoGasto } from '@/models/gastos.model';
+import { Gasto, CreateGastoDto, UpdateGastoDto, TipoGasto, CreateTipoGastoDto, UpdateTipoGastoDto } from '@/models/gastos.model';
 
 // Servicio específico para las operaciones de gastos
 export const gastosService = {
@@ -68,5 +68,22 @@ export const tiposGastoService = {
      */
     async getById(id: string): Promise<TipoGasto> {
         return apiClient.get<TipoGasto>(`${API_CONFIG.ENDPOINTS.TIPOS_GASTO}/${id}`);
+    },
+
+    /**
+     * Crea un nuevo tipo de gasto
+     */
+    async create(tipoGasto: CreateTipoGastoDto): Promise<{ message: string }> {
+        return apiClient.post<{ message: string }>(API_CONFIG.ENDPOINTS.TIPOS_GASTO, tipoGasto);
+    },
+
+    /**
+     * Actualiza un tipo de gasto existente
+     */
+    async update(id: number, tipoGasto: UpdateTipoGastoDto): Promise<{ message: string }> {
+        return apiClient.put<{ message: string }>(
+            `${API_CONFIG.ENDPOINTS.TIPOS_GASTO}/${id}`,
+            tipoGasto
+        );
     },
 };

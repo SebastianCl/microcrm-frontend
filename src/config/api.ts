@@ -9,7 +9,7 @@ export const API_CONFIG = {
     INVENTORY: '/inventory',
     USERS: '/users',
     GASTOS: '/expenses',
-    TIPOS_GASTO: '/expenses/type-of-expense',
+    TIPOS_GASTO: '/type-of-expense',
     ADDITIONS: '/additions',
   },
   DEFAULT_HEADERS: {

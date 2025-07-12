@@ -4,6 +4,16 @@ export interface TipoGasto {
     descripcion: string;
 }
 
+export interface CreateTipoGastoDto {
+    nombre_tipo: string;
+    descripcion: string;
+}
+
+export interface UpdateTipoGastoDto {
+    nombre_tipo?: string;
+    descripcion?: string;
+}
+
 export interface Gasto {
     id_gasto: number;
     descripcion: string;
