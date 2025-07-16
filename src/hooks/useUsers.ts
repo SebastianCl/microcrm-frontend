@@ -35,7 +35,7 @@ export function useUsers() {
   });
 
   const updateUserMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateUserDto }) => 
+    mutationFn: ({ id, data }: { id: number; data: UpdateUserDto }) => 
       userService.updateUser(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
@@ -54,7 +54,7 @@ export function useUsers() {
   });
 
   const deleteUserMutation = useMutation({
-    mutationFn: (id: string) => userService.deleteUser(id),
+    mutationFn: (id: number) => userService.deleteUser(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       toast({
@@ -85,7 +85,7 @@ export function useUsers() {
   };
 }
 
-export function useUser(id?: string) {
+export function useUser(id?: number) {
   return useQuery({
     queryKey: ['user', id],
     queryFn: () => userService.getUserById(id!),

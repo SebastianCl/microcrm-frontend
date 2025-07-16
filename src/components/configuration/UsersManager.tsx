@@ -10,37 +10,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Edit, Trash2, User } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { User as UserModel } from '@/models/user.model';
+import { useUsers } from '@/hooks/useUsers';
 
 const UsersManager: React.FC = () => {
   const { toast } = useToast();
-  const [users, setUsers] = useState<UserModel[]>([
-    {
-      id: '1',
-      name: 'Juan Pérez',
-      email: 'admin@pos.com',
-      role: 'Administrator',
-      status: 'active'
-    },
-    {
-      id: '2',
-      name: 'María García',
-      email: 'maria@pos.com',
-      role: 'Collaborator',
-      status: 'active'
-    }
-  ]);
+  const { users, isLoading, createUser, updateUser, deleteUser, isCreating, isUpdating, isDeleting } = useUsers();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserModel | null>(null);
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    role: 'Collaborator',
+    nombre_usuario: '',
+    rol: 'empleado' as 'admin' | 'empleado',
     password: ''
   });
 
   const handleCreateUser = () => {
-    if (!formData.name || !formData.email || !formData.password) {
+    if (!formData.nombre_usuario || !formData.password) {
       toast({
         title: "Error",
         description: "Todos los campos son obligatorios",
@@ -49,26 +34,18 @@ const UsersManager: React.FC = () => {
       return;
     }
 
-    const newUser: UserModel = {
-      id: Date.now().toString(),
-      name: formData.name,
-      email: formData.email,
-      role: formData.role,
-      status: 'active'
-    };
-
-    setUsers([...users, newUser]);
-    setFormData({ name: '', email: '', role: 'Collaborator', password: '' });
-    setIsCreateDialogOpen(false);
-
-    toast({
-      title: "Usuario creado",
-      description: `Usuario ${formData.name} creado exitosamente`,
+    createUser({
+      nombre_usuario: formData.nombre_usuario,
+      rol: formData.rol,
+      password: formData.password
     });
+
+    setFormData({ nombre_usuario: '', rol: 'empleado', password: '' });
+    setIsCreateDialogOpen(false);
   };
 
   const handleEditUser = () => {
-    if (!selectedUser || !formData.name || !formData.email) {
+    if (!selectedUser || !formData.nombre_usuario) {
       toast({
         title: "Error",
         description: "Todos los campos son obligatorios",
@@ -77,26 +54,23 @@ const UsersManager: React.FC = () => {
       return;
     }
 
-    const updatedUsers = users.map(user =>
-      user.id === selectedUser.id
-        ? { ...user, name: formData.name, email: formData.email, role: formData.role }
-        : user
-    );
+    updateUser({
+      id: selectedUser.id_usuario,
+      data: {
+        nombre_usuario: formData.nombre_usuario,
+        rol: formData.rol,
+        ...(formData.password && { password: formData.password })
+      }
+    });
 
-    setUsers(updatedUsers);
     setIsEditDialogOpen(false);
     setSelectedUser(null);
-    setFormData({ name: '', email: '', role: 'Collaborator', password: '' });
-
-    toast({
-      title: "Usuario actualizado",
-      description: `Usuario ${formData.name} actualizado exitosamente`,
-    });
+    setFormData({ nombre_usuario: '', rol: 'empleado', password: '' });
   };
 
-  const handleDeleteUser = (userId: string) => {
-    const userToDelete = users.find(u => u.id === userId);
-    if (userToDelete?.role === 'Administrator' && users.filter(u => u.role === 'Administrator').length === 1) {
+  const handleDeleteUser = (userId: number) => {
+    const userToDelete = users.find(u => u.id_usuario === userId);
+    if (userToDelete?.rol === 'admin' && users.filter(u => u.rol === 'admin').length === 1) {
       toast({
         title: "Error",
         description: "No puedes eliminar el único administrador del sistema",
@@ -105,32 +79,36 @@ const UsersManager: React.FC = () => {
       return;
     }
 
-    setUsers(users.filter(user => user.id !== userId));
-    toast({
-      title: "Usuario eliminado",
-      description: "Usuario eliminado exitosamente",
-    });
+    deleteUser(userId);
   };
 
-  const toggleUserStatus = (userId: string) => {
-    const updatedUsers = users.map(user =>
-      user.id === userId
-        ? { ...user, status: user.status === 'active' ? 'inactive' : 'active' as 'active' | 'inactive' }
-        : user
-    );
-    setUsers(updatedUsers);
+  const toggleUserStatus = (userId: number) => {
+    const user = users.find(u => u.id_usuario === userId);
+    if (user) {
+      updateUser({
+        id: userId,
+        data: { estado: !user.estado }
+      });
+    }
   };
 
   const openEditDialog = (user: UserModel) => {
     setSelectedUser(user);
     setFormData({
-      name: user.name,
-      email: user.email,
-      role: user.role,
+      nombre_usuario: user.nombre_usuario,
+      rol: user.rol,
       password: ''
     });
     setIsEditDialogOpen(true);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-lg">Cargando usuarios...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -158,19 +136,9 @@ const UsersManager: React.FC = () => {
                 <Label htmlFor="name">Nombre</Label>
                 <Input
                   id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Nombre completo"
-                />
-              </div>
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="correo@ejemplo.com"
+                  value={formData.nombre_usuario}
+                  onChange={(e) => setFormData({ ...formData, nombre_usuario: e.target.value })}
+                  placeholder="Nombre de usuario"
                 />
               </div>
               <div>
@@ -185,13 +153,13 @@ const UsersManager: React.FC = () => {
               </div>
               <div>
                 <Label htmlFor="role">Rol</Label>
-                <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
+                <Select value={formData.rol} onValueChange={(value: 'admin' | 'empleado') => setFormData({ ...formData, rol: value })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Administrator">Administrador</SelectItem>
-                    <SelectItem value="Collaborator">Colaborador</SelectItem>
+                    <SelectItem value="admin">Administrador</SelectItem>
+                    <SelectItem value="empleado">Empleado</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -199,8 +167,8 @@ const UsersManager: React.FC = () => {
                 <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                   Cancelar
                 </Button>
-                <Button onClick={handleCreateUser}>
-                  Crear usuario
+                <Button onClick={handleCreateUser} disabled={isCreating}>
+                  {isCreating ? 'Creando...' : 'Crear usuario'}
                 </Button>
               </div>
             </div>
@@ -219,8 +187,7 @@ const UsersManager: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nombre</TableHead>
-                <TableHead>Email</TableHead>
+                <TableHead>Nombre de usuario</TableHead>
                 <TableHead>Rol</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead>Acciones</TableHead>
@@ -228,17 +195,16 @@ const UsersManager: React.FC = () => {
             </TableHeader>
             <TableBody>
               {users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>{user.name}</TableCell>
-                  <TableCell>{user.email}</TableCell>
+                <TableRow key={user.id_usuario}>
+                  <TableCell>{user.nombre_usuario}</TableCell>
                   <TableCell>
-                    <Badge variant={user.role === 'Administrator' ? 'default' : 'secondary'}>
-                      {user.role === 'Administrator' ? 'Administrador' : 'Colaborador'}
+                    <Badge variant={user.rol === 'admin' ? 'default' : 'secondary'}>
+                      {user.rol === 'admin' ? 'Administrador' : 'Empleado'}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={user.status === 'active' ? 'default' : 'destructive'}>
-                      {user.status === 'active' ? 'Activo' : 'Inactivo'}
+                    <Badge variant={user.estado ? 'default' : 'destructive'}>
+                      {user.estado ? 'Activo' : 'Inactivo'}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -253,14 +219,16 @@ const UsersManager: React.FC = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => toggleUserStatus(user.id)}
+                        onClick={() => toggleUserStatus(user.id_usuario)}
+                        disabled={isUpdating}
                       >
-                        {user.status === 'active' ? 'Desactivar' : 'Activar'}
+                        {user.estado ? 'Desactivar' : 'Activar'}
                       </Button>
                       <Button
                         variant="destructive"
                         size="sm"
-                        onClick={() => handleDeleteUser(user.id)}
+                        onClick={() => handleDeleteUser(user.id_usuario)}
+                        disabled={isDeleting}
                       >
                         <Trash2 size={14} />
                       </Button>
@@ -284,33 +252,33 @@ const UsersManager: React.FC = () => {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="edit-name">Nombre</Label>
+              <Label htmlFor="edit-name">Nombre de usuario</Label>
               <Input
                 id="edit-name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Nombre completo"
+                value={formData.nombre_usuario}
+                onChange={(e) => setFormData({ ...formData, nombre_usuario: e.target.value })}
+                placeholder="Nombre de usuario"
               />
             </div>
             <div>
-              <Label htmlFor="edit-email">Email</Label>
+              <Label htmlFor="edit-password">Contraseña (opcional)</Label>
               <Input
-                id="edit-email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="correo@ejemplo.com"
+                id="edit-password"
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                placeholder="Nueva contraseña (dejar en blanco para mantener actual)"
               />
             </div>
             <div>
               <Label htmlFor="edit-role">Rol</Label>
-              <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
+              <Select value={formData.rol} onValueChange={(value: 'admin' | 'empleado') => setFormData({ ...formData, rol: value })}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Administrator">Administrador</SelectItem>
-                  <SelectItem value="Collaborator">Colaborador</SelectItem>
+                  <SelectItem value="admin">Administrador</SelectItem>
+                  <SelectItem value="empleado">Empleado</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -318,8 +286,8 @@ const UsersManager: React.FC = () => {
               <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
                 Cancelar
               </Button>
-              <Button onClick={handleEditUser}>
-                Guardar cambios
+              <Button onClick={handleEditUser} disabled={isUpdating}>
+                {isUpdating ? 'Guardando...' : 'Guardar cambios'}
               </Button>
             </div>
           </div>

@@ -1,7 +1,6 @@
 export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  status: 'active' | 'inactive';
+  id_usuario: number;
+  nombre_usuario: string;
+  rol: 'admin' | 'empleado';
+  estado: boolean;
 }

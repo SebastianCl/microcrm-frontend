@@ -16,7 +16,7 @@ export const userService = {
   /**
    * Get user by ID
    */
-  async getUserById(id: string): Promise<User> {
+  async getUserById(id: number): Promise<User> {
     return apiClient.get<User>(`${API_CONFIG.ENDPOINTS.USERS}/${id}`);
   },
 
@@ -30,14 +30,14 @@ export const userService = {
   /**
    * Update a user
    */
-  async updateUser(id: string, userData: UpdateUserDto): Promise<User> {
+  async updateUser(id: number, userData: UpdateUserDto): Promise<User> {
     return apiClient.put<User>(`${API_CONFIG.ENDPOINTS.USERS}/${id}`, userData);
   },
 
   /**
    * Delete a user
    */
-  async deleteUser(id: string): Promise<void> {
+  async deleteUser(id: number): Promise<void> {
     return apiClient.delete<void>(`${API_CONFIG.ENDPOINTS.USERS}/${id}`);
   }
 };

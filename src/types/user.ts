@@ -1,29 +1,22 @@
 
-export type UserRole = 'Administrator' | 'Collaborator' | 'Viewer';
-export type UserStatus = 'Active' | 'Inactive';
+export type UserRole = 'admin' | 'empleado';
 
 export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  status: UserStatus;
-  avatar?: string;
-  createdAt: string;
-  lastLogin?: string;
+  id_usuario: number;
+  nombre_usuario: string;
+  rol: UserRole;
+  estado: boolean;
 }
 
 export interface CreateUserDto {
-  name: string;
-  email: string;
+  nombre_usuario: string;
   password: string;
-  role: UserRole;
+  rol: UserRole;
 }
 
 export interface UpdateUserDto {
-  name?: string;
-  email?: string;
-  role?: UserRole;
-  status?: UserStatus;
+  nombre_usuario?: string;
+  rol?: UserRole;
+  estado?: boolean;
   password?: string;
 }
