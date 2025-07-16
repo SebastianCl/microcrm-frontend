@@ -300,6 +300,11 @@ const OrderDetail = () => {
                       {orderItems.map((item, index) => {
                         const rows = [];
 
+                        // Calcular el total del producto incluyendo adiciones
+                        const additionsTotal = item.additions?.reduce((addSum, addition) =>
+                          addSum + (addition.price * addition.quantity), 0) || 0;
+                        const itemTotalWithAdditions = item.total + additionsTotal;
+
                         // Fila principal del producto
                         rows.push(
                           <tr key={`item-${item.productId}-${index}`} className="border-t">
@@ -315,7 +320,7 @@ const OrderDetail = () => {
                             </td>
                             <td className="text-center p-2">{item.quantity}</td>
                             <td className="text-right p-2 px-4">{formatCurrency(item.price)}</td>
-                            <td className="text-right p-2 px-4">{formatCurrency(item.total)}</td>
+                            <td className="text-right p-2 px-4">{formatCurrency(itemTotalWithAdditions)}</td>
                           </tr>
                         );
 
