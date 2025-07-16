@@ -46,5 +46,14 @@ export const userService = {
    */
   async toggleUserStatus(id: number): Promise<User> {
     return apiClient.patch<User>(`${API_CONFIG.ENDPOINTS.USERS}/${id}`);
+  },
+
+  /**
+   * Reset user password
+   */
+  async resetUserPassword(id: number, newPassword: string): Promise<User> {
+    return apiClient.patch<User>(`${API_CONFIG.ENDPOINTS.USERS}/reset-password/${id}`, {
+      newPassword
+    });
   }
 };

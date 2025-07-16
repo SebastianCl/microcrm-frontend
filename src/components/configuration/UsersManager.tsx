@@ -7,21 +7,26 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Edit, User } from 'lucide-react';
+import { Plus, Edit, User, Key } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { User as UserModel } from '@/models/user.model';
 import { useUsers } from '@/hooks/useUsers';
 
 const UsersManager: React.FC = () => {
   const { toast } = useToast();
-  const { users, isLoading, createUser, updateUser, deleteUser, toggleUserStatus, isCreating, isUpdating, isDeleting, isTogglingStatus } = useUsers();
+  const { users, isLoading, createUser, updateUser, toggleUserStatus, resetPassword, isCreating, isUpdating, isTogglingStatus, isResettingPassword } = useUsers();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserModel | null>(null);
   const [formData, setFormData] = useState({
     nombre_usuario: '',
     rol: 'empleado' as 'admin' | 'empleado',
     password: ''
+  });
+  const [passwordData, setPasswordData] = useState({
+    newPassword: '',
+    confirmPassword: ''
   });
 
   const handleCreateUser = () => {
@@ -58,14 +63,42 @@ const UsersManager: React.FC = () => {
       id: selectedUser.id_usuario,
       data: {
         nombre_usuario: formData.nombre_usuario,
-        rol: formData.rol,
-        ...(formData.password && { password: formData.password })
+        rol: formData.rol
       }
     });
 
     setIsEditDialogOpen(false);
     setSelectedUser(null);
     setFormData({ nombre_usuario: '', rol: 'empleado', password: '' });
+  };
+
+  const handleResetPassword = () => {
+    if (!selectedUser || !passwordData.newPassword) {
+      toast({
+        title: "Error",
+        description: "La contraseña es obligatoria",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Las contraseñas no coinciden",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    resetPassword({
+      id: selectedUser.id_usuario,
+      newPassword: passwordData.newPassword
+    });
+
+    setIsPasswordDialogOpen(false);
+    setSelectedUser(null);
+    setPasswordData({ newPassword: '', confirmPassword: '' });
   };
 
   const handleToggleUserStatus = (userId: number) => {
@@ -80,6 +113,12 @@ const UsersManager: React.FC = () => {
       password: ''
     });
     setIsEditDialogOpen(true);
+  };
+
+  const openPasswordDialog = (user: UserModel) => {
+    setSelectedUser(user);
+    setPasswordData({ newPassword: '', confirmPassword: '' });
+    setIsPasswordDialogOpen(true);
   };
 
   if (isLoading) {
@@ -199,6 +238,13 @@ const UsersManager: React.FC = () => {
                       <Button
                         variant="outline"
                         size="sm"
+                        onClick={() => openPasswordDialog(user)}
+                      >
+                        <Key size={14} />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => handleToggleUserStatus(user.id_usuario)}
                         disabled={isTogglingStatus}
                       >
@@ -233,16 +279,6 @@ const UsersManager: React.FC = () => {
               />
             </div>
             <div>
-              <Label htmlFor="edit-password">Contraseña (opcional)</Label>
-              <Input
-                id="edit-password"
-                type="password"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                placeholder="Nueva contraseña (dejar en blanco para mantener actual)"
-              />
-            </div>
-            <div>
               <Label htmlFor="edit-role">Rol</Label>
               <Select value={formData.rol} onValueChange={(value: 'admin' | 'empleado') => setFormData({ ...formData, rol: value })}>
                 <SelectTrigger>
@@ -260,6 +296,46 @@ const UsersManager: React.FC = () => {
               </Button>
               <Button onClick={handleEditUser} disabled={isUpdating}>
                 {isUpdating ? 'Guardando...' : 'Guardar cambios'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Password Reset Dialog */}
+      <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Cambiar contraseña</DialogTitle>
+            <DialogDescription>
+              Establece una nueva contraseña para el usuario {selectedUser?.nombre_usuario}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="new-password">Nueva contraseña</Label>
+              <Input
+                id="new-password"
+                type="password"
+                value={passwordData.newPassword}
+                onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="confirm-password">Confirmar contraseña</Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                value={passwordData.confirmPassword}
+                onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setIsPasswordDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleResetPassword} disabled={isResettingPassword}>
+                {isResettingPassword ? 'Cambiando...' : 'Cambiar contraseña'}
               </Button>
             </div>
           </div>

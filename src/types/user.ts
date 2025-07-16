@@ -18,5 +18,8 @@ export interface UpdateUserDto {
   nombre_usuario?: string;
   rol?: UserRole;
   estado?: boolean;
-  password?: string;
+}
+
+export interface ResetPasswordDto {
+  newPassword: string;
 }

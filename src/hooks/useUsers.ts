@@ -89,6 +89,24 @@ export function useUsers() {
     }
   });
 
+  const resetPasswordMutation = useMutation({
+    mutationFn: ({ id, newPassword }: { id: number; newPassword: string }) => 
+      userService.resetUserPassword(id, newPassword),
+    onSuccess: () => {
+      toast({
+        title: "Contraseña actualizada",
+        description: "La contraseña del usuario ha sido actualizada exitosamente",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error al actualizar contraseña",
+        description: error.message || "Ha ocurrido un error al actualizar la contraseña",
+        variant: "destructive",
+      });
+    }
+  });
+
   return {
     users,
     isLoading,
@@ -102,6 +120,8 @@ export function useUsers() {
     isDeleting: deleteUserMutation.isPending,
     toggleUserStatus: toggleUserStatusMutation.mutate,
     isTogglingStatus: toggleUserStatusMutation.isPending,
+    resetPassword: resetPasswordMutation.mutate,
+    isResettingPassword: resetPasswordMutation.isPending,
   };
 }
 
