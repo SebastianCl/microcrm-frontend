@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Edit, User, Key } from 'lucide-react';
+import { Plus, User, Key } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { User as UserModel } from '@/models/user.model';
 import { useUsers } from '@/hooks/useUsers';
@@ -16,7 +16,6 @@ const UsersManager: React.FC = () => {
   const { toast } = useToast();
   const { users, isLoading, createUser, updateUser, toggleUserStatus, resetPassword, isCreating, isUpdating, isTogglingStatus, isResettingPassword } = useUsers();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserModel | null>(null);
   const [formData, setFormData] = useState({
@@ -67,7 +66,6 @@ const UsersManager: React.FC = () => {
       }
     });
 
-    setIsEditDialogOpen(false);
     setSelectedUser(null);
     setFormData({ nombre_usuario: '', rol: 'empleado', password: '' });
   };
@@ -103,16 +101,6 @@ const UsersManager: React.FC = () => {
 
   const handleToggleUserStatus = (userId: number) => {
     toggleUserStatus(userId);
-  };
-
-  const openEditDialog = (user: UserModel) => {
-    setSelectedUser(user);
-    setFormData({
-      nombre_usuario: user.nombre_usuario,
-      rol: user.rol,
-      password: ''
-    });
-    setIsEditDialogOpen(true);
   };
 
   const openPasswordDialog = (user: UserModel) => {
@@ -199,7 +187,7 @@ const UsersManager: React.FC = () => {
         <CardHeader>
           <CardTitle>Lista de usuarios</CardTitle>
           <CardDescription>
-            Administra los usuarios que tienen acceso al sistema POS.
+            Administra los usuarios que tienen acceso al sistema.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -231,13 +219,6 @@ const UsersManager: React.FC = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => openEditDialog(user)}
-                      >
-                        <Edit size={14} />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
                         onClick={() => openPasswordDialog(user)}
                       >
                         <Key size={14} />
@@ -257,50 +238,7 @@ const UsersManager: React.FC = () => {
             </TableBody>
           </Table>
         </CardContent>
-      </Card>
-
-      {/* Edit Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Editar usuario</DialogTitle>
-            <DialogDescription>
-              Modifica la información del usuario seleccionado.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="edit-name">Nombre de usuario</Label>
-              <Input
-                id="edit-name"
-                value={formData.nombre_usuario}
-                onChange={(e) => setFormData({ ...formData, nombre_usuario: e.target.value })}
-                placeholder="Nombre de usuario"
-              />
-            </div>
-            <div>
-              <Label htmlFor="edit-role">Rol</Label>
-              <Select value={formData.rol} onValueChange={(value: 'admin' | 'empleado') => setFormData({ ...formData, rol: value })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin">Administrador</SelectItem>
-                  <SelectItem value="empleado">Empleado</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-                Cancelar
-              </Button>
-              <Button onClick={handleEditUser} disabled={isUpdating}>
-                {isUpdating ? 'Guardando...' : 'Guardar cambios'}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      </Card>x
 
       {/* Password Reset Dialog */}
       <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
