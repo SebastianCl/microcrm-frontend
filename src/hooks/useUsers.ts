@@ -5,7 +5,7 @@ import { CreateUserDto, UpdateUserDto, User } from '@/types/user';
 
 export function useUsers() {
   const queryClient = useQueryClient();
-  
+
   const {
     data: users = [],
     isLoading,
@@ -35,7 +35,7 @@ export function useUsers() {
   });
 
   const updateUserMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateUserDto }) => 
+    mutationFn: ({ id, data }: { id: number; data: UpdateUserDto }) =>
       userService.updateUser(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
@@ -71,6 +71,24 @@ export function useUsers() {
     }
   });
 
+  const toggleUserStatusMutation = useMutation({
+    mutationFn: (id: number) => userService.toggleUserStatus(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast({
+        title: "Estado actualizado",
+        description: "El estado del usuario ha sido actualizado exitosamente",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error al actualizar estado",
+        description: error.message || "Ha ocurrido un error al actualizar el estado del usuario",
+        variant: "destructive",
+      });
+    }
+  });
+
   return {
     users,
     isLoading,
@@ -82,6 +100,8 @@ export function useUsers() {
     isUpdating: updateUserMutation.isPending,
     deleteUser: deleteUserMutation.mutate,
     isDeleting: deleteUserMutation.isPending,
+    toggleUserStatus: toggleUserStatusMutation.mutate,
+    isTogglingStatus: toggleUserStatusMutation.isPending,
   };
 }
 

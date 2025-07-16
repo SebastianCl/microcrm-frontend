@@ -39,5 +39,12 @@ export const userService = {
    */
   async deleteUser(id: number): Promise<void> {
     return apiClient.delete<void>(`${API_CONFIG.ENDPOINTS.USERS}/${id}`);
+  },
+
+  /**
+   * Toggle user status (active/inactive)
+   */
+  async toggleUserStatus(id: number): Promise<User> {
+    return apiClient.patch<User>(`${API_CONFIG.ENDPOINTS.USERS}/${id}`);
   }
 };

@@ -7,14 +7,14 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Edit, Trash2, User } from 'lucide-react';
+import { Plus, Edit, User } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { User as UserModel } from '@/models/user.model';
 import { useUsers } from '@/hooks/useUsers';
 
 const UsersManager: React.FC = () => {
   const { toast } = useToast();
-  const { users, isLoading, createUser, updateUser, deleteUser, isCreating, isUpdating, isDeleting } = useUsers();
+  const { users, isLoading, createUser, updateUser, deleteUser, toggleUserStatus, isCreating, isUpdating, isDeleting, isTogglingStatus } = useUsers();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserModel | null>(null);
@@ -68,28 +68,8 @@ const UsersManager: React.FC = () => {
     setFormData({ nombre_usuario: '', rol: 'empleado', password: '' });
   };
 
-  const handleDeleteUser = (userId: number) => {
-    const userToDelete = users.find(u => u.id_usuario === userId);
-    if (userToDelete?.rol === 'admin' && users.filter(u => u.rol === 'admin').length === 1) {
-      toast({
-        title: "Error",
-        description: "No puedes eliminar el único administrador del sistema",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    deleteUser(userId);
-  };
-
-  const toggleUserStatus = (userId: number) => {
-    const user = users.find(u => u.id_usuario === userId);
-    if (user) {
-      updateUser({
-        id: userId,
-        data: { estado: !user.estado }
-      });
-    }
+  const handleToggleUserStatus = (userId: number) => {
+    toggleUserStatus(userId);
   };
 
   const openEditDialog = (user: UserModel) => {
@@ -219,18 +199,10 @@ const UsersManager: React.FC = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => toggleUserStatus(user.id_usuario)}
-                        disabled={isUpdating}
+                        onClick={() => handleToggleUserStatus(user.id_usuario)}
+                        disabled={isTogglingStatus}
                       >
                         {user.estado ? 'Desactivar' : 'Activar'}
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDeleteUser(user.id_usuario)}
-                        disabled={isDeleting}
-                      >
-                        <Trash2 size={14} />
                       </Button>
                     </div>
                   </TableCell>
