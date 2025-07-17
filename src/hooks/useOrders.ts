@@ -215,6 +215,8 @@ export const useAdjustOrder = (id: string) => {
 
   return useMutation({
     mutationFn: (data: {
+      valor_domi?: number | null;
+      valor_descu?: number | null;
       agregados: Array<{
         id_producto: number;
         cantidad: number;

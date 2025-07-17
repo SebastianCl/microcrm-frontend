@@ -3,13 +3,27 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 import { useOrderDetail, useAdjustOrder } from '@/hooks/useOrders';
 import { OrderItem } from '@/models/order.model';
 import { toast } from "sonner";
 import { Separator } from '@/components/ui/separator';
-import { ChevronLeft, Loader2 } from 'lucide-react';
+import { ChevronLeft, Loader2, Percent, DollarSign, Truck } from 'lucide-react';
 import QuickProductSelector from '@/components/QuickProductSelector';
 import OrderItemRow from '@/components/OrderItemRow';
+import { formatCurrency } from '@/lib/utils';
+
+const DiscountTypes = {
+  PERCENTAGE: 'percentage',
+  FIXED: 'fixed',
+  NONE: 'none'
+};
 
 const EditOrder = () => {
   const { id } = useParams<{ id: string }>();
@@ -25,6 +39,41 @@ const EditOrder = () => {
   const [currentItems, setCurrentItems] = useState<(OrderItem & { discount?: number; discountType?: string })[]>([]);
   const [newItems, setNewItems] = useState<(OrderItem & { discount?: number; discountType?: string })[]>([]);
   const [removedItemIds, setRemovedItemIds] = useState<number[]>([]);
+
+  // Estados para descuento y domicilio
+  const [discount, setDiscount] = useState(0);
+  const [discountType, setDiscountType] = useState(DiscountTypes.NONE);
+  const [originalDiscount, setOriginalDiscount] = useState(0);
+  const [originalDiscountType, setOriginalDiscountType] = useState(DiscountTypes.NONE);
+
+  const [deliveryValue, setDeliveryValue] = useState(0);
+  const [originalDeliveryValue, setOriginalDeliveryValue] = useState(0);
+
+  const calculateItemsSubtotal = () => {
+    const currentTotal = currentItems.reduce((sum, item) => sum + item.total, 0);
+    const newTotal = newItems.reduce((sum, item) => sum + item.total, 0);
+    return currentTotal + newTotal;
+  };
+
+  const calculateOrderDiscount = () => {
+    const subtotal = calculateItemsSubtotal();
+    if (discountType === DiscountTypes.PERCENTAGE) {
+      return subtotal * (discount / 100);
+    }
+    if (discountType === DiscountTypes.FIXED) {
+      return Math.min(subtotal, discount);
+    }
+    return 0;
+  };
+
+  const handleDiscountChange = (newDiscount: number, newType: string) => {
+    setDiscount(newDiscount);
+    setDiscountType(newType);
+  };
+
+  const handleDeliveryValueChange = (value: number) => {
+    setDeliveryValue(value);
+  };
 
   useEffect(() => {
     if (orderData?.items) {
@@ -43,7 +92,49 @@ const EditOrder = () => {
       setOriginalItems(transformedItems);
       setCurrentItems(transformedItems);
     }
-  }, [orderData]);
+  }, [orderData?.items]);
+
+  // Efecto separado para configurar descuento y domicilio
+  useEffect(() => {
+    if (orderData?.order && orderData?.items) {
+      // Configurar valores de descuento y domicilio originales
+      const order = orderData.order;
+      const orderDiscountValue = parseFloat(order.valor_descu || '0');
+      const orderDeliveryValue = parseFloat(order.valor_domi || '0');
+
+      setOriginalDeliveryValue(orderDeliveryValue);
+      setDeliveryValue(orderDeliveryValue);
+
+      // Para determinar el tipo de descuento, usaremos una lógica simple:
+      if (orderDiscountValue > 0) {
+        // Calcular subtotal de los items
+        const itemsSubtotal = orderData.items.reduce((sum, item) => {
+          return sum + item.total + (item.additions?.reduce((addSum, add) => addSum + (add.price * add.quantity), 0) || 0);
+        }, 0);
+
+        const calculatedPercentage = itemsSubtotal > 0 ? (orderDiscountValue / itemsSubtotal) * 100 : 0;
+
+        // Si el porcentaje calculado es razonable (entre 1 y 100), lo tratamos como porcentaje
+        if (calculatedPercentage >= 1 && calculatedPercentage <= 100 && Math.abs(calculatedPercentage - Math.round(calculatedPercentage)) < 0.1) {
+          setDiscountType(DiscountTypes.PERCENTAGE);
+          setOriginalDiscountType(DiscountTypes.PERCENTAGE);
+          const roundedPercentage = Math.round(calculatedPercentage);
+          setDiscount(roundedPercentage);
+          setOriginalDiscount(roundedPercentage);
+        } else {
+          setDiscountType(DiscountTypes.FIXED);
+          setOriginalDiscountType(DiscountTypes.FIXED);
+          setDiscount(orderDiscountValue);
+          setOriginalDiscount(orderDiscountValue);
+        }
+      } else {
+        setDiscountType(DiscountTypes.NONE);
+        setOriginalDiscountType(DiscountTypes.NONE);
+        setDiscount(0);
+        setOriginalDiscount(0);
+      }
+    }
+  }, [orderData?.order, orderData?.items]);
   const handleAddProduct = (product: OrderItem) => {
     // Agregar como nuevo item
     const newProductWithId = {
@@ -87,9 +178,11 @@ const EditOrder = () => {
   };
 
   const calculateTotal = () => {
-    const currentTotal = currentItems.reduce((sum, item) => sum + item.total, 0);
-    const newTotal = newItems.reduce((sum, item) => sum + item.total, 0);
-    return currentTotal + newTotal;
+    const subtotal = calculateItemsSubtotal();
+    const discountAmount = calculateOrderDiscount();
+    const isForTakeout = orderData?.order?.nombre_mesa === 'Para llevar';
+    const delivery = isForTakeout ? deliveryValue : 0;
+    return Math.max(0, subtotal - discountAmount + delivery);
   };
 
   const getAllItems = () => {
@@ -102,8 +195,36 @@ const EditOrder = () => {
     }
 
     try {
+      // Calcular valores de descuento y domicilio para enviar
+      let valor_descu = null;
+      let valor_domi = null;
+
+      // Verificar si el descuento cambió
+      const currentDiscountValue = discountType === DiscountTypes.PERCENTAGE
+        ? calculateOrderDiscount()
+        : discountType === DiscountTypes.FIXED
+          ? discount
+          : 0;
+
+      const originalDiscountValue = originalDiscountType === DiscountTypes.PERCENTAGE
+        ? calculateItemsSubtotal() * (originalDiscount / 100)
+        : originalDiscountType === DiscountTypes.FIXED
+          ? originalDiscount
+          : 0;
+
+      if (Math.abs(currentDiscountValue - originalDiscountValue) > 0.01) {
+        valor_descu = currentDiscountValue;
+      }
+
+      // Verificar si el valor de domicilio cambió
+      if (Math.abs(deliveryValue - originalDeliveryValue) > 0.01) {
+        valor_domi = deliveryValue;
+      }
+
       // Preparar datos para el endpoint de ajustar
       const adjustData = {
+        valor_domi,
+        valor_descu,
         agregados: newItems.map(item => ({
           id_producto: parseInt(item.productId),
           cantidad: item.quantity,
@@ -214,8 +335,88 @@ const EditOrder = () => {
 
           {/* Quick Product Selector */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Agrear producto</h3>
+            <h3 className="text-lg font-semibold">Agregar producto</h3>
             <QuickProductSelector onAddProduct={handleAddProduct} />
+          </div>
+
+          <Separator />
+
+          {/* Discount and Delivery Section */}
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">Descuento y domicilio</h3>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Discount Section */}
+              <div className="space-y-3">
+                <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                  <Percent className="h-4 w-4" />
+                  Descuento
+                </label>
+                <div className="flex gap-2">
+                  <Input
+                    type="number"
+                    min="0"
+                    value={discount || ''}
+                    onChange={(e) => handleDiscountChange(Number(e.target.value), discountType)}
+                    className="flex-1"
+                    placeholder="0"
+                    disabled={discountType === DiscountTypes.NONE}
+                  />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="icon" className="shrink-0">
+                        {discountType === DiscountTypes.PERCENTAGE ? (
+                          <Percent className="h-4 w-4" />
+                        ) : discountType === DiscountTypes.FIXED ? (
+                          <DollarSign className="h-4 w-4" />
+                        ) : (
+                          '-'
+                        )}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleDiscountChange(0, DiscountTypes.NONE)}>
+                        Sin descuento
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDiscountChange(discount, DiscountTypes.PERCENTAGE)}>
+                        Porcentaje (%)
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDiscountChange(discount, DiscountTypes.FIXED)}>
+                        Cantidad fija ($)
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+                {calculateOrderDiscount() > 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    Descuento aplicado: -{formatCurrency(calculateOrderDiscount())}
+                  </p>
+                )}
+              </div>
+
+              {/* Delivery Section - Solo para pedidos para llevar */}
+              {order.nombre_mesa === 'Para llevar' && (
+                <div className="space-y-3">
+                  <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                    <Truck className="h-4 w-4" />
+                    Valor domicilio
+                  </label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={deliveryValue || ''}
+                    onChange={(e) => handleDeliveryValueChange(Number(e.target.value))}
+                    className="flex-1"
+                    placeholder="0"
+                  />
+                  {deliveryValue > 0 && (
+                    <p className="text-sm text-muted-foreground">
+                      Costo de domicilio: {formatCurrency(deliveryValue)}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           <Separator />
@@ -270,9 +471,32 @@ const EditOrder = () => {
 
             <div className="flex justify-end pt-4">
               <div className="w-full sm:w-72 md:w-80">
-                <div className="flex justify-between py-2 text-lg font-bold border-t">
-                  <span>Total:</span>
-                  <span>${calculateTotal()}</span>
+                <div className="space-y-2">
+                  <div className="flex justify-between py-1 text-sm">
+                    <span className="text-muted-foreground">Subtotal:</span>
+                    <span>{formatCurrency(calculateItemsSubtotal())}</span>
+                  </div>
+
+                  {calculateOrderDiscount() > 0 && (
+                    <div className="flex justify-between py-1 text-sm">
+                      <span className="text-muted-foreground">
+                        Descuento {discountType === DiscountTypes.PERCENTAGE ? `(${discount}%)` : `(${formatCurrency(discount)})`}:
+                      </span>
+                      <span className="text-destructive">-{formatCurrency(calculateOrderDiscount())}</span>
+                    </div>
+                  )}
+
+                  {order.nombre_mesa === 'Para llevar' && deliveryValue > 0 && (
+                    <div className="flex justify-between py-1 text-sm">
+                      <span className="text-muted-foreground">Valor domicilio:</span>
+                      <span>+{formatCurrency(deliveryValue)}</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between py-2 text-lg font-bold border-t">
+                    <span>Total:</span>
+                    <span>{formatCurrency(calculateTotal())}</span>
+                  </div>
                 </div>
               </div>
             </div>

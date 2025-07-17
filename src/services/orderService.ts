@@ -278,6 +278,8 @@ export const orderService = {
    * Ajusta una orden con productos agregados, modificados y eliminados
    */
   async adjustOrder(id: string, data: {
+    valor_domi?: number | null;
+    valor_descu?: number | null;
     agregados: Array<{
       id_producto: number;
       cantidad: number;
