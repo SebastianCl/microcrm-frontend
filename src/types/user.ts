@@ -9,7 +9,8 @@ export interface User {
 }
 
 export interface CreateUserDto {
-  nombre_usuario: string;
+  id_client: number;
+  username: string;
   password: string;
   rol: UserRole;
 }

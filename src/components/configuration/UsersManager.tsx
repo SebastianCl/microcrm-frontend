@@ -11,15 +11,18 @@ import { Plus, User, Key } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { User as UserModel } from '@/models/user.model';
 import { useUsers } from '@/hooks/useUsers';
+import { useClients } from '@/hooks/useClients';
 
 const UsersManager: React.FC = () => {
   const { toast } = useToast();
   const { users, isLoading, createUser, updateUser, toggleUserStatus, resetPassword, isCreating, isUpdating, isTogglingStatus, isResettingPassword } = useUsers();
+  const { data: clients, isLoading: isLoadingClients } = useClients();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserModel | null>(null);
   const [formData, setFormData] = useState({
-    nombre_usuario: '',
+    id_client: '',
+    username: '',
     rol: 'empleado' as 'admin' | 'empleado',
     password: ''
   });
@@ -29,7 +32,7 @@ const UsersManager: React.FC = () => {
   });
 
   const handleCreateUser = () => {
-    if (!formData.nombre_usuario || !formData.password) {
+    if (!formData.id_client || !formData.username || !formData.password) {
       toast({
         title: "Error",
         description: "Todos los campos son obligatorios",
@@ -39,17 +42,18 @@ const UsersManager: React.FC = () => {
     }
 
     createUser({
-      nombre_usuario: formData.nombre_usuario,
+      id_client: parseInt(formData.id_client),
+      username: formData.username,
       rol: formData.rol,
       password: formData.password
     });
 
-    setFormData({ nombre_usuario: '', rol: 'empleado', password: '' });
+    setFormData({ id_client: '', username: '', rol: 'empleado', password: '' });
     setIsCreateDialogOpen(false);
   };
 
   const handleEditUser = () => {
-    if (!selectedUser || !formData.nombre_usuario) {
+    if (!selectedUser || !formData.username) {
       toast({
         title: "Error",
         description: "Todos los campos son obligatorios",
@@ -61,13 +65,13 @@ const UsersManager: React.FC = () => {
     updateUser({
       id: selectedUser.id_usuario,
       data: {
-        nombre_usuario: formData.nombre_usuario,
+        nombre_usuario: formData.username,
         rol: formData.rol
       }
     });
 
     setSelectedUser(null);
-    setFormData({ nombre_usuario: '', rol: 'empleado', password: '' });
+    setFormData({ id_client: '', username: '', rol: 'empleado', password: '' });
   };
 
   const handleResetPassword = () => {
@@ -109,10 +113,10 @@ const UsersManager: React.FC = () => {
     setIsPasswordDialogOpen(true);
   };
 
-  if (isLoading) {
+  if (isLoading || isLoadingClients) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="text-lg">Cargando usuarios...</div>
+        <div className="text-lg">Cargando...</div>
       </div>
     );
   }
@@ -140,12 +144,44 @@ const UsersManager: React.FC = () => {
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="name">Nombre</Label>
+                <Label htmlFor="client">Cliente</Label>
+                <Select
+                  value={formData.id_client}
+                  onValueChange={(value) => {
+                    const selectedClient = clients?.find(client => client.id_cliente.toString() === value);
+                    setFormData({
+                      ...formData,
+                      id_client: value,
+                      username: selectedClient ? selectedClient.correo : ''
+                    });
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona un cliente" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clients && clients.length > 0 ? (
+                      clients.map((client) => (
+                        <SelectItem key={client.id_cliente} value={client.id_cliente.toString()}>
+                          {client.nombre} - {client.correo}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="" disabled>
+                        No hay clientes disponibles
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="username">Nombre de usuario (Email)</Label>
                 <Input
-                  id="name"
-                  value={formData.nombre_usuario}
-                  onChange={(e) => setFormData({ ...formData, nombre_usuario: e.target.value })}
-                  placeholder="Nombre de usuario"
+                  id="username"
+                  type="email"
+                  value={formData.username}
+                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                  placeholder="usuario@correo.com"
                 />
               </div>
               <div>
@@ -238,7 +274,7 @@ const UsersManager: React.FC = () => {
             </TableBody>
           </Table>
         </CardContent>
-      </Card>x
+      </Card>
 
       {/* Password Reset Dialog */}
       <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
