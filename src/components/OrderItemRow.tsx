@@ -8,7 +8,14 @@ import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Edit3, Trash2, Check, X } from 'lucide-react';
 import { OrderItem, Addition } from '@/models/order.model';
-import { useProducts, productHasAdditions, getProductAdditions } from '@/hooks/useProducts';
+import {
+  useProducts,
+  productHasAdditions,
+  getProductAdditions,
+  getProductByName,
+  productHasAdditionsByName,
+  getProductAdditionsByName
+} from '@/hooks/useProducts';
 import { formatCurrency } from '@/lib/utils';
 
 interface OrderItemRowProps {
@@ -35,9 +42,14 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({ item, onUpdate, onRemove })
   // Obtener productos de la API
   const { data: products = [], isLoading, isError } = useProducts();
 
+  // Intentar encontrar el producto por ID primero, luego por nombre si no se encuentra
+  const productById = !isLoading && !isError ? products.find(p => p.id === item.productId) : null;
+  const productByName = !productById && !isLoading && !isError ? getProductByName(item.name, products) : null;
+  const actualProduct = productById || productByName;
+
   // Si hay error o está cargando, mostrar los datos sin funcionalidad de edición de adiciones
-  const hasAdditions = !isLoading && !isError ? productHasAdditions(item.productId, products) : false;
-  const availableAdditions = !isLoading && !isError ? getProductAdditions(item.productId, products) : [];  // Convertir AppAddition a Addition cuando sea necesario
+  const hasAdditions = actualProduct ? actualProduct.additions.length > 0 : false;
+  const availableAdditions = actualProduct ? actualProduct.additions.filter(a => a.isActive) : [];  // Convertir AppAddition a Addition cuando sea necesario
   const convertToAddition = (appAddition: typeof availableAdditions[0]): Addition => {
     // Verificar si ya existe en editAdditions para preservar la cantidad
     const existingAddition = editAdditions.find(a => a.id === appAddition.id);

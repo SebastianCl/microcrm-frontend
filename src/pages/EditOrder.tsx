@@ -240,14 +240,22 @@ const EditOrder = () => {
             const originalItem = originalItems.find(orig => orig.id_detalle_pedido === item.id_detalle_pedido);
             if (!originalItem) return false;
 
-            // Verificar si hay cambios en cantidad o descuento
-            return originalItem.quantity !== item.quantity ||
-              (originalItem.discount || 0) !== (item.discount || 0);
+            // Verificar si hay cambios en cantidad, descuento o adiciones
+            const quantityChanged = originalItem.quantity !== item.quantity;
+            const discountChanged = (originalItem.discount || 0) !== (item.discount || 0);
+            const additionsChanged = JSON.stringify(originalItem.additions || []) !== JSON.stringify(item.additions || []);
+
+            return quantityChanged || discountChanged || additionsChanged;
           })
           .map(item => ({
             id_detalle_pedido: item.id_detalle_pedido!,
             cantidad: item.quantity,
             descuento: item.discount || 0,
+            // Incluir adiciones si el producto las tiene
+            adiciones: item.additions?.map(add => ({
+              id_adicion: parseInt(add.id),
+              cantidad: add.quantity,
+            })) || [],
           })),
         eliminados: removedItemIds,
       };

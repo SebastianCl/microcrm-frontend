@@ -120,7 +120,7 @@ export const orderService = {
     // Transformar los detalles de productos al formato esperado
     const items = orderData.detalles.map(detalle => ({
       id_detalle_pedido: detalle.id_detalle_pedido,
-      productId: detalle.id_detalle_pedido.toString(), // Usar el ID del detalle como productId
+      productId: detalle.id_detalle_pedido.toString(), // Mantenemos como string para compatibilidad, pero podría ser mejorado
       name: detalle.producto,
       quantity: detalle.cantidad,
       price: detalle.precio_unitario,
@@ -293,6 +293,10 @@ export const orderService = {
       id_detalle_pedido: number;
       cantidad: number;
       descuento?: number;
+      adiciones?: Array<{
+        id_adicion: number;
+        cantidad: number;
+      }>;
     }>;
     eliminados: Array<number>;
   }): Promise<Order> {

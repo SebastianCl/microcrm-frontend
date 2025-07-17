@@ -230,6 +230,10 @@ export const useAdjustOrder = (id: string) => {
         id_detalle_pedido: number;
         cantidad: number;
         descuento?: number;
+        adiciones?: Array<{
+          id_adicion: number;
+          cantidad: number;
+        }>;
       }>;
       eliminados: Array<number>;
     }) => orderService.adjustOrder(id, data),

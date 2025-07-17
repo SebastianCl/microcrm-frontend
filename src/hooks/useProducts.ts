@@ -105,6 +105,25 @@ export const getProductAdditions = (productId: string, products: AppProduct[]): 
     return product ? product.additions.filter(a => a.isActive).map(a => ({ ...a /*, quantity: a.quantity || 1 */ })) : [];
 };
 
+export const getProductByName = (productName: string, products: AppProduct[]): AppProduct | null => {
+    return products.find(p => p.name === productName) || null;
+};
+
+export const getProductIdByName = (productName: string, products: AppProduct[]): string | null => {
+    const product = getProductByName(productName, products);
+    return product ? product.id : null;
+};
+
+export const productHasAdditionsByName = (productName: string, products: AppProduct[]): boolean => {
+    const product = getProductByName(productName, products);
+    return !!product && product.additions.length > 0;
+};
+
+export const getProductAdditionsByName = (productName: string, products: AppProduct[]): AppAddition[] => {
+    const product = getProductByName(productName, products);
+    return product ? product.additions.filter(a => a.isActive).map(a => ({ ...a })) : [];
+};
+
 export const useCategories = () => {
     return useQuery<Category[], Error>({
         queryKey: ['categories'],
