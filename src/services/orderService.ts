@@ -44,6 +44,8 @@ interface OrderDetailItem {
   correo_cliente: string;
   observacion_pedido: string | null;
   medio_pago: string | null;
+  valor_domi: string;
+  valor_descu: string;
   total_pedido: string;
   id_venta: number | null;
 }
@@ -105,13 +107,14 @@ export const orderService = {
     const order: Order = {
       id_pedido: id,
       id_venta: orderData.id_venta,
-      fecha: '', // No viene en la respuesta, se puede obtener de otro endpoint si es necesario
       tipo_pedido: orderData.mesa === 'Para llevar' ? 'para_llevar' : 'en_mesa',
       estado: orderData.estado_pedido as Order['estado'],
       nombre_mesa: orderData.mesa,
       nombre_cliente: orderData.nombre_cliente,
       observacion_pedido: orderData.observacion_pedido,
       medio_pago: orderData.medio_pago,
+      valor_domi: orderData.valor_domi,
+      valor_descu: orderData.valor_descu,
     };
 
     // Transformar los detalles de productos al formato esperado

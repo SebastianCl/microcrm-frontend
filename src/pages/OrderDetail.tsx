@@ -10,7 +10,6 @@ import {
   Ban,
   CheckCircle2,
   Clock,
-  RefreshCw,
   Loader2,
   ArrowRight,
   Download,
@@ -181,13 +180,20 @@ const OrderDetail = () => {
   const order = orderData.order;
   const orderItems = orderData.items;
 
-  // Calcular el total de la orden
-  const orderTotal = orderItems.reduce((sum, item) => {
+  // Calcular subtotal de productos
+  const subtotal = orderItems.reduce((sum, item) => {
     const itemTotal = item.total;
     const additionsTotal = item.additions?.reduce((addSum, addition) =>
       addSum + (addition.price * addition.quantity), 0) || 0;
     return sum + itemTotal + additionsTotal;
   }, 0);
+
+  // Obtener valores de domicilio y descuento
+  const valorDomicilio = parseFloat(order.valor_domi || '0');
+  const valorDescuento = parseFloat(order.valor_descu || '0');
+
+  // Calcular el total final
+  const orderTotal = subtotal + valorDomicilio - valorDescuento;
 
   const nextStatus = getNextStatus(order.estado);
   const nextStatusLabel = getNextStatusLabel(order.estado);
@@ -349,15 +355,32 @@ const OrderDetail = () => {
                   </table>
                 </div>
               </div>
-              <div className="mt-4 text-right">
-                <p className="text-xl font-bold">
-                  Total: {formatCurrency(orderItems.reduce((sum, item) => {
-                    const itemTotal = item.total;
-                    const additionsTotal = item.additions?.reduce((addSum, addition) =>
-                      addSum + (addition.price * addition.quantity), 0) || 0;
-                    return sum + itemTotal + additionsTotal;
-                  }, 0))}
-                </p>
+              <div className="mt-4 space-y-2">
+                <div className="flex justify-between text-right">
+                  <span className="text-muted-foreground">Subtotal:</span>
+                  <span>{formatCurrency(subtotal)}</span>
+                </div>
+
+                {valorDomicilio > 0 && (
+                  <div className="flex justify-between text-right">
+                    <span className="text-muted-foreground">Domicilio:</span>
+                    <span>+{formatCurrency(valorDomicilio)}</span>
+                  </div>
+                )}
+
+                {valorDescuento > 0 && (
+                  <div className="flex justify-between text-right text-green-600">
+                    <span>Descuento:</span>
+                    <span>-{formatCurrency(valorDescuento)}</span>
+                  </div>
+                )}
+
+                <Separator className="my-2" />
+
+                <div className="flex justify-between text-right">
+                  <span className="text-xl font-bold">Total:</span>
+                  <span className="text-xl font-bold">{formatCurrency(orderTotal)}</span>
+                </div>
               </div>
             </div>
           </div>

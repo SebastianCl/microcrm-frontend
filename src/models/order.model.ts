@@ -1,6 +1,5 @@
 export interface Order {
   id_pedido: string;
-  fecha: string;
   tipo_pedido: string;
   estado: "Pendiente" | "Cancelado" | "Entregado" | "Finalizado";
   nombre_mesa?: string;
@@ -11,6 +10,8 @@ export interface Order {
   id_venta?: number;
   observacion_pedido?: string;
   medio_pago?: string;
+  valor_domi?: string;
+  valor_descu?: string;
 }
 
 export interface OrderItem {
