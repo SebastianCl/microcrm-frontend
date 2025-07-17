@@ -77,6 +77,8 @@ export const useCreateOrderWithProducts = () => {
     tipo_pedido: string;
     Observacion: string;
     medio_pago: string | null;
+    valor_domi?: number;
+    valor_descu?: number;
     productos: Array<{
       id_producto: number;
       cantidad: number;

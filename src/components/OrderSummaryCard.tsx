@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
-import { Percent, DollarSign, ShoppingCart, Receipt } from 'lucide-react';
+import { Percent, DollarSign, ShoppingCart, Receipt, Truck } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 
 interface OrderSummaryCardProps {
@@ -19,7 +19,10 @@ interface OrderSummaryCardProps {
   discount: number;
   discountType: string;
   total: number;
+  deliveryValue?: number;
+  hasTable?: boolean;
   onDiscountChange: (discount: number, type: string) => void;
+  onDeliveryValueChange?: (value: number) => void;
 }
 
 const DiscountTypes = {
@@ -34,7 +37,10 @@ const OrderSummaryCard: React.FC<OrderSummaryCardProps> = ({
   discount,
   discountType,
   total,
-  onDiscountChange
+  deliveryValue = 0,
+  hasTable = true,
+  onDiscountChange,
+  onDeliveryValueChange
 }) => {
   const calculateOrderDiscount = () => {
     if (discountType === DiscountTypes.PERCENTAGE) {
@@ -106,6 +112,27 @@ const OrderSummaryCard: React.FC<OrderSummaryCardProps> = ({
           </div>
         </div>
 
+        {/* Delivery Value Section - Solo para pedidos sin mesa */}
+        {!hasTable && (
+          <>
+            <Separator />
+            <div className="space-y-3">
+              <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                <Truck className="h-4 w-4" />
+                Valor domicilio
+              </label>
+              <Input
+                type="number"
+                min="0"
+                value={deliveryValue || ''}
+                onChange={(e) => onDeliveryValueChange?.(Number(e.target.value))}
+                className="flex-1"
+                placeholder="0"
+              />
+            </div>
+          </>
+        )}
+
         <Separator />
 
         {/* Totals */}
@@ -120,6 +147,13 @@ const OrderSummaryCard: React.FC<OrderSummaryCardProps> = ({
                 Descuento {discountType === DiscountTypes.PERCENTAGE ? `(${discount}%)` : `(${formatCurrency(discount)})`}:
               </span>
               <span className="text-destructive font-medium">-{formatCurrency(discountAmount)}</span>
+            </div>
+          )}
+
+          {!hasTable && deliveryValue > 0 && (
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Valor domicilio:</span>
+              <span className="font-medium">{formatCurrency(deliveryValue)}</span>
             </div>
           )}
 

@@ -48,6 +48,7 @@ const CreateOrder = () => {
   const [isCancelConfirmationOpen, setIsCancelConfirmationOpen] = useState(false);
   const [orderDiscount, setOrderDiscount] = useState<number>(0);
   const [orderDiscountType, setOrderDiscountType] = useState<string>(DiscountTypes.NONE);
+  const [deliveryValue, setDeliveryValue] = useState<number>(0);
   const [selectedClientId, setSelectedClientId] = useState<string>('');
   const [selectedClientName, setSelectedClientName] = useState<string>('');
   const [selectedTableId, setSelectedTableId] = useState<string>('');
@@ -97,6 +98,7 @@ const CreateOrder = () => {
 
     if (tableName !== 'Para llevar') {
       form.setValue('observations', '');
+      setDeliveryValue(0); // Limpiar valor del domicilio cuando se selecciona una mesa
     }
 
     form.clearErrors('observations');
@@ -106,6 +108,7 @@ const CreateOrder = () => {
   const clearTable = () => {
     setSelectedTableId('');
     setSelectedTableName('Para llevar');
+    setDeliveryValue(0); // Resetear valor del domicilio al limpiar la mesa
     form.setValue('tableNumber', '');
     form.clearErrors('observations');
     setCurrentStep('table');
@@ -185,12 +188,17 @@ const CreateOrder = () => {
   const getOrderTotal = () => {
     const subtotal = getProductsSubtotal();
     const discount = calculateOrderDiscount();
-    return Math.max(0, subtotal - discount);
+    const delivery = selectedTableId ? 0 : deliveryValue; // Solo agregar domicilio si no hay mesa
+    return Math.max(0, subtotal - discount + delivery);
   };
 
   const handleDiscountChange = (discount: number, type: string) => {
     setOrderDiscount(discount);
     setOrderDiscountType(type);
+  };
+
+  const handleDeliveryValueChange = (value: number) => {
+    setDeliveryValue(value);
   };
 
   const onSubmit = async (values: FormValues) => {
@@ -211,6 +219,8 @@ const CreateOrder = () => {
       tipo_pedido: selectedTableId ? "en_mesa" : "para_llevar",
       Observacion: selectedTableId ? "" : values.observations || "",
       medio_pago: null,
+      valor_domi: selectedTableId ? 0 : deliveryValue || 0, // Solo aplicar valor de domicilio si no hay mesa asignada
+      valor_descu: calculateOrderDiscount() || 0, // Valor del descuento calculado
       productos: orderItems.map(item => ({
         id_producto: Number(item.productId),
         cantidad: item.quantity,
@@ -632,7 +642,10 @@ const CreateOrder = () => {
         discount={orderDiscount}
         discountType={orderDiscountType}
         total={getOrderTotal()}
+        deliveryValue={deliveryValue}
+        hasTable={!!selectedTableId}
         onDiscountChange={handleDiscountChange}
+        onDeliveryValueChange={handleDeliveryValueChange}
       />
 
       <div className="flex space-x-4">
