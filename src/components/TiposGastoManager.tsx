@@ -7,6 +7,7 @@ import EditTipoGastoDialog from './EditTipoGastoDialog';
 
 const TiposGastoManager: React.FC = () => {
     const { data: tiposGasto = [], isLoading, error } = useTiposGasto();
+    const [showCreateDialog, setShowCreateDialog] = useState(false);
 
     const columns = [
         {
@@ -20,6 +21,10 @@ const TiposGastoManager: React.FC = () => {
             render: (value: string) => value || '-'
         }
     ];
+
+    const handleCreateTipoGasto = () => {
+        setShowCreateDialog(true);
+    };
 
     if (error) {
         return (
@@ -35,7 +40,6 @@ const TiposGastoManager: React.FC = () => {
 
     return (
         <div className="space-y-4">
-
             <ConfigurationTable
                 title="Tipos de gasto"
                 description="Administra los tipos de gasto disponibles para categorizar los gastos del sistema."
@@ -62,8 +66,17 @@ const TiposGastoManager: React.FC = () => {
                     }
                 ]}
                 actions={[]}
+                onAdd={handleCreateTipoGasto}
+                addButtonLabel="Nuevo tipo de gasto"
                 isLoading={isLoading}
             />
+
+            {showCreateDialog && (
+                <CreateTipoGastoDialog
+                    open={showCreateDialog}
+                    onOpenChange={setShowCreateDialog}
+                />
+            )}
         </div>
     );
 };
