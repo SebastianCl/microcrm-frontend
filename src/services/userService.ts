@@ -31,7 +31,7 @@ export const userService = {
    * Update a user
    */
   async updateUser(id: number, userData: UpdateUserDto): Promise<User> {
-    return apiClient.put<User>(`${API_CONFIG.ENDPOINTS.USERS}/${id}`, userData);
+    return apiClient.put<User>(`${API_CONFIG.ENDPOINTS.USERS}/update-user/${id}`, userData);
   },
 
   /**

@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, User, Key } from 'lucide-react';
+import { Plus, User, Key, Edit } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { User as UserModel } from '@/models/user.model';
 import { useUsers } from '@/hooks/useUsers';
@@ -18,6 +18,7 @@ const UsersManager: React.FC = () => {
   const { users, isLoading, createUser, updateUser, toggleUserStatus, resetPassword, isCreating, isUpdating, isTogglingStatus, isResettingPassword } = useUsers();
   const { data: clients, isLoading: isLoadingClients } = useClients();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserModel | null>(null);
   const [formData, setFormData] = useState({
@@ -72,6 +73,18 @@ const UsersManager: React.FC = () => {
 
     setSelectedUser(null);
     setFormData({ id_client: '', username: '', rol: 'empleado', password: '' });
+    setIsEditDialogOpen(false);
+  };
+
+  const openEditDialog = (user: UserModel) => {
+    setSelectedUser(user);
+    setFormData({
+      id_client: '',
+      username: user.nombre_usuario,
+      rol: user.rol,
+      password: ''
+    });
+    setIsEditDialogOpen(true);
   };
 
   const handleResetPassword = () => {
@@ -255,6 +268,13 @@ const UsersManager: React.FC = () => {
                       <Button
                         variant="outline"
                         size="sm"
+                        onClick={() => openEditDialog(user)}
+                      >
+                        <Edit size={14} />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => openPasswordDialog(user)}
                       >
                         <Key size={14} />
@@ -275,6 +295,50 @@ const UsersManager: React.FC = () => {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Edit User Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar usuario</DialogTitle>
+            <DialogDescription>
+              Modifica la información del usuario {selectedUser?.nombre_usuario}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="edit-username">Nombre de usuario (Email)</Label>
+              <Input
+                id="edit-username"
+                type="email"
+                value={formData.username}
+                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                placeholder="usuario@correo.com"
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-role">Rol</Label>
+              <Select value={formData.rol} onValueChange={(value: 'admin' | 'empleado') => setFormData({ ...formData, rol: value })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">Administrador</SelectItem>
+                  <SelectItem value="empleado">Empleado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleEditUser} disabled={isUpdating}>
+                {isUpdating ? 'Actualizando...' : 'Actualizar usuario'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Password Reset Dialog */}
       <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
