@@ -98,6 +98,11 @@ const PaymentMethodDialog: React.FC<PaymentMethodDialogProps> = ({
       setPaidAmountInput('');
       setPaidAmount(0);
       setChange(0);
+    } else {
+      // Al seleccionar efectivo, limpiar los valores para empezar fresh
+      setPaidAmountInput('');
+      setPaidAmount(0);
+      setChange(0);
     }
   };
 
@@ -110,8 +115,16 @@ const PaymentMethodDialog: React.FC<PaymentMethodDialogProps> = ({
     setPaidAmount(numeric);
   };
 
-  const isPaidAmountValid = selectedPaymentMethod !== 'efectivo' ||
-    (paidAmount > 0 && paidAmount >= totalAmount);
+  const isPaidAmountValid = () => {
+    if (selectedPaymentMethod !== 'efectivo') {
+      return true; // Para transferencia no necesitamos validar monto
+    }
+
+    // Para efectivo, necesitamos que el monto sea >= al total
+    return paidAmount > 0 && paidAmount >= totalAmount;
+  };
+
+  const isFormValid = selectedPaymentMethod && isPaidAmountValid();
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-CO', {
@@ -218,7 +231,7 @@ const PaymentMethodDialog: React.FC<PaymentMethodDialogProps> = ({
           </Button>
           <Button
             onClick={handleConfirm}
-            disabled={!selectedPaymentMethod || !isPaidAmountValid || isLoading}
+            disabled={!isFormValid || isLoading}
           >
             {isLoading ? 'Finalizando...' : 'Finalizar orden'}
           </Button>
