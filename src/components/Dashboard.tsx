@@ -1,11 +1,18 @@
-import { PiggyBank, CreditCard, AlertCircle, ShoppingCart, BarChart4, Package, Users, Receipt } from 'lucide-react';
+import { PiggyBank, CreditCard, AlertCircle, ShoppingCart, BarChart4, Package, Users, Receipt, TrendingUp } from 'lucide-react';
 import StatCard from './stats/StatCard';
 import { useFinancialSummary } from '@/hooks/useFinancialSummary';
+import { useDetailedFinancialSummary } from '@/hooks/useDetailedFinancialSummary';
 import QuickActionCard from './dashboard/QuickActionCard';
+import OrderTypeStats from './dashboard/OrderTypeStats';
+import PaymentMethodStats from './dashboard/PaymentMethodStats';
+import TopProductsStats from './dashboard/TopProductsStats';
+import LowStockStats from './dashboard/LowStockStats';
+import CashFlowCard from './dashboard/CashFlowCard';
 import { formatCurrency } from '@/lib/utils';
 
 const Dashboard = () => {
   const { data: financialData, isLoading, error } = useFinancialSummary();
+  const { data: detailedData, isLoading: isDetailedLoading, error: detailedError } = useDetailedFinancialSummary();
   return (
     <div className="space-y-8">
       <div>
@@ -64,7 +71,7 @@ const Dashboard = () => {
             <p>Error al cargar el resumen financiero</p>
           </div>
         ) : financialData ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard
               title="Total en ventas"
               value={formatCurrency(Number(financialData.total_venta) || 0)}
@@ -83,9 +90,62 @@ const Dashboard = () => {
               icon={<AlertCircle />}
               description="Ordenes por procesar"
             />
+            {detailedData && (
+              <StatCard
+                title="Ticket promedio"
+                value={formatCurrency(detailedData.ticket_promedio)}
+                icon={<TrendingUp />}
+                description="Promedio por orden"
+              />
+            )}
           </div>
         ) : null}
       </div>
+
+      {/* Estadísticas detalladas */}
+      {detailedData && !isDetailedLoading && !detailedError && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold tracking-tight">Estadísticas detalladas</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <OrderTypeStats data={detailedData.pedidos_por_tipo} />
+            <PaymentMethodStats data={detailedData.ventas_por_medio_pago} />
+            <TopProductsStats data={detailedData.top_productos_mas_vendidos} />
+            <LowStockStats data={detailedData.productos_con_menos_stock} />
+          </div>
+        </div>
+      )}
+
+      {/* Resumen de flujo de caja */}
+      {detailedData && !isDetailedLoading && !detailedError && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold tracking-tight">Flujo de caja</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <StatCard
+              title="Gastos del día"
+              value={formatCurrency(detailedData.total_gastos_fecha)}
+              icon={<CreditCard />}
+              description="Gastos registrados hoy"
+            />
+            <CashFlowCard
+              title="Flujo neto de caja"
+              value={formatCurrency(detailedData.flujo_neto_caja)}
+              icon={<PiggyBank />}
+              description="Ingresos - Gastos"
+              amount={detailedData.flujo_neto_caja}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Error state para estadísticas detalladas */}
+      {detailedError && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold tracking-tight">Estadísticas detalladas</h2>
+          <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
+            <p>Error al cargar las estadísticas detalladas</p>
+          </div>
+        </div>
+      )}
 
     </div>
   );
