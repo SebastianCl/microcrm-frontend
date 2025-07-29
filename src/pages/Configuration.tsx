@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Table, DollarSign, Plus, Tag, Settings } from 'lucide-react';
+import { Users, Table, TrendingDownIcon, Plus, Tag, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 
@@ -39,8 +39,8 @@ const Configuration: React.FC = () => {
     {
       id: 'gastos',
       label: 'Tipos de gastos',
-      icon: <DollarSign size={16} />,
-      description: 'Definir categorías de gastos',
+      icon: <TrendingDownIcon size={16} />,
+      description: 'Definir tipos de gastos',
       component: <TiposGastoManager />
     },
     {

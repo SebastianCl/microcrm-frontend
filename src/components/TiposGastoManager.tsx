@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTiposGasto } from '@/hooks/useGastos';
-import { FileText, Edit } from 'lucide-react';
+import { TrendingDownIcon, Edit } from 'lucide-react';
 import ConfigurationTable from './configuration/ConfigurationTable';
 import CreateTipoGastoDialog from './CreateTipoGastoDialog';
 import EditTipoGastoDialog from './EditTipoGastoDialog';
@@ -36,7 +36,7 @@ const TiposGastoManager: React.FC = () => {
     if (error) {
         return (
             <div className="text-center py-8">
-                <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <TrendingDownIcon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                 <h3 className="text-lg font-medium mb-2">Error al cargar tipos de gasto</h3>
                 <p className="text-muted-foreground">
                     No se pudieron cargar los tipos de gasto. Por favor, inténtalo de nuevo.
@@ -48,9 +48,9 @@ const TiposGastoManager: React.FC = () => {
     return (
         <div className="space-y-4">
             <ConfigurationTable
-                title="Tipos de gasto"
+                title="Tipos de gastos"
                 description="Administra los tipos de gasto disponibles para categorizar los gastos del sistema."
-                icon={<FileText size={20} />}
+                icon={<TrendingDownIcon size={20} />}
                 data={tiposGasto}
                 columns={columns}
                 actions={[

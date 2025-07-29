@@ -12,6 +12,7 @@ interface StatCardProps {
     isPositive: boolean;
   };
   className?: string;
+  valueColor?: string;
 }
 
 const StatCard = ({
@@ -21,6 +22,7 @@ const StatCard = ({
   description,
   trend,
   className,
+  valueColor,
 }: StatCardProps) => {
   return (
     <Card className={cn("overflow-hidden", className)}>
@@ -29,14 +31,13 @@ const StatCard = ({
         <div className="h-4 w-4 text-muted-foreground">{icon}</div>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className={cn("text-2xl font-bold", valueColor)}>{value}</div>
         {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
         {trend && (
           <div className="flex items-center mt-2">
             <span
-              className={`text-xs ${
-                trend.isPositive ? "text-green-500" : "text-red-500"
-              } flex items-center`}
+              className={`text-xs ${trend.isPositive ? "text-green-500" : "text-red-500"
+                } flex items-center`}
             >
               {trend.isPositive ? "↑" : "↓"} {Math.abs(trend.value)}%
             </span>

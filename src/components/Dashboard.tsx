@@ -1,4 +1,4 @@
-import { PiggyBank, CreditCard, AlertCircle, ShoppingCart, BarChart4, Package, Users, Receipt, TrendingUp } from 'lucide-react';
+import { PiggyBank, TrendingDownIcon, AlertCircle, ShoppingCart, BarChart4, Package, Users, Receipt, TrendingDown } from 'lucide-react';
 import StatCard from './stats/StatCard';
 import { useFinancialSummary } from '@/hooks/useFinancialSummary';
 import { useDetailedFinancialSummary } from '@/hooks/useDetailedFinancialSummary';
@@ -34,7 +34,7 @@ const Dashboard = () => {
           <QuickActionCard
             title="Registrar gasto"
             description="Registra un nuevo gasto del negocio"
-            icon={<CreditCard className="h-6 w-6 text-muted-foreground" />}
+            icon={<TrendingDownIcon className="h-6 w-6 text-muted-foreground" />}
             href="/gastos"
           />
           <QuickActionCard
@@ -83,14 +83,15 @@ const Dashboard = () => {
                 <StatCard
                   title="Ticket promedio"
                   value={formatCurrency(detailedData.ticket_promedio)}
-                  icon={<TrendingUp />}
+                  icon={<Receipt />}
                   description="Promedio por orden"
                 />
                 <StatCard
                   title="Gastos del día"
                   value={formatCurrency(detailedData.total_gastos_fecha)}
-                  icon={<CreditCard />}
+                  icon={<TrendingDown />}
                   description="Gastos registrados hoy"
+                  valueColor="text-red-500"
                 />
                 <CashFlowCard
                   title="Flujo neto de caja"
