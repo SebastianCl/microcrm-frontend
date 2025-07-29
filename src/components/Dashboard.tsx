@@ -73,30 +73,33 @@ const Dashboard = () => {
         ) : financialData ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard
-              title="Total en ventas"
-              value={formatCurrency(Number(financialData.total_venta) || 0)}
-              icon={<PiggyBank />}
-              description="Ingresos por ventas"
-            />
-            <StatCard
-              title="Total en gastos"
-              value={formatCurrency(Number(financialData.total_gastos) || 0)}
-              icon={<CreditCard />}
-              description="Gastos registrados"
-            />
-            <StatCard
               title="Ordenes pendientes"
               value={financialData.total_pen}
               icon={<AlertCircle />}
               description="Ordenes por procesar"
             />
             {detailedData && (
-              <StatCard
-                title="Ticket promedio"
-                value={formatCurrency(detailedData.ticket_promedio)}
-                icon={<TrendingUp />}
-                description="Promedio por orden"
-              />
+              <>
+                <StatCard
+                  title="Ticket promedio"
+                  value={formatCurrency(detailedData.ticket_promedio)}
+                  icon={<TrendingUp />}
+                  description="Promedio por orden"
+                />
+                <StatCard
+                  title="Gastos del día"
+                  value={formatCurrency(detailedData.total_gastos_fecha)}
+                  icon={<CreditCard />}
+                  description="Gastos registrados hoy"
+                />
+                <CashFlowCard
+                  title="Flujo neto de caja"
+                  value={formatCurrency(detailedData.flujo_neto_caja)}
+                  icon={<PiggyBank />}
+                  description="Ingresos - Gastos"
+                  amount={detailedData.flujo_neto_caja}
+                />
+              </>
             )}
           </div>
         ) : null}
@@ -111,28 +114,6 @@ const Dashboard = () => {
             <PaymentMethodStats data={detailedData.ventas_por_medio_pago} />
             <TopProductsStats data={detailedData.top_productos_mas_vendidos} />
             <LowStockStats data={detailedData.productos_con_menos_stock} />
-          </div>
-        </div>
-      )}
-
-      {/* Resumen de flujo de caja */}
-      {detailedData && !isDetailedLoading && !detailedError && (
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold tracking-tight">Flujo de caja</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <StatCard
-              title="Gastos del día"
-              value={formatCurrency(detailedData.total_gastos_fecha)}
-              icon={<CreditCard />}
-              description="Gastos registrados hoy"
-            />
-            <CashFlowCard
-              title="Flujo neto de caja"
-              value={formatCurrency(detailedData.flujo_neto_caja)}
-              icon={<PiggyBank />}
-              description="Ingresos - Gastos"
-              amount={detailedData.flujo_neto_caja}
-            />
           </div>
         </div>
       )}
