@@ -15,7 +15,7 @@ const OrderTypeStats = ({ data }: OrderTypeStatsProps) => {
     const getTypeLabel = (type: string) => {
         switch (type) {
             case 'en_mesa':
-                return 'En Mesa';
+                return 'En mesa';
             case 'para_llevar':
                 return 'Para llevar';
             default:
