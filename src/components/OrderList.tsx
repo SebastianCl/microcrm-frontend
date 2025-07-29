@@ -86,7 +86,7 @@ const OrderList: React.FC<OrderListProps> = ({
           order?.tipo_pedido === 'en_mesa' ||
           (order?.nombre_mesa && order.nombre_mesa !== 'Para llevar')
         );
-      } else if (activeFilters.orderType === 'Para Llevar') {
+      } else if (activeFilters.orderType === 'Para llevar') {
         result = result.filter(order =>
           order?.tipo_pedido === 'para_llevar' ||
           order?.nombre_mesa === 'Para llevar'
@@ -177,7 +177,7 @@ const OrderList: React.FC<OrderListProps> = ({
       id: 'orderType',
       label: 'Tipo',
       type: 'select' as const,
-      options: ['En Mesa', 'Para Llevar']
+      options: ['En Mesa', 'Para llevar']
     }
   ];
 

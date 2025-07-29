@@ -69,7 +69,7 @@ const TableSelectorModal = ({
             </p>
           </div>
 
-          {/* Opción Para Llevar */}
+          {/* Opción Para llevar */}
           <Card 
             className={`cursor-pointer transition-all hover:shadow-md ${
               selectedTableId === '' ? 'ring-2 ring-primary' : ''
@@ -86,7 +86,7 @@ const TableSelectorModal = ({
                     <Utensils className="h-5 w-5 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg">Para Llevar</h3>
+                    <h3 className="font-semibold text-lg">Para llevar</h3>
                     <p className="text-sm text-muted-foreground">Pedido para llevar</p>
                   </div>
                 </div>

@@ -17,7 +17,7 @@ const OrderTypeStats = ({ data }: OrderTypeStatsProps) => {
             case 'en_mesa':
                 return 'En Mesa';
             case 'para_llevar':
-                return 'Para Llevar';
+                return 'Para llevar';
             default:
                 return type;
         }
@@ -37,7 +37,7 @@ const OrderTypeStats = ({ data }: OrderTypeStatsProps) => {
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Pedidos por Tipo</CardTitle>
+                <CardTitle className="text-sm font-medium">Pedidos por tipo</CardTitle>
                 <ShoppingCart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
