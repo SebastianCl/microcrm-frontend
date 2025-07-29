@@ -250,47 +250,61 @@ const UsersManager: React.FC = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id_usuario}>
-                  <TableCell>{user.nombre_usuario}</TableCell>
-                  <TableCell>
-                    <Badge variant={user.rol === 'admin' ? 'default' : 'secondary'}>
-                      {user.rol === 'admin' ? 'Administrador' : 'Empleado'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={user.estado ? 'default' : 'destructive'}>
-                      {user.estado ? 'Activo' : 'Inactivo'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openEditDialog(user)}
-                      >
-                        <Edit size={14} />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openPasswordDialog(user)}
-                      >
-                        <Key size={14} />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleToggleUserStatus(user.id_usuario)}
-                        disabled={isTogglingStatus}
-                      >
-                        {user.estado ? 'Desactivar' : 'Activar'}
-                      </Button>
+              {users && users.length > 0 ? (
+                users.map((user) => (
+                  <TableRow key={user.id_usuario}>
+                    <TableCell>{user.nombre_usuario}</TableCell>
+                    <TableCell>
+                      <Badge variant={user.rol === 'admin' ? 'default' : 'secondary'}>
+                        {user.rol === 'admin' ? 'Administrador' : 'Empleado'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={user.estado ? 'default' : 'destructive'}>
+                        {user.estado ? 'Activo' : 'Inactivo'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openEditDialog(user)}
+                        >
+                          <Edit size={14} />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openPasswordDialog(user)}
+                        >
+                          <Key size={14} />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleToggleUserStatus(user.id_usuario)}
+                          disabled={isTogglingStatus}
+                        >
+                          {user.estado ? 'Desactivar' : 'Activar'}
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center py-8">
+                    <div className="text-muted-foreground mb-4">
+                      No hay usuarios disponibles
                     </div>
+                    <Button onClick={() => setIsCreateDialogOpen(true)} variant="outline">
+                      <Plus size={16} className="mr-2" />
+                      Crear el primer usuario
+                    </Button>
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </CardContent>

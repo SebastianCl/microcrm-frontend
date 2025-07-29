@@ -316,45 +316,59 @@ const ProductAdditionsManager: React.FC = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {additions.map((addition) => (
-                <TableRow key={addition.id}>
-                  <TableCell className="font-medium">{addition.name}</TableCell>
-                  <TableCell className="font-mono">{addition.price.toLocaleString('es-CO')}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">
-                      {getProductName(addition.productId)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={addition.isActive ? 'default' : 'destructive'}>
-                      {addition.isActive ? 'Activa' : 'Inactiva'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openEditDialog(addition)}
-                      >
-                        <Edit size={14} />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleToggleAdditionStatus(addition.id)}
-                        disabled={isTogglingStatus}
-                      >
-                        {isTogglingStatus ? (
-                          <Loader2 size={14} className="animate-spin" />
-                        ) : (
-                          addition.isActive ? 'Desactivar' : 'Activar'
-                        )}
-                      </Button>
+              {additions && additions.length > 0 ? (
+                additions.map((addition) => (
+                  <TableRow key={addition.id}>
+                    <TableCell className="font-medium">{addition.name}</TableCell>
+                    <TableCell className="font-mono">{addition.price.toLocaleString('es-CO')}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">
+                        {getProductName(addition.productId)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={addition.isActive ? 'default' : 'destructive'}>
+                        {addition.isActive ? 'Activa' : 'Inactiva'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openEditDialog(addition)}
+                        >
+                          <Edit size={14} />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleToggleAdditionStatus(addition.id)}
+                          disabled={isTogglingStatus}
+                        >
+                          {isTogglingStatus ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : (
+                            addition.isActive ? 'Desactivar' : 'Activar'
+                          )}
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8">
+                    <div className="text-muted-foreground mb-4">
+                      No hay adiciones disponibles
                     </div>
+                    <Button onClick={() => setIsCreateDialogOpen(true)} variant="outline">
+                      <Plus size={16} className="mr-2" />
+                      Crear la primera adición
+                    </Button>
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </CardContent>

@@ -8,6 +8,8 @@ import EditTipoGastoDialog from './EditTipoGastoDialog';
 const TiposGastoManager: React.FC = () => {
     const { data: tiposGasto = [], isLoading, error } = useTiposGasto();
     const [showCreateDialog, setShowCreateDialog] = useState(false);
+    const [selectedTipo, setSelectedTipo] = useState(null);
+    const [showEditDialog, setShowEditDialog] = useState(false);
 
     const columns = [
         {
@@ -24,6 +26,11 @@ const TiposGastoManager: React.FC = () => {
 
     const handleCreateTipoGasto = () => {
         setShowCreateDialog(true);
+    };
+
+    const handleEditTipoGasto = (tipo: any) => {
+        setSelectedTipo(tipo);
+        setShowEditDialog(true);
     };
 
     if (error) {
@@ -44,30 +51,17 @@ const TiposGastoManager: React.FC = () => {
                 title="Tipos de gasto"
                 description="Administra los tipos de gasto disponibles para categorizar los gastos del sistema."
                 icon={<FileText size={20} />}
-                data={tiposGasto.map(tipo => ({
-                    ...tipo,
-                    editAction: (
-                        <EditTipoGastoDialog
-                            tipoGasto={tipo}
-                            trigger={
-                                <button className="p-1 hover:bg-muted rounded transition-colors">
-                                    <Edit size={14} />
-                                </button>
-                            }
-                        />
-                    )
-                }))}
-                columns={[
-                    ...columns,
+                data={tiposGasto}
+                columns={columns}
+                actions={[
                     {
-                        key: 'editAction',
-                        header: 'Acciones',
-                        render: (value: React.ReactNode) => value
+                        label: 'Editar',
+                        icon: <Edit size={14} />,
+                        onClick: handleEditTipoGasto
                     }
                 ]}
-                actions={[]}
                 onAdd={handleCreateTipoGasto}
-                addButtonLabel="Nuevo tipo de gasto"
+                addButtonLabel="Crear tipo de gasto"
                 isLoading={isLoading}
             />
 
@@ -75,6 +69,15 @@ const TiposGastoManager: React.FC = () => {
                 <CreateTipoGastoDialog
                     open={showCreateDialog}
                     onOpenChange={setShowCreateDialog}
+                />
+            )}
+
+            {showEditDialog && selectedTipo && (
+                <EditTipoGastoDialog
+                    tipoGasto={selectedTipo}
+                    trigger={
+                        <button style={{ display: 'none' }} />
+                    }
                 />
             )}
         </div>

@@ -160,50 +160,58 @@ const TablesManager: React.FC = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {tables?.map((table) => (
-                <TableRow key={table.id_mesa}>
-                  <TableCell className="font-medium">{table.nombre_mesa}</TableCell>
-                  <TableCell>
-                    <Badge variant={table.activa ? 'default' : 'destructive'}>
-                      {table.activa ? 'Activa' : 'Inactiva'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openEditDialog(table)}
-                        disabled={updateTableMutation.isPending}
-                      >
-                        {updateTableMutation.isPending ? (
-                          <Loader2 size={14} className="animate-spin" />
-                        ) : (
-                          <Edit size={14} />
-                        )}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleToggleTableStatus(table.id_mesa)}
-                        disabled={toggleStatusMutation.isPending}
-                      >
-                        {toggleStatusMutation.isPending ? (
-                          <Loader2 size={14} className="animate-spin" />
-                        ) : (
-                          table.activa ? 'Desactivar' : 'Activar'
-                        )}
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )) || (
-                  <TableRow>
-                    <TableCell colSpan={3} className="text-center text-muted-foreground">
-                      No hay mesas disponibles
+              {tables && tables.length > 0 ? (
+                tables.map((table) => (
+                  <TableRow key={table.id_mesa}>
+                    <TableCell className="font-medium">{table.nombre_mesa}</TableCell>
+                    <TableCell>
+                      <Badge variant={table.activa ? 'default' : 'destructive'}>
+                        {table.activa ? 'Activa' : 'Inactiva'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openEditDialog(table)}
+                          disabled={updateTableMutation.isPending}
+                        >
+                          {updateTableMutation.isPending ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : (
+                            <Edit size={14} />
+                          )}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleToggleTableStatus(table.id_mesa)}
+                          disabled={toggleStatusMutation.isPending}
+                        >
+                          {toggleStatusMutation.isPending ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : (
+                            table.activa ? 'Desactivar' : 'Activar'
+                          )}
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
-                )}
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={3} className="text-center py-8">
+                    <div className="text-muted-foreground mb-4">
+                      No hay mesas disponibles
+                    </div>
+                    <Button onClick={() => setIsCreateDialogOpen(true)} variant="outline">
+                      <Plus size={16} className="mr-2" />
+                      Crear la primera mesa
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </TableComponent>
         </CardContent>
