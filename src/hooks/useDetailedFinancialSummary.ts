@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/services/apiClient';
+import { getCurrentDate } from '@/lib/utils';
 
 interface PedidoPorTipo {
     tipo_pedido: string;
@@ -34,8 +35,8 @@ export interface DetailedFinancialSummary {
 }
 
 const fetchDetailedFinancialSummary = async (): Promise<DetailedFinancialSummary> => {
-    const today = new Date().toISOString().split('T')[0]; // Formato YYYY-MM-DD
-    const response = await apiClient.get<DetailedFinancialSummary>(`/finance/summary?fecha_inicio=${today}`);
+    const todayString = getCurrentDate();
+    const response = await apiClient.get<DetailedFinancialSummary>(`/finance/summary?fecha_inicio=${todayString}`);
     return response;
 };
 
