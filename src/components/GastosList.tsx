@@ -11,7 +11,7 @@ import { ErrorDisplay } from '@/components/ui/error-display';
 import { useNetwork } from '@/hooks/useNetwork';
 import CreateGastoDialog from './CreateGastoDialog';
 import { Plus } from 'lucide-react';
-import { getCurrentDate } from '@/lib/utils';
+import { getCurrentDate, formatDate } from '@/lib/utils';
 
 interface GastosListProps {
     limit?: number;
@@ -123,15 +123,11 @@ const GastosList: React.FC<GastosListProps> = ({
             header: 'Fecha',
             accessorKey: 'fecha' as keyof Gasto,
             cell: (gasto: Gasto) => {
-                try {
-                    return gasto.fecha ? (
-                        <span>{new Date(gasto.fecha).toLocaleDateString('es-ES')}</span>
-                    ) : (
-                        <span className="text-muted-foreground">-</span>
-                    );
-                } catch (error) {
-                    return <span className="text-muted-foreground">Fecha inválida</span>;
-                }
+                return gasto.fecha ? (
+                    <span>{formatDate(gasto.fecha)}</span>
+                ) : (
+                    <span className="text-muted-foreground">-</span>
+                );
             },
         },
         {

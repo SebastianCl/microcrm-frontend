@@ -1,4 +1,4 @@
-import { PiggyBank, TrendingDownIcon, AlertCircle, ShoppingCart, BarChart4, Package, Users, Receipt, TrendingDown } from 'lucide-react';
+import { PiggyBank, TrendingDownIcon, AlertCircle, ShoppingCart, BarChart4, Package, Users, Receipt, TrendingDown, Download } from 'lucide-react';
 import StatCard from './stats/StatCard';
 import { useFinancialSummary } from '@/hooks/useFinancialSummary';
 import { useDetailedFinancialSummary } from '@/hooks/useDetailedFinancialSummary';
@@ -8,11 +8,21 @@ import PaymentMethodStats from './dashboard/PaymentMethodStats';
 import TopProductsStats from './dashboard/TopProductsStats';
 import LowStockStats from './dashboard/LowStockStats';
 import CashFlowCard from './dashboard/CashFlowCard';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, getFormattedDate } from '@/lib/utils';
+import { Button } from './ui/button';
+import { useDownloadReport } from '@/hooks/useDownloadReport';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 const Dashboard = () => {
   const { data: financialData, isLoading, error } = useFinancialSummary();
   const { data: detailedData, isLoading: isDetailedLoading, error: detailedError } = useDetailedFinancialSummary();
+  const { mutate: downloadReport, isPending: isDownloading } = useDownloadReport();
+
+  const handleDownloadReport = () => {
+    const today = getFormattedDate(new Date());
+    downloadReport(today);
+  };
+
   return (
     <div className="space-y-8">
       <div>
@@ -59,7 +69,21 @@ const Dashboard = () => {
       </div>
 
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold tracking-tight">Resumen financiero</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold tracking-tight">Resumen financiero</h2>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="default" size="icon" onClick={handleDownloadReport} disabled={isDownloading}>
+                  <Download className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Descargar informe diario</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="h-32 bg-muted animate-pulse rounded-lg"></div>
@@ -128,7 +152,6 @@ const Dashboard = () => {
           </div>
         </div>
       )}
-
     </div>
   );
 };

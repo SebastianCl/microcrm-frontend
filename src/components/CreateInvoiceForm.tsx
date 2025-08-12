@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { X, Plus, User, Calendar, CalendarDays, FileText, Hash, DollarSign } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { formatCurrency, getCurrentDate } from '@/lib/utils';
+import { formatCurrency, getCurrentDate, getFutureDate } from '@/lib/utils';
 
 // Schema for invoice creation form
 const invoiceFormSchema = z.object({
@@ -48,7 +48,7 @@ const CreateInvoiceForm: React.FC<CreateInvoiceFormProps> = ({ onClose }) => {
   const defaultValues: InvoiceFormValues = {
     client: "",
     invoiceDate: getCurrentDate(),
-    dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    dueDate: getFutureDate(15), // 15 días después de hoy
     items: [
       { description: "", quantity: 1, rate: 0 }
     ]

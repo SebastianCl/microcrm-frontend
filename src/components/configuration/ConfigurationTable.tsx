@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Edit, Trash2 } from 'lucide-react';
+import { formatDateTime } from '@/lib/utils';
 
 interface ActionButton {
   label: string;
@@ -54,13 +55,7 @@ const ConfigurationTable: React.FC<ConfigurationTableProps> = ({
     if (column.key.includes('Date') || column.key.includes('At')) {
       return (
         <span className="text-sm text-muted-foreground">
-          {new Date(value).toLocaleDateString('es-ES', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          })}
+          {formatDateTime(value)}
         </span>
       );
     }

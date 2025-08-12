@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { categoryService } from '@/services/categoryService';
 import { Category, ApiCategory } from '@/models/category.model';
+import { getCurrentTimestamp } from '@/lib/utils';
 
 // Función utilitaria para convertir ApiCategory a Category
 const mapApiCategoryToCategory = (apiCategory: ApiCategory): Category => ({
@@ -9,8 +10,8 @@ const mapApiCategoryToCategory = (apiCategory: ApiCategory): Category => ({
   name: apiCategory.nombre_categoria,
   description: '', // La API no maneja descripción por ahora
   isActive: true, // Asumimos que todas están activas por defecto
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
+  createdAt: getCurrentTimestamp(),
+  updatedAt: getCurrentTimestamp(),
 });
 
 export const useCategories = () => {
@@ -64,8 +65,8 @@ export const useCategories = () => {
         name: name,
         description: '',
         isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: getCurrentTimestamp(),
+        updatedAt: getCurrentTimestamp(),
       };
 
       setCategories(prev => [...prev, newCategory]);
@@ -91,7 +92,7 @@ export const useCategories = () => {
 
       setCategories(prev => prev.map(category =>
         category.id === categoryId
-          ? { ...category, name, updatedAt: new Date().toISOString() }
+          ? { ...category, name, updatedAt: getCurrentTimestamp() }
           : category
       ));
 
@@ -116,7 +117,7 @@ export const useCategories = () => {
   const toggleCategoryStatus = useCallback((categoryId: string) => {
     setCategories(prev => prev.map(category =>
       category.id === categoryId
-        ? { ...category, isActive: !category.isActive, updatedAt: new Date().toISOString() }
+        ? { ...category, isActive: !category.isActive, updatedAt: getCurrentTimestamp() }
         : category
     ));
     

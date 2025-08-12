@@ -1,6 +1,6 @@
 // Configuración centralizada para la API
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.BACKEND_API_URL || 'http://localhost:3000/api',
+  BASE_URL: import.meta.env.VITE_BACKEND_API_URL || 'http://localhost:3000/api',
   ENDPOINTS: {
     AUTH: '/auth',
     INVOICES: '/factura',

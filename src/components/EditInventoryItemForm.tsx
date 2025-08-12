@@ -27,6 +27,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { InventoryItem } from '@/types/inventory';
 import { useCategories, useUpdateProduct } from '@/hooks/useProducts';
+import { useAuth } from '@/contexts/AuthContext';
 
 const formSchema = z.object({
   name: z.string().min(3, { message: "El nombre debe tener al menos 3 caracteres" }),
@@ -50,6 +51,10 @@ interface EditInventoryItemFormProps {
 const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onClose }) => {
   const { data: categoriesData } = useCategories();
   const updateProductMutation = useUpdateProduct();
+  const { user } = useAuth();
+
+  // Verificar si el usuario es colaborador (no puede editar cantidad)
+  const isCollaborator = user?.role === 'Collaborator';
 
   // Transformar los datos de categorías al formato esperado por el componente
   const categories = React.useMemo(() => {
@@ -98,7 +103,8 @@ const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onC
           nombre: values.name,
           descripcion: values.description,
           precio: values.price,
-          stock: parseInt(values.stockQuantity),
+          // Si es colaborador, mantener el stock original; si es administrador, usar el nuevo valor
+          stock: isCollaborator ? item.stockQuantity : parseInt(values.stockQuantity),
           estado: values.isActive,
           maneja_inventario: values.managesInventory,
           id_categoria: parseInt(values.category),
@@ -124,7 +130,7 @@ const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onC
               <FormItem>
                 <FormLabel>Nombre del producto</FormLabel>
                 <FormControl>
-                  <Input placeholder="Laptop Dell XPS 13" {...field} />
+                  <Input {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -164,7 +170,7 @@ const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onC
               <FormItem>
                 <FormLabel>Precio (COP)</FormLabel>
                 <FormControl>
-                  <CurrencyInput 
+                  <CurrencyInput
                     value={field.value}
                     onValueChange={(value) => field.onChange(value.toString())}
                   />
@@ -181,8 +187,19 @@ const EditInventoryItemForm: React.FC<EditInventoryItemFormProps> = ({ item, onC
               <FormItem>
                 <FormLabel>Cantidad</FormLabel>
                 <FormControl>
-                  <Input type="number" min="0" step="1" {...field} />
+                  <Input
+                    type="number"
+                    min="0"
+                    step="1"
+                    {...field}
+                    disabled={isCollaborator}
+                  />
                 </FormControl>
+                {isCollaborator && (
+                  <p className="text-xs text-amber-600">
+                    Los colaboradores no pueden editar la cantidad del producto
+                  </p>
+                )}
                 <FormMessage />
               </FormItem>
             )}

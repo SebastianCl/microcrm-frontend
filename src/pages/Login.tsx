@@ -52,8 +52,8 @@ const LoginPage = () => {
       // Guardar el token en localStorage
       localStorage.setItem('authToken', response.token);
 
-      // Determinar el rol basado en la respuesta o usar un valor por defecto
-      const role = values.email.includes('admin') ? 'Administrator' : 'Collaborator';
+      // Determinar el rol basado en la respuesta
+      const role = response.rol === 'admin' ? 'Administrator' : 'Collaborator';
 
       // Usar la función de login del contexto de autenticación
       login({

@@ -22,7 +22,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import EditInventoryItemDialog from '@/components/EditInventoryItemDialog';
 import CreateInventoryMovementDialog from '@/components/CreateInventoryMovementDialog';
 import { InventoryItem } from '@/types/inventory';
-import { formatCurrency, getCurrentDate } from '@/lib/utils';
+import { formatCurrency, getCurrentDate, formatDateTime } from '@/lib/utils';
 import { useInventoryMovements } from '@/hooks/useInventoryMovements';
 import { useProduct } from '@/hooks/useProducts';
 import { AppProduct } from '@/models/product.model';
@@ -77,16 +77,7 @@ const InventoryDetail = () => {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+  // Función para formatear fechas (removida - ahora usa formatDateTime de utils)
 
   const getMovementIcon = (type: string, subtipo?: string) => {
     switch (type) {
@@ -288,7 +279,7 @@ const InventoryDetail = () => {
                               <p className="text-sm text-muted-foreground">{movement.comentario}</p>
                               <div className="flex items-center gap-1 mt-1">
                                 <Calendar className="h-3 w-3 text-muted-foreground" />
-                                <p className="text-xs text-muted-foreground">{formatDate(movement.fecha)}</p>
+                                <p className="text-xs text-muted-foreground">{formatDateTime(movement.fecha)}</p>
                               </div>
                             </div>
                           </div>

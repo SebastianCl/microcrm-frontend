@@ -1,7 +1,7 @@
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { dashboardStats, monthlyRevenue } from '@/lib/sample-data';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, getCurrentMonth } from '@/lib/utils';
 import RevenueChart from '@/components/charts/RevenueChart';
 
 const Reports = () => {
@@ -14,7 +14,7 @@ const Reports = () => {
   const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
     "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
-  const currentMonth = new Date().getMonth();
+  const currentMonth = getCurrentMonth();
 
   return (
     <div className="space-y-6">
