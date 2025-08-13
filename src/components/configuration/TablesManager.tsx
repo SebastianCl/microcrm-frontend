@@ -82,7 +82,12 @@ const TablesManager: React.FC = () => {
     );
   }
 
-  if (error) {
+  // Si es un error 404 (no hay mesas), seguimos mostrando la interfaz
+  // para permitir crear la primera mesa
+  const is404Error = error && error.message && error.message.includes('404');
+  const emptyTables = is404Error || (tables && tables.length === 0);
+
+  if (error && !is404Error) {
     return (
       <div className="text-center text-red-600 p-4">
         <p>Error al cargar las mesas: {error.message}</p>
@@ -160,8 +165,8 @@ const TablesManager: React.FC = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {tables && tables.length > 0 ? (
-                tables.map((table) => (
+              {!emptyTables ? (
+                tables?.map((table) => (
                   <TableRow key={table.id_mesa}>
                     <TableCell className="font-medium">{table.nombre_mesa}</TableCell>
                     <TableCell>

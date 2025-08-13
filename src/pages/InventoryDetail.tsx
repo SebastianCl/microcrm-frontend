@@ -256,9 +256,9 @@ const InventoryDetail = () => {
                     ))}
                   </div>
                 ) : movementsError ? (
-                  <Alert className="border-red-200">
-                    <AlertDescription className="text-red-600">
-                      Error al cargar el historial de movimientos
+                  <Alert className="border-yellow-200">
+                    <AlertDescription className="text-yellow-600">
+                      Este producto aún no tiene movimientos registrados.
                     </AlertDescription>
                   </Alert>
                 ) : movements && movements.length > 0 ? (
